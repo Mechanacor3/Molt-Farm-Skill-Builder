@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "packages"))
 
 from moltfarm.models import AgentDefinition, Skill, SkillResources
 from moltfarm import runner
-from moltfarm.runner import OpenAIAgentsExecutor, StubAgentExecutor
+from moltfarm.runner import OpenAIAgentsExecutor, StubAgentExecutor, run_workflow
 
 
 class StubAgentExecutorTests(unittest.TestCase):
@@ -60,6 +60,28 @@ class StubAgentExecutorTests(unittest.TestCase):
             )
             self.assertFalse(result["compaction"]["input_compacted"])
             self.assertFalse(result["compaction"]["output_compacted"])
+
+    def test_stub_executor_detects_plain_filename_context(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            root_file = project_root / "README.md"
+            root_file.write_text("hello\n", encoding="utf-8")
+
+            executor = StubAgentExecutor()
+            result = executor.run(
+                project_root=project_root,
+                agent=AgentDefinition(
+                    name="generic-worker",
+                    description="",
+                    model="gpt-5",
+                    runtime="stub",
+                    context_policy="least_context",
+                ),
+                skills=[],
+                task_input={"source": "README.md"},
+            )
+
+            self.assertEqual(["README.md"], result["context_files"])
 
 
 class OpenAIAgentsExecutorTests(unittest.TestCase):
@@ -258,6 +280,49 @@ class OpenAIAgentsExecutorTests(unittest.TestCase):
         self.assertIn("Compact this workflow input:", compactor_input)
         self.assertIn("<compacted_workflow_input>", main_input)
         self.assertIn("Compacted content.", main_input)
+
+
+class RunWorkflowFailureTests(unittest.TestCase):
+    def test_run_workflow_persists_failed_run_record(self) -> None:
+        original_build_executor = runner._build_executor
+        try:
+            class FailingExecutor:
+                def run(self, **kwargs):
+                    raise RuntimeError("boom")
+
+            runner._build_executor = lambda runtime: FailingExecutor()
+
+            with tempfile.TemporaryDirectory() as temp_dir:
+                project_root = Path(temp_dir)
+                (project_root / "agents" / "triage-worker").mkdir(parents=True)
+                (project_root / "workflows" / "manual-triage").mkdir(parents=True)
+                (project_root / "skills" / "repo-triage").mkdir(parents=True)
+                (project_root / "agents" / "triage-worker" / "agent.yaml").write_text(
+                    "name: triage-worker\nmodel: gpt-5\nskills:\n  - repo-triage\nruntime: openai_agents\n",
+                    encoding="utf-8",
+                )
+                (project_root / "workflows" / "manual-triage" / "molt.yaml").write_text(
+                    "name: manual-triage\nentry_agent: triage-worker\ninputs:\n  task: test failure\n",
+                    encoding="utf-8",
+                )
+                (project_root / "skills" / "repo-triage" / "SKILL.md").write_text(
+                    "---\nname: repo-triage\ndescription: Triage repositories.\n---\n\nDo triage.\n",
+                    encoding="utf-8",
+                )
+
+                result = run_workflow(
+                    project_root=project_root,
+                    workflow_name="manual-triage",
+                )
+
+                self.assertEqual("failed", result.status)
+                self.assertIn("Run failed: RuntimeError: boom", result.output["summary"])
+                run_record = (project_root / result.run_path).read_text(encoding="utf-8")
+                log_record = (project_root / result.log_path).read_text(encoding="utf-8")
+                self.assertIn('"status": "failed"', run_record)
+                self.assertIn("Run failed: RuntimeError: boom", log_record)
+        finally:
+            runner._build_executor = original_build_executor
 
 
 if __name__ == "__main__":

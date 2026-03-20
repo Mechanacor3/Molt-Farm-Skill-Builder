@@ -16,6 +16,7 @@ from .workflow_loader import load_workflow
 
 COMPACTION_TOKEN_THRESHOLD = 100_000
 COMPACTION_TARGET_TOKENS = 20_000
+COMPACTION_SOURCE_MAX_TOKENS = 120_000
 
 
 class StubAgentExecutor:
@@ -170,12 +171,23 @@ def run_workflow(
 
     executor = _build_executor(agent.runtime)
     run_id = generate_run_id()
-    output = executor.run(
-        project_root=project_root,
-        agent=agent,
-        skills=attached_skills,
-        task_input=task_input,
-    )
+    status = "completed"
+    try:
+        output = executor.run(
+            project_root=project_root,
+            agent=agent,
+            skills=attached_skills,
+            task_input=task_input,
+        )
+    except Exception as exc:
+        status = "failed"
+        output = _build_failed_output(
+            agent=agent,
+            skills=attached_skills,
+            task_input=task_input,
+            error=exc,
+        )
+
     log_path = write_log(
         project_root,
         run_id=run_id,
@@ -188,7 +200,7 @@ def run_workflow(
         run_id=run_id,
         workflow=workflow.name,
         agent=agent.name,
-        status="completed",
+        status=status,
         inputs=task_input,
         output=output,
         log_path=str(log_path.relative_to(project_root)),
@@ -309,6 +321,43 @@ def _build_skill_catalog(skills: list[Skill]) -> list[dict[str, str]]:
         }
         for skill in skills
     ]
+
+
+def _build_failed_output(
+    *,
+    agent: AgentDefinition,
+    skills: list[Skill],
+    task_input: dict[str, Any],
+    error: Exception,
+) -> dict[str, Any]:
+    return {
+        "summary": f"Run failed: {type(error).__name__}: {error}",
+        "skill_names": [skill.name for skill in skills],
+        "skill_descriptions": {
+            skill.name: skill.description for skill in skills
+        },
+        "skill_references": {
+            skill.name: [path.as_posix() for path in skill.referenced_paths]
+            for skill in skills
+        },
+        "skill_catalog": _build_skill_catalog(skills),
+        "context_files": [],
+        "context_directories": [],
+        "runtime": agent.runtime,
+        "model": agent.model,
+        "task_input": task_input,
+        "compaction": {
+            "threshold_tokens": COMPACTION_TOKEN_THRESHOLD,
+            "input_tokens_estimate": 0,
+            "input_compacted": False,
+            "output_tokens_estimate": 0,
+            "output_compacted": False,
+        },
+        "error": {
+            "type": type(error).__name__,
+            "message": str(error),
+        },
+    }
 
 
 def _build_activate_skill_tool(sdk: Any, skills: list[Skill]):
@@ -437,6 +486,7 @@ def _compact_text(
     text: str,
     purpose: str,
 ) -> str:
+    text = _prepare_compaction_source(text)
     compactor = sdk.Agent(
         name="workflow-compactor",
         model=model,
@@ -453,6 +503,29 @@ def _compact_text(
         f"Compact this {purpose}:\n\n{text}",
     )
     return _coerce_final_output(result.final_output)
+
+
+def _prepare_compaction_source(text: str) -> str:
+    if _estimate_tokens(text) <= COMPACTION_SOURCE_MAX_TOKENS:
+        return text
+
+    text_length = len(text)
+    slice_size = min(60_000, text_length // 4)
+    middle_start = max((text_length // 2) - (slice_size // 2), 0)
+    middle_end = min(middle_start + slice_size, text_length)
+    sampled = [
+        "The source was too large to send whole. Compact from these representative windows.",
+        "<window label=\"head\">",
+        text[:slice_size].rstrip(),
+        "</window>",
+        "<window label=\"middle\">",
+        text[middle_start:middle_end].rstrip(),
+        "</window>",
+        "<window label=\"tail\">",
+        text[-slice_size:].rstrip(),
+        "</window>",
+    ]
+    return "\n".join(sampled)
 
 
 def _wrap_skill_activation(skill: Skill) -> str:
@@ -507,14 +580,10 @@ def _estimate_tokens(text: str) -> int:
 def _collect_context_files(project_root: Path, task_input: dict[str, Any]) -> list[str]:
     context_files: list[str] = []
     for value in task_input.values():
-        if not _looks_like_context_path(value):
+        relative_path = _resolve_project_relative_path(project_root, value)
+        if relative_path is None:
             continue
-        resolved = (project_root / value).resolve()
-        try:
-            relative_path = resolved.relative_to(project_root.resolve())
-        except ValueError:
-            continue
-        if resolved.is_file():
+        if (project_root / relative_path).is_file():
             context_files.append(relative_path.as_posix())
     return sorted(set(context_files))
 
@@ -522,14 +591,10 @@ def _collect_context_files(project_root: Path, task_input: dict[str, Any]) -> li
 def _collect_context_directories(project_root: Path, task_input: dict[str, Any]) -> list[str]:
     context_directories: list[str] = []
     for value in task_input.values():
-        if not _looks_like_context_path(value):
+        relative_path = _resolve_project_relative_path(project_root, value)
+        if relative_path is None:
             continue
-        resolved = (project_root / value).resolve()
-        try:
-            relative_path = resolved.relative_to(project_root.resolve())
-        except ValueError:
-            continue
-        if resolved.is_dir():
+        if (project_root / relative_path).is_dir():
             context_directories.append(relative_path.as_posix())
     return sorted(set(context_directories))
 
@@ -553,7 +618,21 @@ def _looks_like_context_path(value: Any) -> bool:
         return False
     if len(value) > 1024 or "\n" in value:
         return False
-    return "/" in value or value.startswith(".")
+    return True
+
+
+def _resolve_project_relative_path(project_root: Path, value: Any) -> Path | None:
+    if not _looks_like_context_path(value):
+        return None
+    try:
+        resolved = (project_root / str(value)).resolve()
+    except OSError:
+        return None
+
+    try:
+        return resolved.relative_to(project_root.resolve())
+    except ValueError:
+        return None
 
 
 def _load_dotenv(project_root: Path):

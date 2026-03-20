@@ -59,7 +59,7 @@ def main() -> int:
             },
             indent=2,
         ))
-        return 0
+        return 0 if result.status == "completed" else 1
 
     parser.error(f"Unknown command: {args.command}")
     return 1

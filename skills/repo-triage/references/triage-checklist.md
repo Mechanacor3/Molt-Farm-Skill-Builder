@@ -1,6 +1,8 @@
 # Triage Checklist
 
-- State the likely goal in one line.
-- State the current observable state in one line.
-- State the next concrete action in one line.
-- Keep the scope limited to the repository and provided task.
+- Identify the likely goal in one sentence.
+- Verify the current state from the smallest possible local evidence.
+- Prefer citing concrete paths, and include line references when they materially help.
+- Keep `Next` to one to three verb-led actions.
+- Add `Missing:` only when one extra file or path would unblock the triage.
+- Add `Unknown:` instead of inferring unsupported facts.
