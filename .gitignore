@@ -1,0 +1,8 @@
+example_upstream_skills/
+.env
+.venv/
+tmp/
+__pycache__/
+*.pyc
+logs/*/
+runs/*.json

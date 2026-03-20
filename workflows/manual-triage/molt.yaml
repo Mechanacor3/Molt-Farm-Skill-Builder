@@ -1,0 +1,8 @@
+name: manual-triage
+description: Manually run a narrow repository triage task.
+entry_agent: triage-worker
+inputs:
+  task: inspect the repository state
+  target: .
+logging_policy: per_run
+execution_policy: local

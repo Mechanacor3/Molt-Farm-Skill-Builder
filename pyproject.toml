@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moltfarm-v2"
+version = "0.1.0"
+description = "Local-first agent control plane scaffold for Molt Farm v2"
+requires-python = ">=3.12"
+dependencies = [
+  "PyYAML>=6.0",
+  "openai-agents>=0.2.0",
+  "python-dotenv>=1.0.1",
+  "tiktoken>=0.8.0",
+]
+
+[project.scripts]
+molt = "moltfarm.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "packages"}
+
+[tool.setuptools.packages.find]
+where = ["packages"]

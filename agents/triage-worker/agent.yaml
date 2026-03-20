@@ -1,0 +1,8 @@
+name: triage-worker
+description: Minimal local worker for repository triage workflows.
+model: gpt-5
+skills:
+  - repo-triage
+tools: []
+context_policy: least_context
+runtime: openai_agents

@@ -1,0 +1,8 @@
+name: skill-refiner-worker
+description: Minimal local worker for refining existing skills from lessons and logs.
+model: gpt-5
+skills:
+  - skill-refiner
+tools: []
+context_policy: least_context
+runtime: openai_agents

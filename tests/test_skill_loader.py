@@ -1,0 +1,102 @@
+from __future__ import annotations
+
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "packages"))
+
+from moltfarm.skill_loader import discover_skills, load_skill
+
+FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "upstream_skills"
+
+
+class SkillLoaderReferenceTests(unittest.TestCase):
+    def test_load_skill_expands_local_reference(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            skill_dir = Path(temp_dir) / "example-skill"
+            references_dir = skill_dir / "references"
+            references_dir.mkdir(parents=True)
+            (references_dir / "details.md").write_text(
+                "Useful detail from a local reference.",
+                encoding="utf-8",
+            )
+            (skill_dir / "SKILL.md").write_text(
+                "---\n"
+                "name: example-skill\n"
+                "description: Example skill.\n"
+                "---\n\n"
+                "Read this: @./references/details.md\n",
+                encoding="utf-8",
+            )
+
+            skill = load_skill(skill_dir / "SKILL.md")
+
+            self.assertEqual(skill.name, "example-skill")
+            self.assertEqual([Path("references/details.md")], skill.referenced_paths)
+            self.assertIn("Useful detail from a local reference.", skill.instructions)
+            self.assertIn("<referenced-file path=\"references/details.md\">", skill.instructions)
+
+    def test_load_skill_rejects_missing_reference(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            skill_dir = Path(temp_dir) / "bad-skill"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text(
+                "---\n"
+                "name: bad-skill\n"
+                "description: Missing reference.\n"
+                "---\n\n"
+                "Read this: @./references/missing.md\n",
+                encoding="utf-8",
+            )
+
+            with self.assertRaises(FileNotFoundError):
+                load_skill(skill_dir / "SKILL.md")
+
+    def test_discover_skills_finds_nested_openai_style_buckets(self) -> None:
+        skills = discover_skills(FIXTURES_DIR / "openai_nested")
+
+        self.assertEqual({"openai-docs", "playwright"}, set(skills))
+        self.assertEqual("openai-docs", skills["openai-docs"].name)
+        self.assertEqual("playwright", skills["playwright"].name)
+
+    def test_load_skill_handles_anthropic_style_frontmatter_and_body(self) -> None:
+        skill = load_skill(FIXTURES_DIR / "anthropic_internal_comms" / "SKILL.md")
+
+        self.assertEqual("internal-comms", skill.name)
+        self.assertIn("internal communications", skill.description)
+        self.assertIn("examples/", skill.instructions)
+        self.assertEqual([], skill.referenced_paths)
+
+    def test_load_skill_expands_explicit_reference_inline_fixture(self) -> None:
+        skill = load_skill(FIXTURES_DIR / "reference_inline" / "SKILL.md")
+
+        self.assertEqual([Path("references/checklist.md")], skill.referenced_paths)
+        self.assertIn("<referenced-file path=\"references/checklist.md\">", skill.instructions)
+        self.assertIn("keep scope narrow", skill.instructions)
+
+    def test_load_skill_collects_bundled_resources_structurally(self) -> None:
+        skill = load_skill(FIXTURES_DIR / "resource_bundle" / "SKILL.md")
+
+        self.assertEqual(
+            [Path("references/guide.md")],
+            skill.resources.references,
+        )
+        self.assertEqual(
+            [Path("scripts/run.py"), Path("scripts/nested/tool.py")],
+            skill.resources.scripts,
+        )
+        self.assertEqual([Path("assets/icon.svg")], skill.resources.assets)
+        self.assertEqual([Path("examples/example.md")], skill.resources.examples)
+        self.assertEqual([Path("agents/helper.yaml")], skill.resources.agents)
+        self.assertEqual([Path("LICENSE.txt")], skill.resources.other)
+        wrapped = skill.resources.as_wrapped_block()
+        self.assertIn('<skill_resources>', wrapped)
+        self.assertIn('<file category="scripts">scripts/run.py</file>', wrapped)
+        self.assertIn('<file category="references">references/guide.md</file>', wrapped)
+        self.assertIn('<file category="other">LICENSE.txt</file>', wrapped)
+
+
+if __name__ == "__main__":
+    unittest.main()

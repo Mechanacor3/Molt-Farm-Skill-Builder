@@ -1,0 +1,8 @@
+name: manual-skill-refinement
+description: Manually refine an existing skill from a narrow brief and supporting lessons.
+entry_agent: skill-refiner-worker
+inputs:
+  target_skill: repo-triage
+  refinement_brief: tighten instructions using the latest lesson
+logging_policy: per_run
+execution_policy: local
