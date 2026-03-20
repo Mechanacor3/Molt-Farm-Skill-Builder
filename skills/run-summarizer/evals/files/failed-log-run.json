@@ -1,0 +1,19 @@
+{
+  "run_id": "run-example-failed",
+  "workflow": "manual-log-write",
+  "agent": "log-writer-worker",
+  "status": "failed",
+  "inputs": {
+    "task": "Write a clean log entry for the latest run.",
+    "source": "runs/run-example-source.json"
+  },
+  "output": {
+    "summary": "Run failed: RuntimeError: missing log source file",
+    "error": {
+      "type": "RuntimeError",
+      "message": "missing log source file"
+    }
+  },
+  "log_path": "logs/2026-03-20/run-example-failed.log",
+  "run_path": "runs/run-example-failed.json"
+}

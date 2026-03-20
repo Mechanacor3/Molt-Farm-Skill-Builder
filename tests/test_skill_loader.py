@@ -61,6 +61,34 @@ class SkillLoaderReferenceTests(unittest.TestCase):
         self.assertEqual("openai-docs", skills["openai-docs"].name)
         self.assertEqual("playwright", skills["playwright"].name)
 
+    def test_discover_skills_ignores_generated_eval_workspace_snapshots(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            skills_root = Path(temp_dir) / "skills"
+            real_skill = skills_root / "sample-skill"
+            snapshot_skill = (
+                real_skill
+                / "evals"
+                / "workspace"
+                / "iteration-1"
+                / "skill-snapshot"
+                / "sample-skill"
+            )
+            real_skill.mkdir(parents=True)
+            snapshot_skill.mkdir(parents=True)
+            (real_skill / "SKILL.md").write_text(
+                "---\nname: sample-skill\ndescription: Real skill.\n---\n\nReal body.\n",
+                encoding="utf-8",
+            )
+            (snapshot_skill / "SKILL.md").write_text(
+                "---\nname: sample-skill\ndescription: Snapshot skill.\n---\n\nSnapshot body.\n",
+                encoding="utf-8",
+            )
+
+            skills = discover_skills(skills_root)
+
+            self.assertEqual({"sample-skill"}, set(skills))
+            self.assertEqual(real_skill, skills["sample-skill"].path)
+
     def test_load_skill_handles_anthropic_style_frontmatter_and_body(self) -> None:
         skill = load_skill(FIXTURES_DIR / "anthropic_internal_comms" / "SKILL.md")
 

@@ -1,0 +1,6 @@
+attempted: Write a clean log entry for the latest run using runs/run-example-source.json.
+happened: Workflow manual-log-write (agent: log-writer-worker, run_id: run-example-failed) reported RuntimeError: missing log source file. Output summary states "Run failed: RuntimeError: missing log source file".
+status: failed
+produced: Output summary and error record; run record at runs/run-example-failed.json; referenced log path logs/2026-03-20/run-example-failed.log.
+gaps: Availability of runs/run-example-source.json was not verified.
+next_step: Ensure runs/run-example-source.json exists or correct the input path, then rerun the manual-log-write workflow.

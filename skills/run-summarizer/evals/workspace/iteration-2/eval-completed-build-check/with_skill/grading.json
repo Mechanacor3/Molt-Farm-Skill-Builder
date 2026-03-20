@@ -1,0 +1,26 @@
+{
+  "assertion_results": [
+    {
+      "text": "The summary includes all of these fields: attempted, happened, status, produced, gaps, next_step",
+      "passed": true,
+      "evidence": "All required fields are present:\n- attempted: \"Assess the repo\u2019s packaging setup and provide next build steps.\"\n- happened: \"Read pyproject.toml and described the package layout, console entrypoint, and dependencies. Did not run pip install, molt --help, or tests.\"\n- status: \"completed\"\n- produced: \"Written packaging assessment in the run output; logs at logs/2026-03-20/run-example-completed.log; run record at runs/run-example-completed.json; no files changed.\"\n- gaps: \"No installation, CLI smoke test, or test execution to validate the packaging and entrypoint.\"\n- next_step: \"Install the project in a clean virtualenv and run molt --help to verify the console entrypoint.\""
+    },
+    {
+      "text": "The summary preserves the completed run status instead of rewriting it as success",
+      "passed": true,
+      "evidence": "Status is explicitly \"completed\": status: completed"
+    },
+    {
+      "text": "The summary states that tests or install verification were not performed",
+      "passed": true,
+      "evidence": "Explicitly stated: \"Did not run pip install, molt --help, or tests.\" and \"No installation, CLI smoke test, or test execution to validate the packaging and entrypoint.\""
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  },
+  "mode": "llm_grader"
+}

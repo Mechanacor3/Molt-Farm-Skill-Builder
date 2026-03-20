@@ -281,6 +281,67 @@ class OpenAIAgentsExecutorTests(unittest.TestCase):
         self.assertIn("<compacted_workflow_input>", main_input)
         self.assertIn("Compacted content.", main_input)
 
+    def test_run_supports_openai_agents_without_attached_skills(self) -> None:
+        calls: dict[str, object] = {}
+
+        class FakeResult:
+            def __init__(self, final_output):
+                self.final_output = final_output
+                self.raw_responses = []
+                self.new_items = []
+
+        class FakeRunner:
+            @staticmethod
+            def run_sync(agent, input):
+                calls["runner_agent"] = agent
+                calls["runner_input"] = input
+                return FakeResult("Baseline output.")
+
+        class FakeSDK:
+            Runner = FakeRunner
+
+            class Agent:
+                def __init__(self, **kwargs):
+                    self.kwargs = kwargs
+
+            @staticmethod
+            def set_tracing_disabled(value):
+                calls["tracing_disabled"] = value
+
+            @staticmethod
+            def function_tool(fn):
+                return fn
+
+        original_import = runner._import_openai_agents_sdk
+        original_dotenv = runner._load_dotenv
+        try:
+            runner._import_openai_agents_sdk = lambda project_root: FakeSDK
+            runner._load_dotenv = lambda project_root: None
+
+            executor = OpenAIAgentsExecutor()
+            with tempfile.TemporaryDirectory() as temp_dir:
+                project_root = Path(temp_dir)
+                result = executor.run(
+                    project_root=project_root,
+                    agent=AgentDefinition(
+                        name="baseline-worker",
+                        description="",
+                        model="gpt-5",
+                        runtime="openai_agents",
+                        context_policy="least_context",
+                    ),
+                    skills=[],
+                    task_input={"task": "do the task without skills"},
+                )
+        finally:
+            runner._import_openai_agents_sdk = original_import
+            runner._load_dotenv = original_dotenv
+
+        self.assertEqual("Baseline output.", result["summary"])
+        fake_agent = calls["runner_agent"]
+        self.assertEqual([], fake_agent.kwargs["tools"])
+        self.assertIn("No specialized skills are attached for this run.", fake_agent.kwargs["instructions"])
+
 
 class RunWorkflowFailureTests(unittest.TestCase):
     def test_run_workflow_persists_failed_run_record(self) -> None:

@@ -1,0 +1,26 @@
+{
+  "assertion_results": [
+    {
+      "text": "The summary marks the run as failed",
+      "passed": true,
+      "evidence": "The output includes: \"status: failed\" and explicitly says: \"Output summary states 'Run failed: RuntimeError: missing log source file'.\""
+    },
+    {
+      "text": "The summary names at least one concrete artifact path from the source run",
+      "passed": true,
+      "evidence": "It lists concrete paths: \"run record at runs/run-example-failed.json\" and \"referenced log path logs/2026-03-20/run-example-failed.log\" (also mentions \"runs/run-example-source.json\")."
+    },
+    {
+      "text": "The summary gives exactly one main next step or says none",
+      "passed": false,
+      "evidence": "The next_step says: \"Ensure runs/run-example-source.json exists or correct the input path, then rerun the manual-log-write workflow.\" This contains multiple actions (ensure/correct, then rerun), not exactly one."
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 1,
+    "total": 3,
+    "pass_rate": 0.6667
+  },
+  "mode": "llm_grader"
+}

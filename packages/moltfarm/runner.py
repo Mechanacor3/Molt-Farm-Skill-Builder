@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib
 import math
 import sys
+import time
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
@@ -61,6 +62,20 @@ class StubAgentExecutor:
                 "output_tokens_estimate": 0,
                 "output_compacted": False,
             },
+            "metrics": {
+                "duration_ms": 0,
+                "usage": {
+                    "requests": 0,
+                    "input_tokens": 0,
+                    "output_tokens": 0,
+                    "total_tokens": 0,
+                },
+            },
+            "trace": {
+                "response_ids": [],
+                "request_ids": [],
+                "items": [],
+            },
         }
 
     def _build_summary(
@@ -100,8 +115,10 @@ class OpenAIAgentsExecutor:
         sdk.set_tracing_disabled(True)
         context_files = _collect_context_files(project_root, task_input)
         context_directories = _collect_context_directories(project_root, task_input)
-        activation_tool = _build_activate_skill_tool(sdk=sdk, skills=skills)
-        resource_tool = _build_read_skill_resource_tool(sdk=sdk, skills=skills)
+        tools = []
+        if skills:
+            tools.append(_build_activate_skill_tool(sdk=sdk, skills=skills))
+            tools.append(_build_read_skill_resource_tool(sdk=sdk, skills=skills))
         raw_input = _build_sdk_input(
             project_root=project_root,
             task_input=task_input,
@@ -117,12 +134,14 @@ class OpenAIAgentsExecutor:
             name=agent.name,
             model=agent.model,
             instructions=_build_sdk_instructions(agent=agent, skills=skills),
-            tools=[activation_tool, resource_tool],
+            tools=tools,
         )
+        started_at = time.perf_counter()
         result = sdk.Runner.run_sync(
             sdk_agent,
             model_input,
         )
+        duration_ms = int((time.perf_counter() - started_at) * 1000)
         final_output = _coerce_final_output(result.final_output)
         final_output, compaction = _maybe_compact_output(
             sdk=sdk,
@@ -147,6 +166,11 @@ class OpenAIAgentsExecutor:
             "model": agent.model,
             "task_input": task_input,
             "compaction": compaction,
+            "metrics": {
+                "duration_ms": duration_ms,
+                "usage": _extract_usage_summary(result),
+            },
+            "trace": _extract_trace_summary(result),
         }
 
 
@@ -168,25 +192,13 @@ def run_workflow(
         project_root=project_root,
         skills_by_name=skills_by_name,
     )
-
-    executor = _build_executor(agent.runtime)
     run_id = generate_run_id()
-    status = "completed"
-    try:
-        output = executor.run(
-            project_root=project_root,
-            agent=agent,
-            skills=attached_skills,
-            task_input=task_input,
-        )
-    except Exception as exc:
-        status = "failed"
-        output = _build_failed_output(
-            agent=agent,
-            skills=attached_skills,
-            task_input=task_input,
-            error=exc,
-        )
+    status, output = execute_task(
+        project_root=project_root,
+        agent=agent,
+        skills=attached_skills,
+        task_input=task_input,
+    )
 
     log_path = write_log(
         project_root,
@@ -209,6 +221,32 @@ def run_workflow(
     result.run_path = f"runs/{run_id}.json"
     write_run_record(project_root, result_to_payload(result))
     return result
+
+
+def execute_task(
+    *,
+    project_root: Path,
+    agent: AgentDefinition,
+    skills: list[Skill],
+    task_input: dict[str, Any],
+) -> tuple[str, dict[str, Any]]:
+    executor = _build_executor(agent.runtime)
+    try:
+        output = executor.run(
+            project_root=project_root,
+            agent=agent,
+            skills=skills,
+            task_input=task_input,
+        )
+        return "completed", output
+    except Exception as exc:
+        output = _build_failed_output(
+            agent=agent,
+            skills=skills,
+            task_input=task_input,
+            error=exc,
+        )
+        return "failed", output
 
 
 def _build_executor(runtime: str) -> StubAgentExecutor | OpenAIAgentsExecutor:
@@ -249,32 +287,49 @@ def _augment_task_input_with_local_skill_paths(
         "target_skill_path",
         str(skill_file.relative_to(project_root)),
     )
+    evals_file = skill.path / "evals" / "evals.json"
+    if evals_file.is_file():
+        task_input.setdefault(
+            "target_skill_evals_path",
+            str(evals_file.relative_to(project_root)),
+        )
+    workspace_root = skill.path / "evals" / "workspace"
+    if workspace_root.exists():
+        task_input.setdefault(
+            "target_skill_workspace_path",
+            str(workspace_root.relative_to(project_root)),
+        )
 
 
 def _build_sdk_instructions(agent: AgentDefinition, skills: list[Skill]) -> str:
     skill_catalog = _build_skill_catalog(skills)
-    catalog_lines = ["<available_skills>"]
-    for entry in skill_catalog:
-        catalog_lines.extend(
+    parts = [f"You are {agent.name}.", f"Context policy: {agent.context_policy}."]
+    if skill_catalog:
+        catalog_lines = ["<available_skills>"]
+        for entry in skill_catalog:
+            catalog_lines.extend(
+                [
+                    "  <skill>",
+                    f"    <name>{entry['name']}</name>",
+                    f"    <description>{entry['description']}</description>",
+                    "  </skill>",
+                ]
+            )
+        catalog_lines.append("</available_skills>")
+        parts.extend(
             [
-                "  <skill>",
-                f"    <name>{entry['name']}</name>",
-                f"    <description>{entry['description']}</description>",
-                "  </skill>",
+                "You have access to specialized skills.",
+                "Start from the skill catalog only. Do not assume full skill instructions are already loaded.",
+                "When a task matches a skill's description, call the activate_skill tool with the matching skill name to load its wrapped instructions before proceeding.",
+                "When the activated skill lists bundled resources, call read_skill_resource only for the specific files you need.",
+                "\n".join(catalog_lines),
             ]
         )
-    catalog_lines.append("</available_skills>")
-
-    parts = [
-        f"You are {agent.name}.",
-        f"Context policy: {agent.context_policy}.",
-        "You have access to specialized skills.",
-        "Start from the skill catalog only. Do not assume full skill instructions are already loaded.",
-        "When a task matches a skill's description, call the activate_skill tool with the matching skill name to load its wrapped instructions before proceeding.",
-        "When the activated skill lists bundled resources, call read_skill_resource only for the specific files you need.",
-        "Explicit workflow input files and directory snapshots may already be included below; use those before asking for more context.",
-        "\n".join(catalog_lines),
-    ]
+    else:
+        parts.append("No specialized skills are attached for this run.")
+    parts.append(
+        "Explicit workflow input files and directory snapshots may already be included below; use those before asking for more context."
+    )
     return "\n\n".join(parts)
 
 
@@ -352,6 +407,20 @@ def _build_failed_output(
             "input_compacted": False,
             "output_tokens_estimate": 0,
             "output_compacted": False,
+        },
+        "metrics": {
+            "duration_ms": 0,
+            "usage": {
+                "requests": 0,
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "total_tokens": 0,
+            },
+        },
+        "trace": {
+            "response_ids": [],
+            "request_ids": [],
+            "items": [],
         },
         "error": {
             "type": type(error).__name__,
@@ -544,6 +613,94 @@ def _wrap_skill_activation(skill: Skill) -> str:
         ]
     )
     return "\n".join(lines)
+
+
+def _extract_usage_summary(result: Any) -> dict[str, Any]:
+    usage = {
+        "requests": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "request_usage_entries": [],
+    }
+    for response in getattr(result, "raw_responses", []) or []:
+        response_usage = getattr(response, "usage", None)
+        if response_usage is None:
+            continue
+        usage["requests"] += int(getattr(response_usage, "requests", 0) or 0)
+        usage["input_tokens"] += int(getattr(response_usage, "input_tokens", 0) or 0)
+        usage["output_tokens"] += int(getattr(response_usage, "output_tokens", 0) or 0)
+        usage["total_tokens"] += int(getattr(response_usage, "total_tokens", 0) or 0)
+        for entry in getattr(response_usage, "request_usage_entries", []) or []:
+            usage["request_usage_entries"].append(
+                {
+                    "input_tokens": int(getattr(entry, "input_tokens", 0) or 0),
+                    "output_tokens": int(getattr(entry, "output_tokens", 0) or 0),
+                    "total_tokens": int(getattr(entry, "total_tokens", 0) or 0),
+                }
+            )
+    return usage
+
+
+def _extract_trace_summary(result: Any) -> dict[str, Any]:
+    response_ids: list[str] = []
+    request_ids: list[str] = []
+    items: list[dict[str, str]] = []
+
+    for response in getattr(result, "raw_responses", []) or []:
+        response_id = getattr(response, "response_id", None)
+        request_id = getattr(response, "request_id", None)
+        if response_id:
+            response_ids.append(str(response_id))
+        if request_id:
+            request_ids.append(str(request_id))
+
+    for item in getattr(result, "new_items", []) or []:
+        item_type = str(getattr(item, "type", type(item).__name__))
+        summary = _summarize_trace_item(getattr(item, "raw_item", None))
+        items.append({"type": item_type, "summary": summary})
+
+    return {
+        "response_ids": response_ids,
+        "request_ids": request_ids,
+        "items": items,
+    }
+
+
+def _summarize_trace_item(raw_item: Any) -> str:
+    if raw_item is None:
+        return ""
+    item_type = getattr(raw_item, "type", None)
+    if item_type == "message":
+        content = getattr(raw_item, "content", []) or []
+        text_parts: list[str] = []
+        for content_item in content:
+            text = getattr(content_item, "text", None) or getattr(content_item, "refusal", None)
+            if text:
+                text_parts.append(str(text))
+        return " ".join(text_parts).strip()[:240]
+    if item_type == "function_call":
+        name = getattr(raw_item, "name", "") or ""
+        return f"function_call:{name}"
+    if item_type == "function_call_output":
+        call_id = getattr(raw_item, "call_id", "") or ""
+        return f"function_call_output:{call_id}"
+    if isinstance(raw_item, dict):
+        raw_type = raw_item.get("type", "")
+        if raw_type == "message":
+            content = raw_item.get("content") or []
+            text_parts = []
+            for content_item in content:
+                if isinstance(content_item, dict):
+                    text = content_item.get("text") or content_item.get("refusal")
+                    if text:
+                        text_parts.append(str(text))
+            return " ".join(text_parts).strip()[:240]
+        if raw_type in {"function_call", "function_call_output"}:
+            name = raw_item.get("name") or raw_item.get("call_id") or ""
+            return f"{raw_type}:{name}"
+        return str(raw_item)[:240]
+    return str(raw_item)[:240]
 
 
 def _sanitize_enum_member_name(skill_name: str) -> str:

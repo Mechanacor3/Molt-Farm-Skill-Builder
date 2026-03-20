@@ -1,0 +1,31 @@
+{
+  "skill_name": "run-summarizer",
+  "evals": [
+    {
+      "id": "completed-build-check",
+      "prompt": "Summarize the completed run in evals/files/completed-build-run.json for later review.",
+      "expected_output": "A compact structured summary with attempted, happened, status, produced, gaps, and next_step.",
+      "files": [
+        "evals/files/completed-build-run.json"
+      ],
+      "assertions": [
+        "The summary includes all of these fields: attempted, happened, status, produced, gaps, next_step",
+        "The summary preserves the completed run status instead of rewriting it as success",
+        "The summary states that tests or install verification were not performed"
+      ]
+    },
+    {
+      "id": "failed-log-review",
+      "prompt": "Summarize the failed run in evals/files/failed-log-run.json for a human reviewer.",
+      "expected_output": "A compact structured summary that makes the failure clear, names the artifact, and gives one next step.",
+      "files": [
+        "evals/files/failed-log-run.json"
+      ],
+      "assertions": [
+        "The summary marks the run as failed",
+        "The summary names at least one concrete artifact path from the source run",
+        "The summary gives exactly one main next step or says none"
+      ]
+    }
+  ]
+}

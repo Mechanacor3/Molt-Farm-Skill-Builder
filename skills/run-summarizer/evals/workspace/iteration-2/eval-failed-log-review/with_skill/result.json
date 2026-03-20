@@ -1,0 +1,90 @@
+{
+  "status": "completed",
+  "task_input": {
+    "task": "Summarize the failed run in evals/files/failed-log-run.json for a human reviewer.",
+    "output_dir": "skills/run-summarizer/evals/workspace/iteration-2/eval-failed-log-review/with_skill/outputs",
+    "input_file_1": "skills/run-summarizer/evals/files/failed-log-run.json"
+  },
+  "output": {
+    "summary": "attempted: Write a clean log entry for the latest run using runs/run-example-source.json.\nhappened: Workflow manual-log-write (agent: log-writer-worker, run_id: run-example-failed) reported RuntimeError: missing log source file. Output summary states \"Run failed: RuntimeError: missing log source file\".\nstatus: failed\nproduced: Output summary and error record; run record at runs/run-example-failed.json; referenced log path logs/2026-03-20/run-example-failed.log.\ngaps: Availability of runs/run-example-source.json was not verified.\nnext_step: Ensure runs/run-example-source.json exists or correct the input path, then rerun the manual-log-write workflow.",
+    "skill_names": [
+      "run-summarizer"
+    ],
+    "skill_descriptions": {
+      "run-summarizer": "Summarize the outcome of a completed agent run into a concise structured report."
+    },
+    "skill_references": {
+      "run-summarizer": [
+        "references/run-summary-template.md"
+      ]
+    },
+    "skill_catalog": [
+      {
+        "name": "run-summarizer",
+        "description": "Summarize the outcome of a completed agent run into a concise structured report."
+      }
+    ],
+    "context_files": [
+      "skills/run-summarizer/evals/files/failed-log-run.json"
+    ],
+    "context_directories": [
+      "skills/run-summarizer/evals/workspace/iteration-2/eval-failed-log-review/with_skill/outputs"
+    ],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "Summarize the failed run in evals/files/failed-log-run.json for a human reviewer.",
+      "output_dir": "skills/run-summarizer/evals/workspace/iteration-2/eval-failed-log-review/with_skill/outputs",
+      "input_file_1": "skills/run-summarizer/evals/files/failed-log-run.json"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 293,
+      "input_compacted": false,
+      "output_tokens_estimate": 146,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 36161,
+      "usage": {
+        "requests": 2,
+        "input_tokens": 2317,
+        "output_tokens": 2128,
+        "total_tokens": 4445,
+        "request_usage_entries": []
+      }
+    },
+    "trace": {
+      "response_ids": [
+        "resp_04e7c98245e62ca40069bddd9040b4819581ac4b5b8ea0b312",
+        "resp_04e7c98245e62ca40069bddd9780748195a46dd8225bf66f3e"
+      ],
+      "request_ids": [
+        "req_62906a0498de4a5c92549ce3bf39507d",
+        "req_66c99af5624148858e6dfa0d697fbf13"
+      ],
+      "items": [
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_04e7c98245e62ca40069bddd90f388819584c8a05b06cf92eb', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "tool_call_item",
+          "summary": "function_call:activate_skill"
+        },
+        {
+          "type": "tool_call_output_item",
+          "summary": "function_call_output:call_O8j1tW6YNRSXdZ05ld0hqNrm"
+        },
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_04e7c98245e62ca40069bddd97fe948195abda659e5fd15107', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "message_output_item",
+          "summary": "attempted: Write a clean log entry for the latest run using runs/run-example-source.json.\nhappened: Workflow manual-log-write (agent: log-writer-worker, run_id: run-example-failed) reported RuntimeError: missing log source file. Output summ"
+        }
+      ]
+    }
+  }
+}

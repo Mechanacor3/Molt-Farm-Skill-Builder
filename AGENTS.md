@@ -47,6 +47,21 @@ Current durable preferences:
 - prefer tracing disabled unless there is a clear reason to enable it
 - prefer narrow context, inspectable files on disk, and low-export behavior by default
 - treat the repo as a skill foundry: look for reusable capabilities that should become portable `SKILL.md` artifacts
+- remember to keep work moving into git in small, coherent commits instead of leaving useful repo changes uncommitted
+
+---
+
+## CLI Guidance
+
+For now, the CLI is the main control surface for local execution.
+
+Use it lightly and inspectably:
+- prefer `./molt run <workflow-name>` for manual local runs
+- pass narrow inputs with `--input key=value` rather than broad repo dumps
+- treat the CLI as a way to exercise workflows, not as a chat surface
+- after a run, inspect `runs/` and `logs/YYYY-MM-DD/` to understand what happened
+
+Keep this guidance flexible. The exact command surface can evolve, but the intent should stay the same: local runs, narrow inputs, durable artifacts, easy inspection.
 
 ---
 

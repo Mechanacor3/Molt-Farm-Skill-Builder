@@ -1,0 +1,26 @@
+{
+  "assertion_results": [
+    {
+      "text": "The summary marks the run as failed",
+      "passed": true,
+      "evidence": "The output begins with \"Run failed:\" indicating the run was marked as failed."
+    },
+    {
+      "text": "The summary names at least one concrete artifact path from the source run",
+      "passed": false,
+      "evidence": "No artifact path is present in the output. It only contains: \"Run failed: ValueError: activate_skill tool requires at least one skill.\""
+    },
+    {
+      "text": "The summary gives exactly one main next step or says none",
+      "passed": false,
+      "evidence": "The output provides no next step and does not state \"none\"; it only states the error message."
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 2,
+    "total": 3,
+    "pass_rate": 0.3333
+  },
+  "mode": "llm_grader"
+}

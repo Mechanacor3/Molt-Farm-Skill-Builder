@@ -45,6 +45,22 @@ class Skill:
 
 
 @dataclass(slots=True)
+class SkillEvalCase:
+    case_id: str
+    prompt: str
+    expected_output: str
+    files: list[Path] = field(default_factory=list)
+    assertions: list[str] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class SkillEvalSuite:
+    skill_name: str
+    evals_path: Path
+    cases: list[SkillEvalCase] = field(default_factory=list)
+
+
+@dataclass(slots=True)
 class AgentDefinition:
     name: str
     description: str

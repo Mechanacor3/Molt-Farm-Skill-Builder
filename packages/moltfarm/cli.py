@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+from .skill_evaluator import evaluate_skill
 from .runner import run_workflow
 
 
@@ -22,6 +23,28 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         metavar="KEY=VALUE",
         help="Override a workflow input. Can be repeated.",
+    )
+
+    eval_parser = subparsers.add_parser(
+        "eval-skill",
+        help="Run a skill eval iteration from skills/<name>/evals/evals.json.",
+    )
+    eval_parser.add_argument("skill", help="Skill folder name under skills/.")
+    eval_parser.add_argument(
+        "--baseline",
+        choices=["without-skill", "snapshot"],
+        default="without-skill",
+        help="Baseline to compare against.",
+    )
+    eval_parser.add_argument(
+        "--snapshot-current",
+        action="store_true",
+        help="Save a snapshot of the current skill into the new iteration directory.",
+    )
+    eval_parser.add_argument(
+        "--model",
+        default="gpt-5",
+        help="Model to use for eval runs and grading.",
     )
     return parser
 
@@ -60,6 +83,17 @@ def main() -> int:
             indent=2,
         ))
         return 0 if result.status == "completed" else 1
+
+    if args.command == "eval-skill":
+        result = evaluate_skill(
+            project_root=project_root,
+            skill_name=args.skill,
+            model=args.model,
+            baseline=args.baseline,
+            snapshot_current=args.snapshot_current,
+        )
+        print(json.dumps(result, indent=2))
+        return 0
 
     parser.error(f"Unknown command: {args.command}")
     return 1

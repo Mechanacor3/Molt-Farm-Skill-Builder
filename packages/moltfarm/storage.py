@@ -22,6 +22,18 @@ def write_run_record(project_root: Path, payload: dict) -> Path:
     return run_path
 
 
+def write_json(path: Path, payload: dict | list) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return path
+
+
+def write_text(path: Path, content: str) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+    return path
+
+
 def write_log(
     project_root: Path,
     *,

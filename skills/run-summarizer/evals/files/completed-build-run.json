@@ -1,0 +1,19 @@
+{
+  "run_id": "run-example-completed",
+  "workflow": "manual-python-build",
+  "agent": "python-builder-worker",
+  "status": "completed",
+  "inputs": {
+    "task": "Assess the repo packaging setup and provide next build steps.",
+    "pyproject_path": "pyproject.toml"
+  },
+  "output": {
+    "summary": "Read pyproject.toml and described the package layout, entrypoint, and dependencies. Did not run pip install, molt --help, or tests.",
+    "task_input": {
+      "task": "Assess the repo packaging setup and provide next build steps.",
+      "pyproject_path": "pyproject.toml"
+    }
+  },
+  "log_path": "logs/2026-03-20/run-example-completed.log",
+  "run_path": "runs/run-example-completed.json"
+}

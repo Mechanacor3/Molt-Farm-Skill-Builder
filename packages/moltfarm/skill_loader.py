@@ -17,7 +17,9 @@ def discover_skills(skills_root: Path) -> dict[str, Skill]:
         return skills
 
     skill_files = sorted(
-        skill_file for skill_file in skills_root.rglob("SKILL.md") if skill_file.is_file()
+        skill_file
+        for skill_file in skills_root.rglob("SKILL.md")
+        if skill_file.is_file() and not _is_generated_skill_artifact(skill_file, skills_root)
     )
     for skill_file in skill_files:
         skill = load_skill(skill_file)
@@ -108,6 +110,18 @@ def _collect_resources(skill_dir: Path) -> SkillResources:
         category = _resource_category(relative_path)
         getattr(resource_index, category).append(relative_path)
     return resource_index
+
+
+def _is_generated_skill_artifact(skill_file: Path, skills_root: Path) -> bool:
+    try:
+        relative = skill_file.relative_to(skills_root)
+    except ValueError:
+        return False
+    parts = relative.parts
+    for index in range(len(parts) - 1):
+        if parts[index] == "evals" and index + 1 < len(parts) and parts[index + 1] == "workspace":
+            return True
+    return False
 
 
 def _resource_category(relative_path: Path) -> str:

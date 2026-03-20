@@ -1,0 +1,49 @@
+{
+  "status": "failed",
+  "task_input": {
+    "task": "Summarize the completed run in evals/files/completed-build-run.json for later review.",
+    "output_dir": "skills/run-summarizer/evals/workspace/iteration-2/eval-completed-build-check/without_skill/outputs",
+    "input_file_1": "skills/run-summarizer/evals/files/completed-build-run.json"
+  },
+  "output": {
+    "summary": "Run failed: ValueError: activate_skill tool requires at least one skill.",
+    "skill_names": [],
+    "skill_descriptions": {},
+    "skill_references": {},
+    "skill_catalog": [],
+    "context_files": [],
+    "context_directories": [],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "Summarize the completed run in evals/files/completed-build-run.json for later review.",
+      "output_dir": "skills/run-summarizer/evals/workspace/iteration-2/eval-completed-build-check/without_skill/outputs",
+      "input_file_1": "skills/run-summarizer/evals/files/completed-build-run.json"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 0,
+      "input_compacted": false,
+      "output_tokens_estimate": 0,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 0,
+      "usage": {
+        "requests": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      }
+    },
+    "trace": {
+      "response_ids": [],
+      "request_ids": [],
+      "items": []
+    },
+    "error": {
+      "type": "ValueError",
+      "message": "activate_skill tool requires at least one skill."
+    }
+  }
+}

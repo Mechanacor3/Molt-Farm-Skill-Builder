@@ -1,0 +1,26 @@
+{
+  "assertion_results": [
+    {
+      "text": "The summary includes all of these fields: attempted, happened, status, produced, gaps, next_step",
+      "passed": false,
+      "evidence": "Actual output is a single line: \"Run failed: ValueError: activate_skill tool requires at least one skill.\" None of the required fields (attempted, happened, status, produced, gaps, next_step) appear."
+    },
+    {
+      "text": "The summary preserves the completed run status instead of rewriting it as success",
+      "passed": true,
+      "evidence": "The output explicitly states \"Run failed\" and does not claim success, so it does not rewrite the status as success."
+    },
+    {
+      "text": "The summary states that tests or install verification were not performed",
+      "passed": false,
+      "evidence": "The output does not mention tests or install verification at all; there is no statement indicating they were not performed."
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 2,
+    "total": 3,
+    "pass_rate": 0.3333333333333333
+  },
+  "mode": "llm_grader"
+}

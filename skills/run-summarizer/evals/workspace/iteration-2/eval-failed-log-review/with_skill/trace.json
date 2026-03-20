@@ -1,0 +1,32 @@
+{
+  "response_ids": [
+    "resp_04e7c98245e62ca40069bddd9040b4819581ac4b5b8ea0b312",
+    "resp_04e7c98245e62ca40069bddd9780748195a46dd8225bf66f3e"
+  ],
+  "request_ids": [
+    "req_62906a0498de4a5c92549ce3bf39507d",
+    "req_66c99af5624148858e6dfa0d697fbf13"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_04e7c98245e62ca40069bddd90f388819584c8a05b06cf92eb', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:activate_skill"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_O8j1tW6YNRSXdZ05ld0hqNrm"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_04e7c98245e62ca40069bddd97fe948195abda659e5fd15107', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "attempted: Write a clean log entry for the latest run using runs/run-example-source.json.\nhappened: Workflow manual-log-write (agent: log-writer-worker, run_id: run-example-failed) reported RuntimeError: missing log source file. Output summ"
+    }
+  ]
+}

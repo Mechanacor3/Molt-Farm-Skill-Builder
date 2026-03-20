@@ -4,5 +4,10 @@ entry_agent: skill-refiner-worker
 inputs:
   target_skill: repo-triage
   refinement_brief: tighten instructions using the latest lesson
+  lesson_path: ""
+  grading_path: ""
+  feedback_path: ""
+  benchmark_path: ""
+  trace_path: ""
 logging_policy: per_run
 execution_policy: local
