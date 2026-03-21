@@ -60,6 +60,27 @@ class CliParserTests(unittest.TestCase):
         self.assertEqual("none", args.baseline)
         self.assertEqual("gpt-5.4-nano", args.model)
 
+    def test_skill_builder_probe_codex_trigger_parses(self) -> None:
+        parser = build_parser()
+
+        args = parser.parse_args(
+            [
+                "skill-builder",
+                "probe-codex-trigger",
+                "develop-web-game",
+                "--with-skill",
+                "game-bootstrap",
+                "--model",
+                "gpt-5.4",
+            ]
+        )
+
+        self.assertEqual("skill-builder", args.command)
+        self.assertEqual("probe-codex-trigger", args.skill_builder_command)
+        self.assertEqual("develop-web-game", args.skill)
+        self.assertEqual(["game-bootstrap"], args.with_skill)
+        self.assertEqual("gpt-5.4", args.model)
+
     def test_legacy_top_level_run_still_parses(self) -> None:
         parser = build_parser()
 

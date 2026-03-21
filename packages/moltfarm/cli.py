@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+from .codex_probe import run_codex_trigger_probe
 from .skill_evaluator import evaluate_skill
 from .runner import run_workflow
 
@@ -26,10 +27,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     _add_run_parser(skill_builder_subparsers)
     _add_eval_skill_parser(skill_builder_subparsers)
+    _add_probe_codex_trigger_parser(skill_builder_subparsers)
 
     # Keep the older top-level forms as compatibility aliases.
     _add_run_parser(subparsers)
     _add_eval_skill_parser(subparsers)
+    _add_probe_codex_trigger_parser(subparsers)
     return parser
 
 
@@ -69,6 +72,26 @@ def _add_eval_skill_parser(subparsers) -> argparse.ArgumentParser:
         help="Model to use for eval runs and grading.",
     )
     return eval_parser
+
+
+def _add_probe_codex_trigger_parser(subparsers) -> argparse.ArgumentParser:
+    probe_parser = subparsers.add_parser(
+        "probe-codex-trigger",
+        help="Run a clean Codex CLI probe to see which installed skills trigger first.",
+    )
+    probe_parser.add_argument("skill", help="Primary skill under skills/.")
+    probe_parser.add_argument(
+        "--with-skill",
+        action="append",
+        default=[],
+        help="Additional local skills to install alongside the primary skill.",
+    )
+    probe_parser.add_argument(
+        "--model",
+        default=None,
+        help="Optional Codex model override for the probe run.",
+    )
+    return probe_parser
 
 
 def parse_overrides(items: list[str]) -> dict[str, str]:
@@ -120,6 +143,16 @@ def main() -> int:
         )
         print(json.dumps(result, indent=2))
         return 0
+
+    if command == "probe-codex-trigger":
+        result = run_codex_trigger_probe(
+            project_root=project_root,
+            target_skill=args.skill,
+            installed_skills=args.with_skill,
+            model=args.model,
+        )
+        print(json.dumps(result, indent=2))
+        return 0 if result["discover_completed"] else 1
 
     parser.error(f"Unknown command: {command}")
     return 1

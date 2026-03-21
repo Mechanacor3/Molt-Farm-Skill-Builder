@@ -49,6 +49,7 @@ Today the main paths are:
 ```bash
 ./molt skill-builder run <workflow> --input key=value
 ./molt skill-builder eval-skill <skill>
+./molt skill-builder probe-codex-trigger <skill> --with-skill <other-skill>
 ```
 
 Older top-level command forms may still exist as compatibility paths, but the intended shape is the `skill-builder` namespace.
@@ -62,12 +63,38 @@ pip install -e .
 ./molt skill-builder eval-skill run-summarizer
 ```
 
+The project depends on `pydantic`, so a clean install should now succeed with the editable install above.
+
 After a run, inspect:
 
 - `runs/`
 - `logs/YYYY-MM-DD/`
 - `lessons/`
 - `skills/<skill>/evals/workspace/iteration-N/`
+- `tmp/codex-trigger-probes/` for clean Codex CLI trigger probes
+
+## Docker
+
+For sandboxed local testing, build and run the repo in Docker:
+
+```bash
+docker build -t moltfarm-skillbuilder .
+docker run --rm -it moltfarm-skillbuilder
+```
+
+The image defaults to `./molt skill-builder --help`. To run tests or a specific CLI command:
+
+```bash
+docker run --rm -it moltfarm-skillbuilder python -m unittest discover -s tests -p 'test_*.py'
+docker run --rm -it moltfarm-skillbuilder skill-builder eval-skill run-summarizer
+```
+
+If you want container writes to land in your working tree, bind-mount the repo:
+
+```bash
+docker run --rm -it -v "$PWD:/app" -w /app moltfarm-skillbuilder python -m unittest discover -s tests -p 'test_*.py'
+docker run --rm -it -v "$PWD:/app" -w /app moltfarm-skillbuilder skill-builder run manual-lesson-extraction
+```
 
 ## Design Bias
 
