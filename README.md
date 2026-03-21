@@ -1,67 +1,82 @@
-# Molt Farm v2
+# Molt Farm Skill Builder
 
-Molt Farm v2 is a local-first control plane for running agent workflows, recording what happened, and improving behavior over time through reusable `SKILL.md` capabilities.
+Molt Farm Skill Builder is a local-first workspace for recursively improving `SKILL.md` capabilities.
+
+The repo is intentionally narrower now:
+
+- evaluate strong upstream skills
+- extract reusable lessons
+- refine local skills
+- measure whether the skill actually got better
 
 The core loop is:
 
-**Run -> Log -> Lesson -> Skill -> Better Run**
+**Test -> Observe -> Lesson -> Improve -> Measure**
 
 ## What This Repo Is
 
-Molt Farm separates a few concerns cleanly:
+This repo is primarily about skill quality, not general agent orchestration.
 
-- `skills/` holds portable capabilities anchored by `SKILL.md`
-- `agents/` holds worker definitions that load skills and execution defaults
-- `workflows/` holds runnable jobs that bind inputs to an agent
-- `runs/` holds durable execution records
-- `logs/` holds append-only records of what happened
-- `lessons/` holds distilled improvements that can be promoted into skills
-- `packages/` holds the minimal Python runtime
-- `apps/` holds future service entrypoints
+The most important artifacts are:
 
-This is intentionally not a chat app, not a UI project, and not a distributed platform. The focus is local execution, inspectable files, and a tight improvement loop.
+- `skills/` for reusable `SKILL.md` capabilities
+- `lessons/` for distilled improvements
+- `logs/` and `runs/` for inspectable evidence
+- `packages/` for the minimal runtime that supports the loop
 
-## Current Shape
+Some older agent/workflow scaffolding still exists because it is useful as local execution machinery, but it is no longer the product center.
 
-Today the repo provides:
+## Current Focus
 
-- skill discovery and loading from `SKILL.md`
-- agent and workflow loading from YAML
-- a CLI entrypoint via `molt run <workflow>`
-- OpenAI Agents SDK execution with local-first defaults
-- durable run records and per-run logs on disk
-- a path for evolving skills through lessons and refinements
+The project exists to:
 
-## Why It Exists
+- study high-quality skills from OpenAI, Anthropic, and `agentskills`
+- preserve the best patterns in local reusable skills
+- run evals against concrete prompts and artifacts
+- compare baselines and measure whether a refinement helped
+- keep the whole process local, inspectable, and file-based
 
-Most agent tooling focuses on conversation surfaces or orchestration first. Molt Farm focuses on reusable skills first.
+## CLI Shape
 
-The long-term value of the system is not just the runtime. It is the library of high-quality, narrow, composable skills that emerge from real runs and real logs.
+The default interface is:
+
+```bash
+molt skill-builder [options]
+```
+
+Today the main paths are:
+
+```bash
+./molt skill-builder run <workflow> --input key=value
+./molt skill-builder eval-skill <skill>
+```
+
+Older top-level command forms may still exist as compatibility paths, but the intended shape is the `skill-builder` namespace.
 
 ## Quick Start
-
-Create a virtual environment, install the package, set `OPENAI_API_KEY`, and run a workflow:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
-./molt run manual-triage --input target=.
+./molt skill-builder eval-skill run-summarizer
 ```
 
 After a run, inspect:
 
-- `runs/` for the structured execution record
-- `logs/YYYY-MM-DD/` for the append-only log entry
+- `runs/`
+- `logs/YYYY-MM-DD/`
+- `lessons/`
+- `skills/<skill>/evals/workspace/iteration-N/`
 
 ## Design Bias
 
-Molt Farm prefers:
+Molt Farm Skill Builder prefers:
 
 - local-first execution
 - least-context by default
 - plain files over hidden state
-- small, boring runtime code
-- skills that are portable and composable
+- strong eval loops over intuition
+- small, composable skills over broad abstractions
 
-If you want implementation guidance and project conventions, start with [AGENTS.md](/mnt/d/moltfarm_v2/AGENTS.md).
+For repo-specific working guidance, see [AGENTS.md](/mnt/d/moltfarm_v2/AGENTS.md).

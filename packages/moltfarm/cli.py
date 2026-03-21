@@ -15,6 +15,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    skill_builder_parser = subparsers.add_parser(
+        "skill-builder",
+        help="Skill-builder operations for running workflows and evaluating skills.",
+    )
+    skill_builder_subparsers = skill_builder_parser.add_subparsers(
+        dest="skill_builder_command",
+        required=True,
+    )
+
+    _add_run_parser(skill_builder_subparsers)
+    _add_eval_skill_parser(skill_builder_subparsers)
+
+    # Keep the older top-level forms as compatibility aliases.
+    _add_run_parser(subparsers)
+    _add_eval_skill_parser(subparsers)
+    return parser
+
+
+def _add_run_parser(subparsers) -> argparse.ArgumentParser:
     run_parser = subparsers.add_parser("run", help="Execute a workflow.")
     run_parser.add_argument("workflow", help="Workflow folder name under workflows/.")
     run_parser.add_argument(
@@ -24,7 +43,10 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="KEY=VALUE",
         help="Override a workflow input. Can be repeated.",
     )
+    return run_parser
 
+
+def _add_eval_skill_parser(subparsers) -> argparse.ArgumentParser:
     eval_parser = subparsers.add_parser(
         "eval-skill",
         help="Run a skill eval iteration from skills/<name>/evals/evals.json.",
@@ -46,7 +68,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="gpt-5",
         help="Model to use for eval runs and grading.",
     )
-    return parser
+    return eval_parser
 
 
 def parse_overrides(items: list[str]) -> dict[str, str]:
@@ -64,7 +86,11 @@ def main() -> int:
     args = parser.parse_args()
     project_root = Path.cwd()
 
-    if args.command == "run":
+    command = args.command
+    if command == "skill-builder":
+        command = args.skill_builder_command
+
+    if command == "run":
         result = run_workflow(
             project_root=project_root,
             workflow_name=args.workflow,
@@ -84,7 +110,7 @@ def main() -> int:
         ))
         return 0 if result.status == "completed" else 1
 
-    if args.command == "eval-skill":
+    if command == "eval-skill":
         result = evaluate_skill(
             project_root=project_root,
             skill_name=args.skill,
@@ -95,7 +121,7 @@ def main() -> int:
         print(json.dumps(result, indent=2))
         return 0
 
-    parser.error(f"Unknown command: {args.command}")
+    parser.error(f"Unknown command: {command}")
     return 1
 
 

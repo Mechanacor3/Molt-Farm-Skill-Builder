@@ -3,12 +3,12 @@
 ## Common commands
 
 - Run a workflow:
-  - `./molt run manual-triage --input target=.`
-  - `./molt run manual-run-summary --input run_record_path=runs/<run-id>.json`
+  - `./molt skill-builder run manual-triage --input target=.`
+  - `./molt skill-builder run manual-run-summary --input run_record_path=runs/<run-id>.json`
 
 - Evaluate a skill:
-  - `./molt eval-skill run-summarizer`
-  - `./molt eval-skill run-summarizer --baseline snapshot --snapshot-current`
+  - `./molt skill-builder eval-skill run-summarizer`
+  - `./molt skill-builder eval-skill run-summarizer --baseline snapshot --snapshot-current`
 
 ## What to inspect after running
 
@@ -29,3 +29,4 @@
 - Prefer inspecting artifacts already on disk before rerunning expensive commands.
 - When a run fails, read the run record and log before editing code.
 - When evaluating a skill, compare `with_skill` against the baseline before changing `SKILL.md`.
+- Treat older top-level command forms as compatibility paths, not the preferred examples.

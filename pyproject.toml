@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "moltfarm-v2"
+name = "moltfarm-skillbuilder"
 version = "0.1.0"
-description = "Local-first agent control plane scaffold for Molt Farm v2"
+description = "Local-first skill builder for recursively evaluating and improving SKILL.md capabilities"
 requires-python = ">=3.12"
 dependencies = [
   "PyYAML>=6.0",
