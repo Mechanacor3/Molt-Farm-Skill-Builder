@@ -1,0 +1,8 @@
+name: manual-docker-smoke-test
+description: Propose one narrow Docker build-and-run smoke test for a local repo or artifact.
+entry_agent: docker-smoke-worker
+inputs:
+  task: propose a narrow Docker smoke test for the current repository
+  dockerfile_path: Dockerfile
+logging_policy: per_run
+execution_policy: local

@@ -1,0 +1,34 @@
+{
+  "skill_name": "docker-smoke-test",
+  "evals": [
+    {
+      "id": "python-cli-dockerfile-first-check",
+      "prompt": "I just added a Dockerfile for a Python CLI project. I want the first narrow container check to confirm the image builds and the CLI entrypoint responds. Give me the exact commands and what to inspect afterward.",
+      "expected_output": "A concise response with Goal, Build, Run, Verify, and Inspect sections that uses one `docker build` command, one `docker run --rm` command, and points to stdout or one concrete artifact to inspect.",
+      "assertions": [
+        "The answer includes the sections Goal, Build, Run, Verify, and Inspect",
+        "The Build section includes a concrete `docker build` command",
+        "The Run section includes a concrete `docker run --rm` command",
+        "The answer keeps the scope to one narrow smoke test rather than a broad validation plan"
+      ],
+      "required_skill_activations": [
+        "docker-smoke-test"
+      ]
+    },
+    {
+      "id": "bind-mounted-artifact-check",
+      "prompt": "I already have image `moltfarm-skillbuilder:verify`. I want to run one sandboxed check that writes run artifacts back to my working tree so I can inspect them on the host afterward. Give me the shortest exact command and tell me what host path to inspect.",
+      "expected_output": "A concise response with Goal, Build, Run, Verify, and Inspect sections that reuses the given image, uses a bind mount for host-visible artifacts, and names the host path to inspect after the run.",
+      "assertions": [
+        "The Build section says `none` or clearly reuses the existing image instead of rebuilding",
+        "The Run section includes `--user \"$(id -u):$(id -g)\"` or equivalent host-user mapping for bind-mounted writes",
+        "The Run section includes a bind mount such as `-v \"$PWD:/app\"` and a working directory",
+        "The Inspect section names a host-visible path rather than only saying stdout",
+        "The answer reuses the provided image name `moltfarm-skillbuilder:verify`"
+      ],
+      "required_skill_activations": [
+        "docker-smoke-test"
+      ]
+    }
+  ]
+}

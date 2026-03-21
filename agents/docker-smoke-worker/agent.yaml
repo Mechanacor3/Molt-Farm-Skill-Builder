@@ -1,0 +1,8 @@
+name: docker-smoke-worker
+description: Minimal local worker for proposing narrow Docker smoke tests.
+model: gpt-5
+skills:
+  - docker-smoke-test
+tools: []
+context_policy: least_context
+runtime: openai_agents
