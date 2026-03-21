@@ -54,7 +54,7 @@ def _add_eval_skill_parser(subparsers) -> argparse.ArgumentParser:
     eval_parser.add_argument("skill", help="Skill folder name under skills/.")
     eval_parser.add_argument(
         "--baseline",
-        choices=["without-skill", "snapshot"],
+        choices=["none", "without-skill", "snapshot"],
         default="without-skill",
         help="Baseline to compare against.",
     )

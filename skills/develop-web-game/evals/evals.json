@@ -8,6 +8,9 @@
       "files": [
         "evals/files/new-game-brief.md"
       ],
+      "required_skill_activations": [
+        "develop-web-game"
+      ],
       "assertions": [
         "The response starts with a small playable slice instead of broad polish or content expansion",
         "The response names at least one relevant component skill such as game-bootstrap or playwright-eval-loop",
@@ -20,6 +23,9 @@
       "expected_output": "An evidence-backed next pass that focuses on one main improvement, cites the browser report, and explains how to re-test it.",
       "files": [
         "evals/files/failing-playtest-report.md"
+      ],
+      "required_skill_activations": [
+        "develop-web-game"
       ],
       "assertions": [
         "The response cites at least one concrete observation from the attached report",

@@ -63,7 +63,9 @@ def evaluate_skill(
         snapshot_dir = None
 
     configurations = [("with_skill", skill)]
-    if baseline == "without-skill":
+    if baseline == "none":
+        pass
+    elif baseline == "without-skill":
         configurations.append(("without_skill", None))
     elif baseline == "snapshot":
         snapshot_skill_file = _find_latest_snapshot_skill(skill, exclude_dir=iteration_dir)
@@ -217,34 +219,35 @@ def _grade_eval_output(
     output: dict[str, Any],
     attached_skill: Skill | None,
 ) -> dict[str, Any]:
-    if not case.assertions:
-        return {
-            "assertion_results": [],
-            "summary": {"passed": 0, "failed": 0, "total": 0, "pass_rate": 0.0},
-            "mode": "no_assertions",
-        }
+    llm_payload = {
+        "assertion_results": [],
+        "summary": {"passed": 0, "failed": 0, "total": 0, "pass_rate": 0.0},
+        "mode": "no_assertions",
+    }
+    if case.assertions:
+        sdk = _load_sdk(project_root)
+        prompt = _build_grading_prompt(
+            case=case,
+            output=output,
+            attached_skill=attached_skill,
+        )
+        grader = sdk.Agent(
+            name="skill-eval-grader",
+            model=model,
+            instructions=(
+                "Grade eval assertions against the provided output. "
+                "Each assertion_result must include text, passed, and evidence. "
+                "Require concrete evidence for PASS. "
+                "If an assertion cannot be verified from the output, mark it false."
+            ),
+            output_type=GradingPayload,
+        )
+        result = sdk.Runner.run_sync(grader, prompt)
+        llm_payload = _coerce_grading_payload(result.final_output)
+        llm_payload["mode"] = "llm_grader"
 
-    sdk = _load_sdk(project_root)
-    prompt = _build_grading_prompt(
-        case=case,
-        output=output,
-        attached_skill=attached_skill,
-    )
-    grader = sdk.Agent(
-        name="skill-eval-grader",
-        model=model,
-        instructions=(
-            "Grade eval assertions against the provided output. "
-            "Each assertion_result must include text, passed, and evidence. "
-            "Require concrete evidence for PASS. "
-            "If an assertion cannot be verified from the output, mark it false."
-        ),
-        output_type=GradingPayload,
-    )
-    result = sdk.Runner.run_sync(grader, prompt)
-    payload = _coerce_grading_payload(result.final_output)
-    payload["mode"] = "llm_grader"
-    return payload
+    trace_payload = _grade_trace_requirements(case=case, output=output, attached_skill=attached_skill)
+    return _merge_grading_payloads(llm_payload, trace_payload)
 
 
 def _build_grading_prompt(
@@ -272,6 +275,88 @@ def _build_grading_prompt(
         ]
     )
     return "\n".join(lines)
+
+
+def _grade_trace_requirements(
+    *,
+    case: SkillEvalCase,
+    output: dict[str, Any],
+    attached_skill: Skill | None,
+) -> dict[str, Any]:
+    if not case.required_skill_activations or attached_skill is None:
+        return {
+            "assertion_results": [],
+            "summary": {"passed": 0, "failed": 0, "total": 0, "pass_rate": 0.0},
+            "mode": "trace_requirements",
+        }
+
+    activated_skills = _extract_activated_skills(output.get("trace", {}))
+    assertion_results: list[dict[str, Any]] = []
+    for required_skill in case.required_skill_activations:
+        passed = required_skill in activated_skills
+        if passed:
+            evidence = (
+                f"Trace shows activate_skill for '{required_skill}': "
+                + ", ".join(sorted(activated_skills))
+            )
+        else:
+            evidence = (
+                f"Trace did not show activate_skill for '{required_skill}'. "
+                f"Observed activations: {', '.join(sorted(activated_skills)) or 'none'}."
+            )
+        assertion_results.append(
+            {
+                "text": f"The trace activates skill '{required_skill}'",
+                "passed": passed,
+                "evidence": evidence,
+            }
+        )
+
+    passed_count = sum(1 for result in assertion_results if result["passed"])
+    total = len(assertion_results)
+    failed = total - passed_count
+    pass_rate = 0.0 if total == 0 else passed_count / total
+    return {
+        "assertion_results": assertion_results,
+        "summary": {
+            "passed": passed_count,
+            "failed": failed,
+            "total": total,
+            "pass_rate": pass_rate,
+        },
+        "mode": "trace_requirements",
+    }
+
+
+def _extract_activated_skills(trace: dict[str, Any]) -> set[str]:
+    activated_skills: set[str] = set()
+    for item in trace.get("items", []) or []:
+        summary = str((item or {}).get("summary") or "")
+        prefix = "function_call:activate_skill:"
+        if summary.startswith(prefix):
+            activated_skills.add(summary[len(prefix):].strip())
+    return activated_skills
+
+
+def _merge_grading_payloads(primary: dict[str, Any], secondary: dict[str, Any]) -> dict[str, Any]:
+    primary_results = list(primary.get("assertion_results", []) or [])
+    secondary_results = list(secondary.get("assertion_results", []) or [])
+    assertion_results = primary_results + secondary_results
+    passed = sum(1 for result in assertion_results if result.get("passed"))
+    total = len(assertion_results)
+    failed = total - passed
+    pass_rate = 0.0 if total == 0 else passed / total
+    modes = [mode for mode in [primary.get("mode"), secondary.get("mode")] if mode]
+    return {
+        "assertion_results": assertion_results,
+        "summary": {
+            "passed": passed,
+            "failed": failed,
+            "total": total,
+            "pass_rate": pass_rate,
+        },
+        "mode": "+".join(modes) if modes else "merged",
+    }
 
 
 def _parse_grading_json(raw_text: str) -> dict[str, Any]:

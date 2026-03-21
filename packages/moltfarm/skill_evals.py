@@ -35,6 +35,9 @@ def load_skill_eval_suite(skill: Skill) -> SkillEvalSuite | None:
         case_id = _normalize_case_id(raw_id, fallback=f"case-{index}")
         files = [Path(str(item)) for item in raw_case.get("files") or []]
         assertions = [str(item) for item in raw_case.get("assertions") or []]
+        required_skill_activations = [
+            str(item) for item in raw_case.get("required_skill_activations") or []
+        ]
         cases.append(
             SkillEvalCase(
                 case_id=case_id,
@@ -42,6 +45,7 @@ def load_skill_eval_suite(skill: Skill) -> SkillEvalSuite | None:
                 expected_output=expected_output,
                 files=files,
                 assertions=assertions,
+                required_skill_activations=required_skill_activations,
             )
         )
 

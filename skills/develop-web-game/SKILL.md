@@ -9,6 +9,7 @@ Use this skill when:
 - You are building a browser game or playful web toy from scratch.
 - You are iterating on an existing game and want a short human-feedback loop.
 - The task needs a disciplined loop instead of a one-shot implementation.
+- The user asks for a platformer, arcade game, puzzle game, game jam prototype, or other small browser-playable game, even if they do not name this skill explicitly.
 
 Instructions:
 1. Treat this as a coordination skill. Keep the overall loop visible, then activate narrower skills only when they are needed.

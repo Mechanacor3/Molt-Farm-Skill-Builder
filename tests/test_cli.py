@@ -42,6 +42,24 @@ class CliParserTests(unittest.TestCase):
         self.assertEqual("snapshot", args.baseline)
         self.assertTrue(args.snapshot_current)
 
+    def test_skill_builder_eval_skill_allows_no_baseline(self) -> None:
+        parser = build_parser()
+
+        args = parser.parse_args(
+            [
+                "skill-builder",
+                "eval-skill",
+                "develop-web-game",
+                "--baseline",
+                "none",
+                "--model",
+                "gpt-5.4-nano",
+            ]
+        )
+
+        self.assertEqual("none", args.baseline)
+        self.assertEqual("gpt-5.4-nano", args.model)
+
     def test_legacy_top_level_run_still_parses(self) -> None:
         parser = build_parser()
 

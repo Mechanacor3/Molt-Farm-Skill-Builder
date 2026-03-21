@@ -51,6 +51,7 @@ class SkillEvalCase:
     expected_output: str
     files: list[Path] = field(default_factory=list)
     assertions: list[str] = field(default_factory=list)
+    required_skill_activations: list[str] = field(default_factory=list)
 
 
 @dataclass(slots=True)

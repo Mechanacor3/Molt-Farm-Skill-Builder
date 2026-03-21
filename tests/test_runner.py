@@ -342,6 +342,38 @@ class OpenAIAgentsExecutorTests(unittest.TestCase):
         self.assertEqual([], fake_agent.kwargs["tools"])
         self.assertIn("No specialized skills are attached for this run.", fake_agent.kwargs["instructions"])
 
+    def test_trace_summary_includes_activated_skill_name(self) -> None:
+        class FakeRawItem:
+            def __init__(self, item_type, **kwargs):
+                self.type = item_type
+                for key, value in kwargs.items():
+                    setattr(self, key, value)
+
+        class FakeItem:
+            def __init__(self, item_type, raw_item):
+                self.type = item_type
+                self.raw_item = raw_item
+
+        class FakeResult:
+            def __init__(self):
+                self.raw_responses = []
+                self.new_items = [
+                    FakeItem(
+                        "tool_call_item",
+                        FakeRawItem(
+                            "function_call",
+                            name="activate_skill",
+                            arguments='{"name":"develop-web-game"}',
+                        ),
+                    )
+                ]
+
+        trace = runner._extract_trace_summary(FakeResult())
+        self.assertEqual(
+            [{"type": "tool_call_item", "summary": "function_call:activate_skill:develop-web-game"}],
+            trace["items"],
+        )
+
 
 class RunWorkflowFailureTests(unittest.TestCase):
     def test_run_workflow_persists_failed_run_record(self) -> None:

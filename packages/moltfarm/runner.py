@@ -681,7 +681,8 @@ def _summarize_trace_item(raw_item: Any) -> str:
         return " ".join(text_parts).strip()[:240]
     if item_type == "function_call":
         name = getattr(raw_item, "name", "") or ""
-        return f"function_call:{name}"
+        arguments = getattr(raw_item, "arguments", "") or ""
+        return _summarize_function_call(name=name, arguments=arguments)
     if item_type == "function_call_output":
         call_id = getattr(raw_item, "call_id", "") or ""
         return f"function_call_output:{call_id}"
@@ -697,10 +698,45 @@ def _summarize_trace_item(raw_item: Any) -> str:
                         text_parts.append(str(text))
             return " ".join(text_parts).strip()[:240]
         if raw_type in {"function_call", "function_call_output"}:
+            if raw_type == "function_call":
+                return _summarize_function_call(
+                    name=str(raw_item.get("name") or ""),
+                    arguments=raw_item.get("arguments") or "",
+                )
             name = raw_item.get("name") or raw_item.get("call_id") or ""
             return f"{raw_type}:{name}"
         return str(raw_item)[:240]
     return str(raw_item)[:240]
+
+
+def _summarize_function_call(*, name: str, arguments: Any) -> str:
+    parsed_arguments = _parse_function_call_arguments(arguments)
+    if name == "activate_skill":
+        skill_name = parsed_arguments.get("name")
+        if skill_name:
+            return f"function_call:activate_skill:{skill_name}"
+    if name == "read_skill_resource":
+        skill_name = parsed_arguments.get("name")
+        path = parsed_arguments.get("path")
+        if skill_name and path:
+            return f"function_call:read_skill_resource:{skill_name}:{path}"
+    if parsed_arguments:
+        return f"function_call:{name}:{parsed_arguments}"
+    return f"function_call:{name}"
+
+
+def _parse_function_call_arguments(arguments: Any) -> dict[str, Any]:
+    if isinstance(arguments, dict):
+        return arguments
+    if not isinstance(arguments, str) or not arguments.strip():
+        return {}
+    try:
+        import json
+
+        parsed = json.loads(arguments)
+    except Exception:
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
 
 
 def _sanitize_enum_member_name(skill_name: str) -> str:
