@@ -1,0 +1,31 @@
+{
+  "skill_name": "develop-web-game",
+  "evals": [
+    {
+      "id": "new-game-first-pass",
+      "prompt": "Using the attached brief, describe the first iteration plan for building the browser game.",
+      "expected_output": "A short phase-oriented plan that starts with the smallest playable slice, names relevant component skills, and includes a browser validation step before polish.",
+      "files": [
+        "evals/files/new-game-brief.md"
+      ],
+      "assertions": [
+        "The response starts with a small playable slice instead of broad polish or content expansion",
+        "The response names at least one relevant component skill such as game-bootstrap or playwright-eval-loop",
+        "The response includes a concrete validation step before any polish pass"
+      ]
+    },
+    {
+      "id": "improve-from-playtest-evidence",
+      "prompt": "Using the attached playtest report, describe the next improvement pass for the game.",
+      "expected_output": "An evidence-backed next pass that focuses on one main improvement, cites the browser report, and explains how to re-test it.",
+      "files": [
+        "evals/files/failing-playtest-report.md"
+      ],
+      "assertions": [
+        "The response cites at least one concrete observation from the attached report",
+        "The response chooses one focused next pass instead of many unrelated changes",
+        "The response includes a way to re-test or measure the proposed improvement"
+      ]
+    }
+  ]
+}
