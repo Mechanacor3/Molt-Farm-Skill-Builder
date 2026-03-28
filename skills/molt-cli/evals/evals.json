@@ -81,6 +81,87 @@
           "weight": 1
         }
       ]
+    },
+    {
+      "id": "manual-run-summary-command",
+      "prompt": "I already have `runs/run-20260320192451-9157aace.json`. I want the shortest Molt command that summarizes that run for a human reviewer. What exact command should I run, and which local artifacts should I inspect after it finishes?",
+      "expected_output": "A concise answer that gives one exact `./molt skill-builder run manual-run-summary` command using `run_record_path`, names the provided run path, and points to the resulting run and log artifacts to inspect.",
+      "checks": [
+        {
+          "text": "The answer includes a concrete `./molt skill-builder run manual-run-summary --input run_record_path=runs/run-20260320192451-9157aace.json` command",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer mentions the provided `runs/run-20260320192451-9157aace.json` path exactly",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer points to `runs/` or a new run JSON path and to `logs/` or a dated log path for follow-up inspection",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer stays narrow to the requested command and follow-up artifacts",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "eval-skill-basic-command",
+      "prompt": "I want to evaluate the `docker-smoke-test` skill once, with no baseline or snapshotting. What exact Molt command should I run, and which top-level eval artifact should I open first if I want the overall result before drilling into individual cases?",
+      "expected_output": "A concise answer that gives one exact `./molt skill-builder eval-skill docker-smoke-test` command without extra snapshot flags and points to `benchmark.json` as the first top-level artifact to inspect.",
+      "checks": [
+        {
+          "text": "The answer includes a concrete `./molt skill-builder eval-skill docker-smoke-test` command",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer does not add `--baseline snapshot` or `--snapshot-current` when the user asked for no baseline or snapshotting",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The answer points to `skills/docker-smoke-test/evals/workspace/iteration-N/benchmark.json` or clearly names `benchmark.json` as the first top-level artifact to inspect",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer stays focused on the requested command and top-level artifact instead of expanding into a broad walkthrough",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "eval-workspace-case-inspection",
+      "prompt": "I already ran `./molt skill-builder eval-skill run-summarizer`. Before I change the skill, I want to inspect the local evidence for one case with and without the skill. Which eval workspace artifacts should I open first?",
+      "expected_output": "A concise answer that points to the per-case `comparison.json` plus the `with_skill/` and `without_skill/` directories in the eval workspace, framed as artifact inspection before editing the skill.",
+      "checks": [
+        {
+          "text": "The answer points to `skills/run-summarizer/evals/workspace/iteration-N/eval-<case-id>/comparison.json` or clearly names the per-case `comparison.json` artifact",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer mentions both the `with_skill/` and `without_skill/` directories for the selected case",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer frames the workspace artifacts as local evidence to inspect before changing `SKILL.md`",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The answer stays focused on which artifacts to inspect first rather than immediately telling the user to rerun the eval",
+          "category": "format",
+          "weight": 1
+        }
+      ]
     }
   ]
 }
