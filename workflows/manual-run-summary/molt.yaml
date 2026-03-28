@@ -1,8 +1,0 @@
-name: manual-run-summary
-description: Manually summarize a completed run record.
-entry_agent: run-summarizer-worker
-inputs:
-  run_id: ""
-  run_record_path: ""
-logging_policy: per_run
-execution_policy: local

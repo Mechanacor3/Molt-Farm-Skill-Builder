@@ -4,21 +4,24 @@ import argparse
 import json
 from pathlib import Path
 
-from .codex_probe import run_codex_trigger_probe
-from .skill_evaluator import evaluate_skill
+from .experimental.codex_corpus import analyze_codex_corpus
+from .experimental.codex_timeline import write_codex_skill_timeline
+from .experimental.codex_timeline import discover_analysis_skill_names
+from .experimental.codex_probe import run_codex_trigger_probe
 from .runner import run_workflow
+from .skill_evaluator import evaluate_skill
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="molt",
-        description="Run simple Molt Farm workflows from the local repository.",
+        description="Run simple Molt Farm skill-builder operations from the local repository.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     skill_builder_parser = subparsers.add_parser(
         "skill-builder",
-        help="Skill-builder operations for running workflows and evaluating skills.",
+        help="Skill-builder operations for running named operations and evaluating skills.",
     )
     skill_builder_subparsers = skill_builder_parser.add_subparsers(
         dest="skill_builder_command",
@@ -27,24 +30,19 @@ def build_parser() -> argparse.ArgumentParser:
 
     _add_run_parser(skill_builder_subparsers)
     _add_eval_skill_parser(skill_builder_subparsers)
-    _add_probe_codex_trigger_parser(skill_builder_subparsers)
-
-    # Keep the older top-level forms as compatibility aliases.
-    _add_run_parser(subparsers)
-    _add_eval_skill_parser(subparsers)
-    _add_probe_codex_trigger_parser(subparsers)
+    _add_experimental_parser(skill_builder_subparsers)
     return parser
 
 
 def _add_run_parser(subparsers) -> argparse.ArgumentParser:
-    run_parser = subparsers.add_parser("run", help="Execute a workflow.")
-    run_parser.add_argument("workflow", help="Workflow folder name under workflows/.")
+    run_parser = subparsers.add_parser("run", help="Execute a named skill-builder operation.")
+    run_parser.add_argument("operation", help="Named skill-builder operation.")
     run_parser.add_argument(
         "--input",
         action="append",
         default=[],
         metavar="KEY=VALUE",
-        help="Override a workflow input. Can be repeated.",
+        help="Override an operation input. Can be repeated.",
     )
     return run_parser
 
@@ -74,10 +72,60 @@ def _add_eval_skill_parser(subparsers) -> argparse.ArgumentParser:
     return eval_parser
 
 
+def _add_experimental_parser(subparsers) -> argparse.ArgumentParser:
+    experimental_parser = subparsers.add_parser(
+        "experimental",
+        help="Optional research tooling that is not part of the core skill loop.",
+    )
+    experimental_subparsers = experimental_parser.add_subparsers(
+        dest="experimental_command",
+        required=True,
+    )
+    _add_analyze_codex_run_parser(experimental_subparsers)
+    _add_analyze_codex_corpus_parser(experimental_subparsers)
+    _add_probe_codex_trigger_parser(experimental_subparsers)
+    return experimental_parser
+
+
+def _add_analyze_codex_run_parser(subparsers) -> argparse.ArgumentParser:
+    analyze_parser = subparsers.add_parser(
+        "analyze-codex-run",
+        help="Experimental: analyze one Codex --json run log for observable skill usage.",
+    )
+    analyze_parser.add_argument(
+        "source_path",
+        help="Path to one Codex JSONL log file.",
+    )
+    analyze_parser.add_argument(
+        "--output",
+        default=None,
+        help="Optional output path for the analyzed skill timeline JSON.",
+    )
+    return analyze_parser
+
+
+def _add_analyze_codex_corpus_parser(subparsers) -> argparse.ArgumentParser:
+    corpus_parser = subparsers.add_parser(
+        "analyze-codex-corpus",
+        help="Experimental: analyze a manifest of Codex logs and report skill-detection regressions.",
+    )
+    corpus_parser.add_argument(
+        "--manifest",
+        required=True,
+        help="Path to the Codex corpus manifest JSON file.",
+    )
+    corpus_parser.add_argument(
+        "--output-dir",
+        default=None,
+        help="Optional output directory for the corpus report and per-case timelines.",
+    )
+    return corpus_parser
+
+
 def _add_probe_codex_trigger_parser(subparsers) -> argparse.ArgumentParser:
     probe_parser = subparsers.add_parser(
         "probe-codex-trigger",
-        help="Run a clean Codex CLI probe to see which installed skills trigger first.",
+        help="Experimental: probe Codex skill-trigger behavior in a clean sandbox.",
     )
     probe_parser.add_argument("skill", help="Primary skill under skills/.")
     probe_parser.add_argument(
@@ -112,25 +160,29 @@ def main() -> int:
     command = args.command
     if command == "skill-builder":
         command = args.skill_builder_command
+        if command == "experimental":
+            command = f"experimental:{args.experimental_command}"
 
     if command == "run":
         result = run_workflow(
             project_root=project_root,
-            workflow_name=args.workflow,
+            workflow_name=args.operation,
             overrides=parse_overrides(args.input),
         )
-        print(json.dumps(
-            {
-                "run_id": result.run_id,
-                "workflow": result.workflow,
-                "agent": result.agent,
-                "status": result.status,
-                "run_path": result.run_path,
-                "log_path": result.log_path,
-                "summary": result.output["summary"],
-            },
-            indent=2,
-        ))
+        print(
+            json.dumps(
+                {
+                    "run_id": result.run_id,
+                    "workflow": result.workflow,
+                    "agent": result.agent,
+                    "status": result.status,
+                    "run_path": result.run_path,
+                    "log_path": result.log_path,
+                    "summary": result.output["summary"],
+                },
+                indent=2,
+            )
+        )
         return 0 if result.status == "completed" else 1
 
     if command == "eval-skill":
@@ -144,7 +196,25 @@ def main() -> int:
         print(json.dumps(result, indent=2))
         return 0
 
-    if command == "probe-codex-trigger":
+    if command == "experimental:analyze-codex-run":
+        result = write_codex_skill_timeline(
+            Path(args.source_path),
+            skill_names=discover_analysis_skill_names(project_root=project_root),
+            output_path=Path(args.output) if args.output is not None else None,
+        )
+        print(json.dumps(result, indent=2))
+        return 0
+
+    if command == "experimental:analyze-codex-corpus":
+        result = analyze_codex_corpus(
+            project_root=project_root,
+            manifest_path=Path(args.manifest),
+            output_dir=Path(args.output_dir) if args.output_dir is not None else None,
+        )
+        print(json.dumps(result, indent=2))
+        return 0 if result["passed"] else 1
+
+    if command == "experimental:probe-codex-trigger":
         result = run_codex_trigger_probe(
             project_root=project_root,
             target_skill=args.skill,

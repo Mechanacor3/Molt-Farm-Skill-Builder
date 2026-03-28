@@ -8,10 +8,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "packages"))
 
-from moltfarm.codex_probe import run_codex_trigger_probe, summarize_codex_trigger_probe
+from moltfarm.experimental.codex_probe import run_codex_trigger_probe, summarize_codex_trigger_probe
 
 
-class CodexProbeTests(unittest.TestCase):
+class ExperimentalCodexProbeTests(unittest.TestCase):
     def test_summarize_codex_trigger_probe_reports_first_skill_read(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             sandbox_root = Path(temp_dir)
@@ -93,7 +93,10 @@ class CodexProbeTests(unittest.TestCase):
             self.assertTrue(summary["first_message_mentions_target"])
 
     def test_run_codex_trigger_probe_creates_summary(self) -> None:
-        original_runner = __import__("moltfarm.codex_probe", fromlist=["_run_codex_exec"])
+        original_runner = __import__(
+            "moltfarm.experimental.codex_probe",
+            fromlist=["_run_codex_exec"],
+        )
         original_run_codex_exec = original_runner._run_codex_exec
         try:
             def fake_run_codex_exec(*, sandbox_root, prompt_path, output_path, model):
@@ -167,12 +170,13 @@ class CodexProbeTests(unittest.TestCase):
                 project_root = Path(temp_dir)
                 for skill_name in ["develop-web-game", "game-bootstrap"]:
                     skill_dir = project_root / "skills" / skill_name
-                    (skill_dir / "evals" / "codex-cli-probe").mkdir(parents=True, exist_ok=True)
+                    skill_dir.mkdir(parents=True, exist_ok=True)
                     (skill_dir / "SKILL.md").write_text(
                         f"---\nname: {skill_name}\ndescription: test\n---\n\nUse it.\n",
                         encoding="utf-8",
                     )
-                fixture_root = project_root / "skills" / "develop-web-game" / "evals" / "codex-cli-probe"
+                fixture_root = project_root / "experiments" / "codex-trigger-probe" / "develop-web-game"
+                fixture_root.mkdir(parents=True, exist_ok=True)
                 (fixture_root / "discover.md").write_text("What skills are available?", encoding="utf-8")
                 (fixture_root / "trigger.md").write_text("Build a tiny browser game.", encoding="utf-8")
 
@@ -186,3 +190,7 @@ class CodexProbeTests(unittest.TestCase):
                 self.assertTrue((project_root / summary["summary_path"]).is_file())
         finally:
             original_runner._run_codex_exec = original_run_codex_exec
+
+
+if __name__ == "__main__":
+    unittest.main()

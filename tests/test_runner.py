@@ -376,6 +376,111 @@ class OpenAIAgentsExecutorTests(unittest.TestCase):
 
 
 class RunWorkflowFailureTests(unittest.TestCase):
+    def test_run_workflow_uses_explicit_manual_lesson_context_files(self) -> None:
+        original_build_executor = runner._build_executor
+        try:
+            runner._build_executor = lambda runtime: runner.StubAgentExecutor()
+
+            with tempfile.TemporaryDirectory() as temp_dir:
+                project_root = Path(temp_dir)
+                (project_root / "skills" / "lesson-extractor").mkdir(parents=True)
+                source_file = project_root / "runs" / "source.json"
+                comparison_file = project_root / "runs" / "comparison.json"
+                source_file.parent.mkdir(parents=True)
+                source_file.write_text("{}", encoding="utf-8")
+                comparison_file.write_text("{}", encoding="utf-8")
+                (project_root / "skills" / "lesson-extractor" / "SKILL.md").write_text(
+                    "---\nname: lesson-extractor\ndescription: Extract lessons.\n---\n\nDo it.\n",
+                    encoding="utf-8",
+                )
+
+                result = run_workflow(
+                    project_root=project_root,
+                    workflow_name="manual-lesson-extraction",
+                    overrides={
+                        "source_path": "runs/source.json",
+                        "comparison_path": "runs/comparison.json",
+                    },
+                )
+
+                self.assertEqual("completed", result.status)
+                self.assertEqual(
+                    ["runs/comparison.json", "runs/source.json"],
+                    result.output["context_files"],
+                )
+        finally:
+            runner._build_executor = original_build_executor
+
+    def test_run_workflow_resolves_latest_skill_eval_artifacts_for_refinement(self) -> None:
+        original_build_executor = runner._build_executor
+        try:
+            runner._build_executor = lambda runtime: runner.StubAgentExecutor()
+
+            with tempfile.TemporaryDirectory() as temp_dir:
+                project_root = Path(temp_dir)
+                (project_root / "skills" / "skill-refiner").mkdir(parents=True)
+                sample_skill_dir = project_root / "skills" / "sample-skill"
+                sample_skill_dir.mkdir(parents=True)
+                (project_root / "skills" / "skill-refiner" / "SKILL.md").write_text(
+                    "---\nname: skill-refiner\ndescription: Refine skills.\n---\n\nDo it.\n",
+                    encoding="utf-8",
+                )
+                (sample_skill_dir / "SKILL.md").write_text(
+                    "---\nname: sample-skill\ndescription: Sample skill.\n---\n\nDo it.\n",
+                    encoding="utf-8",
+                )
+                (sample_skill_dir / "evals").mkdir(parents=True)
+                (sample_skill_dir / "evals" / "evals.json").write_text(
+                    '{"skill_name":"sample-skill","evals":[]}',
+                    encoding="utf-8",
+                )
+                latest_iteration = sample_skill_dir / "evals" / "workspace" / "iteration-2"
+                old_iteration = sample_skill_dir / "evals" / "workspace" / "iteration-1"
+                for iteration_dir in [old_iteration, latest_iteration]:
+                    (iteration_dir / "eval-case-one" / "with_skill").mkdir(parents=True)
+                (latest_iteration / "benchmark.json").write_text("{}", encoding="utf-8")
+                (latest_iteration / "feedback.json").write_text("{}", encoding="utf-8")
+                (latest_iteration / "eval-case-one" / "comparison.json").write_text("{}", encoding="utf-8")
+                (latest_iteration / "eval-case-one" / "with_skill" / "grading.json").write_text(
+                    "{}",
+                    encoding="utf-8",
+                )
+                (latest_iteration / "eval-case-one" / "with_skill" / "trace.json").write_text(
+                    "{}",
+                    encoding="utf-8",
+                )
+                (old_iteration / "benchmark.json").write_text("{}", encoding="utf-8")
+
+                result = run_workflow(
+                    project_root=project_root,
+                    workflow_name="manual-skill-refinement",
+                    overrides={"target_skill": "sample-skill"},
+                )
+
+                self.assertEqual("completed", result.status)
+                self.assertEqual(
+                    "skills/sample-skill/evals/workspace/iteration-2/benchmark.json",
+                    result.inputs["benchmark_path"],
+                )
+                self.assertEqual(
+                    "skills/sample-skill/evals/workspace/iteration-2/feedback.json",
+                    result.inputs["feedback_path"],
+                )
+                self.assertEqual(
+                    "skills/sample-skill/evals/workspace/iteration-2/eval-case-one/comparison.json",
+                    result.inputs["comparison_path"],
+                )
+                self.assertEqual(
+                    "skills/sample-skill/evals/workspace/iteration-2/eval-case-one/with_skill/trace.json",
+                    result.inputs["trace_path"],
+                )
+                self.assertIn(
+                    "skills/sample-skill/evals/workspace/iteration-2/eval-case-one/with_skill/grading.json",
+                    result.output["context_files"],
+                )
+        finally:
+            runner._build_executor = original_build_executor
+
     def test_run_workflow_persists_failed_run_record(self) -> None:
         original_build_executor = runner._build_executor
         try:
@@ -387,17 +492,7 @@ class RunWorkflowFailureTests(unittest.TestCase):
 
             with tempfile.TemporaryDirectory() as temp_dir:
                 project_root = Path(temp_dir)
-                (project_root / "agents" / "triage-worker").mkdir(parents=True)
-                (project_root / "workflows" / "manual-triage").mkdir(parents=True)
                 (project_root / "skills" / "repo-triage").mkdir(parents=True)
-                (project_root / "agents" / "triage-worker" / "agent.yaml").write_text(
-                    "name: triage-worker\nmodel: gpt-5\nskills:\n  - repo-triage\nruntime: openai_agents\n",
-                    encoding="utf-8",
-                )
-                (project_root / "workflows" / "manual-triage" / "molt.yaml").write_text(
-                    "name: manual-triage\nentry_agent: triage-worker\ninputs:\n  task: test failure\n",
-                    encoding="utf-8",
-                )
                 (project_root / "skills" / "repo-triage" / "SKILL.md").write_text(
                     "---\nname: repo-triage\ndescription: Triage repositories.\n---\n\nDo triage.\n",
                     encoding="utf-8",

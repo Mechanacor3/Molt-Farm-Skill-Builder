@@ -1,109 +1,182 @@
 # Molt Farm Skill Builder
 
-Molt Farm Skill Builder is a local-first workspace for recursively improving `SKILL.md` capabilities.
+Molt Farm Skill Builder is for people who write local `SKILL.md` skills and for people who run those skills through a small CLI to evaluate outcomes, inspect artifacts, and refine behavior over time.
 
-The repo is intentionally narrower now:
+## Prerequisites
 
-- evaluate strong upstream skills
-- extract reusable lessons
-- refine local skills
-- measure whether the skill actually got better
+- Python `>=3.12`
+- An editable install of this repo
+- OpenAI credentials available in the environment or in `.env`
 
-The core loop is:
-
-**Test -> Observe -> Lesson -> Improve -> Measure**
-
-## What This Repo Is
-
-This repo is primarily about skill quality, not general agent orchestration.
-
-The most important artifacts are:
-
-- `skills/` for reusable `SKILL.md` capabilities
-- `lessons/` for distilled improvements
-- `logs/` and `runs/` for inspectable evidence
-- `packages/` for the minimal runtime that supports the loop
-
-Some older agent/workflow scaffolding still exists because it is useful as local execution machinery, but it is no longer the product center.
-
-## Current Focus
-
-The project exists to:
-
-- study high-quality skills from OpenAI, Anthropic, and `agentskills`
-- preserve the best patterns in local reusable skills
-- run evals against concrete prompts and artifacts
-- compare baselines and measure whether a refinement helped
-- keep the whole process local, inspectable, and file-based
-
-## CLI Shape
-
-The default interface is:
-
-```bash
-molt skill-builder [options]
-```
-
-Today the main paths are:
-
-```bash
-./molt skill-builder run <workflow> --input key=value
-./molt skill-builder eval-skill <skill>
-./molt skill-builder probe-codex-trigger <skill> --with-skill <other-skill>
-```
-
-Older top-level command forms may still exist as compatibility paths, but the intended shape is the `skill-builder` namespace.
+If you prefer, put `OPENAI_API_KEY=...` in `.env` at the repo root. The CLI loads `.env` automatically.
 
 ## Quick Start
+
+Copy-paste this to install the repo locally and run one skill eval end to end:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
+export OPENAI_API_KEY=your_key_here
 ./molt skill-builder eval-skill run-summarizer
 ```
 
-The project depends on `pydantic`, so a clean install should now succeed with the editable install above.
+After it finishes, inspect:
 
-After a run, inspect:
+- `skills/run-summarizer/evals/workspace/iteration-N/benchmark.json`
+- `skills/run-summarizer/evals/workspace/iteration-N/feedback.json`
+- `skills/run-summarizer/evals/workspace/iteration-N/eval-<case-id>/comparison.json`
 
-- `runs/`
-- `logs/YYYY-MM-DD/`
-- `lessons/`
-- `skills/<skill>/evals/workspace/iteration-N/`
-- `tmp/codex-trigger-probes/` for clean Codex CLI trigger probes
+## For Skill Authors
+
+The normal authoring loop is:
+
+1. Create or edit `skills/<name>/SKILL.md`.
+2. Author `skills/<name>/evals/evals.json`.
+3. Run `./molt skill-builder eval-skill <name>`.
+4. Inspect `benchmark.json`, `feedback.json`, and per-case `comparison.json`.
+5. Refine the skill and rerun the eval.
+
+### Skill Layout
+
+Most authored skills follow this shape:
+
+```text
+skills/<name>/
+  SKILL.md
+  references/
+  scripts/
+  evals/
+    evals.json
+    files/
+```
+
+### Build Evals
+
+In this repo, “build evals” means authoring `skills/<name>/evals/evals.json`. There is no separate eval generator command.
+
+Example:
+
+```json
+{
+  "skill_name": "sample-skill",
+  "evals": [
+    {
+      "id": "case-one",
+      "prompt": "Summarize evals/files/sample.json for a human reviewer.",
+      "expected_output": "A short summary that states the outcome and cites the artifact.",
+      "files": ["evals/files/sample.json"],
+      "checks": [
+        {
+          "text": "The answer makes the task outcome clear",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer cites the attached artifact",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer keeps the required output shape",
+          "category": "format",
+          "weight": 1
+        }
+      ],
+      "required_skill_activations": ["sample-skill"]
+    }
+  ]
+}
+```
+
+Supported check categories are `goal`, `evidence`, `format`, and `trigger`. Use weighted checks to make task completion and evidence matter more than formatting. When trigger behavior matters, `required_skill_activations` records trace-based trigger checks under the `trigger` category.
+
+### Evaluate a Skill
+
+Run the current skill against its local eval suite:
+
+```bash
+./molt skill-builder eval-skill run-summarizer
+```
+
+Run with a snapshot baseline:
+
+```bash
+./molt skill-builder eval-skill run-summarizer --baseline snapshot --snapshot-current
+```
+
+Important artifacts:
+
+- `skills/<skill>/evals/workspace/iteration-N/benchmark.json`
+  - aggregate pass rates, category scores, `with_skill_win_rate`, and `task_uplift_score`
+- `skills/<skill>/evals/workspace/iteration-N/feedback.json`
+  - review notes keyed by eval case
+- `skills/<skill>/evals/workspace/iteration-N/eval-<case-id>/comparison.json`
+  - winner, confidence, rationale, category deltas, and cost delta for that case
+
+## For CLI Users
+
+Use `./molt skill-builder run <operation>` when you want to run one of the built-in local operations with narrow inputs.
+
+Example:
+
+```bash
+./molt skill-builder run manual-lesson-extraction \
+  --input source_path=runs/run-20260320192451-9157aace.json \
+  --input comparison_path=runs/run-20260320192637-6d787114.json
+```
+
+That command reads the two provided run records and writes or updates:
+
+- `runs/<run-id>.json`
+- `logs/YYYY-MM-DD/<run-id>.log`
+
+The CLI prints the resulting `run_id`, `run_path`, and `log_path` when it completes.
+
+### Built-in Operations
+
+Current built-in operations:
+
+- `manual-docker-smoke-test`: propose one narrow Docker build-and-run smoke test for a local repo or artifact
+- `manual-lesson-extraction`: review a run or log and extract lessons
+- `manual-python-build`: build or repair a local Python project with narrow context
+- `manual-run-summary`: summarize a completed run record
+- `manual-skill-finding`: choose the best existing skill or identify a missing one for a task
+- `manual-skill-refinement`: refine an existing skill from a brief plus supporting lessons and eval artifacts
+- `manual-triage`: run a narrow repository triage task
+
+After any operation run, inspect:
+
+- `runs/<run-id>.json`
+- `logs/YYYY-MM-DD/<run-id>.log`
+
+## Repo Layout
+
+The main directories you will use are:
+
+- `skills/`: reusable skills anchored by `SKILL.md`
+- `lessons/`: durable lesson files extracted from runs and evals
+- `runs/`: structured run records
+- `logs/`: dated log files for completed runs
+- `packages/`: the Python runtime and CLI that support the skill loop
 
 ## Docker
 
-For sandboxed local testing, build and run the repo in Docker:
+Docker is optional and secondary to the local workflow above.
 
 ```bash
 docker build -t moltfarm-skillbuilder .
-docker run --rm -it moltfarm-skillbuilder
+docker run --rm -it moltfarm-skillbuilder ./molt skill-builder --help
+docker run --rm -it moltfarm-skillbuilder ./molt skill-builder eval-skill run-summarizer
 ```
 
-The image defaults to `./molt skill-builder --help`. To run tests or a specific CLI command:
+To keep writes in your working tree, bind-mount the repo:
 
 ```bash
-docker run --rm -it moltfarm-skillbuilder python -m unittest discover -s tests -p 'test_*.py'
-docker run --rm -it moltfarm-skillbuilder skill-builder eval-skill run-summarizer
+docker run --rm -it -v "$PWD:/app" -w /app moltfarm-skillbuilder ./molt skill-builder run manual-lesson-extraction --input source_path=runs/<run-id>.json
 ```
 
-If you want container writes to land in your working tree, bind-mount the repo:
+## Further Reading
 
-```bash
-docker run --rm -it -v "$PWD:/app" -w /app moltfarm-skillbuilder python -m unittest discover -s tests -p 'test_*.py'
-docker run --rm -it -v "$PWD:/app" -w /app moltfarm-skillbuilder skill-builder run manual-lesson-extraction
-```
-
-## Design Bias
-
-Molt Farm Skill Builder prefers:
-
-- local-first execution
-- least-context by default
-- plain files over hidden state
-- strong eval loops over intuition
-- small, composable skills over broad abstractions
-
-For repo-specific working guidance, see [AGENTS.md](/mnt/d/moltfarm_v2/AGENTS.md).
+- [Skills Guide](./Skills_Guide.md) for deeper guidance on writing stronger skills and eval suites

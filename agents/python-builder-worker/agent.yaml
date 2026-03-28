@@ -1,8 +1,0 @@
-name: python-builder-worker
-description: Minimal local worker for building or repairing local Python project structure.
-model: gpt-5
-skills:
-  - python-build
-tools: []
-context_policy: least_context
-runtime: openai_agents

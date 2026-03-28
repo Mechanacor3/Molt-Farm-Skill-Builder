@@ -5,11 +5,27 @@
       "id": "python-cli-dockerfile-first-check",
       "prompt": "I just added a Dockerfile for a Python CLI project. I want the first narrow container check to confirm the image builds and the CLI entrypoint responds. Give me the exact commands and what to inspect afterward.",
       "expected_output": "A concise response with Goal, Build, Run, Verify, and Inspect sections that uses one `docker build` command, one `docker run --rm` command, and points to stdout or one concrete artifact to inspect.",
-      "assertions": [
-        "The answer includes the sections Goal, Build, Run, Verify, and Inspect",
-        "The Build section includes a concrete `docker build` command",
-        "The Run section includes a concrete `docker run --rm` command",
-        "The answer keeps the scope to one narrow smoke test rather than a broad validation plan"
+      "checks": [
+        {
+          "text": "The answer proposes one narrow smoke test that checks both the image build and CLI entrypoint response",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The Build section includes a concrete `docker build` command",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The Run section includes a concrete `docker run --rm` command",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The answer includes the sections Goal, Build, Run, Verify, and Inspect",
+          "category": "format",
+          "weight": 1
+        }
       ],
       "required_skill_activations": [
         "docker-smoke-test"
@@ -19,12 +35,57 @@
       "id": "bind-mounted-artifact-check",
       "prompt": "I already have image `moltfarm-skillbuilder:verify`. I want to run one sandboxed check that writes run artifacts back to my working tree so I can inspect them on the host afterward. Give me the shortest exact command and tell me what host path to inspect.",
       "expected_output": "A concise response with Goal, Build, Run, Verify, and Inspect sections that reuses the given image, uses a bind mount for host-visible artifacts, and names the host path to inspect after the run.",
-      "assertions": [
-        "The Build section says `none` or clearly reuses the existing image instead of rebuilding",
-        "The Run section includes `--user \"$(id -u):$(id -g)\"` or equivalent host-user mapping for bind-mounted writes",
-        "The Run section includes a bind mount such as `-v \"$PWD:/app\"` and a working directory",
-        "The Inspect section names a host-visible path rather than only saying stdout",
-        "The answer reuses the provided image name `moltfarm-skillbuilder:verify`"
+      "checks": [
+        {
+          "text": "The answer reuses the provided image instead of rebuilding it",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The run command includes a bind mount and host-user mapping for host-visible writes",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The Inspect section names a host-visible path rather than only saying stdout",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer includes the sections Goal, Build, Run, Verify, and Inspect",
+          "category": "format",
+          "weight": 1
+        }
+      ],
+      "required_skill_activations": [
+        "docker-smoke-test"
+      ]
+    },
+    {
+      "id": "stdout-only-help-check",
+      "prompt": "I already have image `moltfarm-skillbuilder:verify`. I just want the narrowest container check that `./molt skill-builder --help` prints usage. Do not add mounts unless they are required.",
+      "expected_output": "A concise response with Goal, Build, Run, Verify, and Inspect sections that reuses the provided image, uses one stdout-only `docker run --rm` command, and avoids unnecessary mounts.",
+      "checks": [
+        {
+          "text": "The answer reuses the provided image and does not rebuild it",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The run command stays stdout-only and avoids bind mounts or extra options that are not required",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The Run section includes one exact `docker run --rm` command for `./molt skill-builder --help`",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer includes the sections Goal, Build, Run, Verify, and Inspect",
+          "category": "format",
+          "weight": 1
+        }
       ],
       "required_skill_activations": [
         "docker-smoke-test"

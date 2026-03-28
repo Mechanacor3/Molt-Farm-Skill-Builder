@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "id": "gamelab-obvious",
+      "path": "../Codex-Game-Lab/runtime-logs/codex-json-skill-obvious-20260305-192838.jsonl",
+      "description": "Clear two-skill read in separate commands from the Game Lab skill experiments.",
+      "expected_observed_invocation_order": [
+        "playwright",
+        "develop-web-game"
+      ],
+      "expected_first_seen_skill_order": [
+        "playwright",
+        "develop-web-game"
+      ],
+      "min_invocation_event_count": 2
+    },
+    {
+      "id": "gamelab-autotrigger",
+      "path": "../Codex-Game-Lab/runtime-logs/codex-json-skill-autotrigger-20260305-183312.jsonl",
+      "description": "Two skills read from a single shell command; proves multi-read extraction order.",
+      "expected_observed_invocation_order": [
+        "develop-web-game",
+        "playwright"
+      ],
+      "expected_first_seen_skill_order": [
+        "develop-web-game",
+        "playwright"
+      ],
+      "min_invocation_event_count": 2
+    },
+    {
+      "id": "archived-no-false-positive",
+      "path": "$HOME/.codex/archived_sessions/rollout-2026-02-09T19-15-13-019c44e6-f867-7c90-85a5-b6c3830416dc.jsonl",
+      "description": "Archived-session wrapper should not count skill paths embedded in instructions as invocation evidence.",
+      "expected_observed_invocation_order": [],
+      "expected_first_seen_skill_order": [],
+      "max_invocation_event_count": 0
+    }
+  ]
+}

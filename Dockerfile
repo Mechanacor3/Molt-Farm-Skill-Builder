@@ -10,11 +10,9 @@ COPY pyproject.toml README.md /app/
 COPY packages /app/packages
 COPY skills /app/skills
 COPY lessons /app/lessons
-COPY workflows /app/workflows
-COPY agents /app/agents
+COPY experiments /app/experiments
 COPY tests /app/tests
 COPY molt /app/molt
-COPY apps /app/apps
 COPY AGENTS.md /app/AGENTS.md
 COPY Skills_Guide.md /app/Skills_Guide.md
 COPY Skills_Guide.png /app/Skills_Guide.png

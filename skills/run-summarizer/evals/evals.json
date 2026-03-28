@@ -8,10 +8,27 @@
       "files": [
         "evals/files/completed-build-run.json"
       ],
-      "assertions": [
-        "The summary includes all of these fields: attempted, happened, status, produced, gaps, next_step",
-        "The summary preserves the completed run status instead of rewriting it as success",
-        "The summary states that tests or install verification were not performed"
+      "checks": [
+        {
+          "text": "The summary makes the actual task outcome clear to a reviewer",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The summary preserves the completed run status instead of rewriting it as success",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The summary states that tests or install verification were not performed",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The summary includes all of these fields: attempted, happened, status, produced, gaps, next_step",
+          "category": "format",
+          "weight": 1
+        }
       ]
     },
     {
@@ -21,10 +38,52 @@
       "files": [
         "evals/files/failed-log-run.json"
       ],
-      "assertions": [
-        "The summary marks the run as failed",
-        "The summary names at least one concrete artifact path from the source run",
-        "The summary gives exactly one main next step or says none"
+      "checks": [
+        {
+          "text": "The summary marks the run as failed",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The summary names at least one concrete artifact path from the source run",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The summary gives exactly one main next step or says none",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The summary stays compact instead of turning into a long retrospective or multi-section report",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "terse-handoff-note",
+      "prompt": "Summarize the completed run in evals/files/completed-build-run.json as a terse handoff note for the next engineer. Keep it to the essential facts only.",
+      "expected_output": "A terse six-field handoff note that states the outcome, names the main artifact, and avoids extra framing.",
+      "files": [
+        "evals/files/completed-build-run.json"
+      ],
+      "checks": [
+        {
+          "text": "The summary keeps only the essential facts for the next engineer",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The summary cites the source run or log artifact path",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The summary stays within the fixed six-field contract instead of adding extra headings or lists",
+          "category": "format",
+          "weight": 2
+        }
       ]
     }
   ]

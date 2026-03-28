@@ -2,15 +2,17 @@
 
 ![Skills Guide diagram](./Skills_Guide.png)
 
-This guide distills the supplied "Technical Framework for Skill Evolution" into a practical reference for building high-value skills in this repository.
+Use [README.md](./README.md) for installation, CLI commands, and the basic authoring loop. This guide is the deeper reference for skill authors who need to design stronger `SKILL.md` files, eval suites, and refinement habits.
 
 ## Purpose
 
-The shift is from one-off prompting to repeatable, inspectable agent workflows. In this repo, the unit of capability is the skill, and the governing loop is:
+In this repo, the unit of capability is the skill, and the governing loop is:
 
 **Test -> Observe -> Lesson -> Improve -> Measure**
 
-That means a good skill is not just a prompt. It is a reusable package of instructions, references, artifacts, and evidence that can be evaluated and refined over time.
+A good skill is not just a prompt. It is a reusable package of instructions, references, artifacts, and evidence that can be evaluated and refined over time.
+
+The main proof is task uplift on the same local artifact. That should be visible in eval artifacts such as `grading.json`, `comparison.json`, and `benchmark.json`.
 
 ## Core Principles
 
@@ -115,7 +117,7 @@ Model choice should follow task shape:
 
 - use stronger reasoning for architecture, root-cause analysis, and complex refactors
 - use lighter-weight models for narrow implementation work when quality is still sufficient
-- judge outputs by correctness, instruction-following, and downstream impact, not style alone
+- judge outputs by correctness, artifact use, and downstream impact, not style alone
 
 The harness should stay model-agnostic where possible so the workflow can evolve without rewriting the surrounding system.
 
@@ -128,6 +130,13 @@ This repo already aligns with the strongest parts of the framework:
 - runs and logs provide inspectable evidence
 - the preferred CLI is narrow and file-oriented
 - the main loop is evaluation-driven rather than intuition-driven
+
+The current expectation for evals is:
+
+- run the same case with and without the skill
+- grade goal, evidence, format, and trigger checks separately
+- treat goal and evidence as the main decision criteria
+- write a per-case `comparison.json` so a reviewer can see whether the skill actually helped
 
 When applying the framework here, favor:
 
@@ -148,10 +157,10 @@ When authoring or refining a skill, use this checklist:
 4. Add only the references required for that job.
 5. Prefer simple scripts over complex abstractions.
 6. Run evals against realistic prompts or artifacts.
-7. Save outputs, grading, timing, and notes to disk.
+7. Save outputs, grading, timing, comparison, and notes to disk.
 8. Promote repeated findings into lesson files.
 9. Refine the skill and rerun the eval.
-10. Compare results against the prior version or baseline.
+10. Compare results against the prior version or baseline, and prefer task-uplift wins over formatting wins.
 
 ## Bottom Line
 

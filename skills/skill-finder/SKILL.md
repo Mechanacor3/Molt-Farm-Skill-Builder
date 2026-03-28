@@ -1,6 +1,6 @@
 ---
 name: skill-finder
-description: Choose the best existing skill or small set of skills for a task, explain why, and identify the smallest missing skill when the current set is not enough. Use before creating a new skill or wiring a workflow.
+description: Choose the best existing skill or small set of skills for a task, explain why, and identify the smallest missing skill when the current set is not enough. Use before creating a new skill or wiring a new operation.
 ---
 
 # Skill Finder
@@ -8,7 +8,7 @@ description: Choose the best existing skill or small set of skills for a task, e
 Use this skill when:
 - You need to decide which existing skills fit a task.
 - You want to know whether a new skill is actually needed.
-- You want a concise recommendation before building or refining a workflow.
+- You want a concise recommendation before building or refining an operation.
 
 Instructions:
 1. Read the task and the provided skill inventory only.

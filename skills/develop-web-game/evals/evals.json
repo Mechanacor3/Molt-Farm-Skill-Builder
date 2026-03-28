@@ -11,10 +11,27 @@
       "required_skill_activations": [
         "develop-web-game"
       ],
-      "assertions": [
-        "The response starts with a small playable slice instead of broad polish or content expansion",
-        "The response names at least one relevant component skill such as game-bootstrap or playwright-eval-loop",
-        "The response includes a concrete validation step before any polish pass"
+      "checks": [
+        {
+          "text": "The response starts with a small playable slice instead of broad polish or content expansion",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response names at least one relevant component skill such as game-bootstrap or playwright-eval-loop",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response includes a concrete validation step before any polish pass",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The response stays in a short phase-oriented planning shape rather than a broad design essay",
+          "category": "format",
+          "weight": 1
+        }
       ]
     },
     {
@@ -27,10 +44,60 @@
       "required_skill_activations": [
         "develop-web-game"
       ],
-      "assertions": [
-        "The response cites at least one concrete observation from the attached report",
-        "The response chooses one focused next pass instead of many unrelated changes",
-        "The response includes a way to re-test or measure the proposed improvement"
+      "checks": [
+        {
+          "text": "The response cites at least one concrete observation from the attached report",
+          "category": "evidence",
+          "weight": 3
+        },
+        {
+          "text": "The response chooses one focused next pass instead of many unrelated changes",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response includes a way to re-test or measure the proposed improvement",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The response stays in a compact next-pass plan rather than a broad redesign pitch",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "stability-before-polish",
+      "prompt": "Using the attached playtest report, I want the next pass to feel better and look better, but I only want the most useful thing to do first. What should happen before any polish pass?",
+      "expected_output": "A compact next-pass recommendation that chooses one gameplay or stability fix before polish, cites the report, and explains how to validate it.",
+      "files": [
+        "evals/files/failing-playtest-report.md"
+      ],
+      "required_skill_activations": [
+        "develop-web-game"
+      ],
+      "checks": [
+        {
+          "text": "The response identifies one gameplay or stability fix that should happen before any polish work",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response cites at least one concrete issue from the report to justify the next pass",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response includes a concrete re-test or browser validation step before polish",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The response avoids turning the answer into a multi-track roadmap or polish brainstorm",
+          "category": "format",
+          "weight": 1
+        }
       ]
     }
   ]

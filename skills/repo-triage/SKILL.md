@@ -1,12 +1,12 @@
 ---
 name: repo-triage
-description: Quickly assess a repository task and output a terse triage in Goal, State, Next form. Use when a repo, issue, PR, workflow, or local code change needs a fast assessment rather than a full solution.
+description: Quickly assess a repository task and output a terse triage in Goal, State, Next form. Use when a repo, issue, PR, operation, or local code change needs a fast assessment rather than a full solution.
 ---
 
 # Repo Triage
 
 Use this skill when:
-- A repo task, issue, PR, or workflow needs a fast local assessment.
+- A repo task, issue, PR, or named operation needs a fast local assessment.
 - The user wants a short, actionable read on what is going on and what to inspect next.
 - Inputs are narrow and local to the current repository.
 

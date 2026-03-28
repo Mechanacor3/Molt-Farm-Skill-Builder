@@ -1,17 +1,18 @@
 {
   "run_id": "run-example-failed",
-  "workflow": "manual-log-write",
-  "agent": "log-writer-worker",
+  "workflow": "manual-lesson-extraction",
+  "agent": "lesson-extractor-worker",
   "status": "failed",
   "inputs": {
-    "task": "Write a clean log entry for the latest run.",
-    "source": "runs/run-example-source.json"
+    "task": "extract lessons from the provided run or log",
+    "source_path": "runs/run-example-source.json",
+    "comparison_path": ""
   },
   "output": {
-    "summary": "Run failed: RuntimeError: missing log source file",
+    "summary": "Run failed: RuntimeError: missing source artifact",
     "error": {
       "type": "RuntimeError",
-      "message": "missing log source file"
+      "message": "missing source artifact"
     }
   },
   "log_path": "logs/2026-03-20/run-example-failed.log",

@@ -1,9 +1,0 @@
-name: manual-python-build
-description: Build or repair a local Python project with narrow, explicit context.
-entry_agent: python-builder-worker
-inputs:
-  task: bootstrap or repair the local Python project
-  target: .
-  pyproject_path: pyproject.toml
-logging_policy: per_run
-execution_policy: local

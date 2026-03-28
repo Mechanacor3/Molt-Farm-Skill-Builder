@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import re
 import shutil
 import subprocess
 from datetime import datetime
@@ -9,8 +8,13 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-
-SKILL_PATH_PATTERN = re.compile(r"\.agents/skills/(?P<skill_name>[^/]+)/SKILL\.md")
+from .codex_timeline import (
+    analyze_codex_jsonl,
+    count_completed_turns,
+    extract_agent_messages,
+    extract_turn_usage,
+    load_codex_jsonl_events,
+)
 
 
 def run_codex_trigger_probe(
@@ -21,12 +25,12 @@ def run_codex_trigger_probe(
     model: str | None = None,
 ) -> dict[str, Any]:
     skills_root = project_root / "skills"
-    fixture_root = skills_root / target_skill / "evals" / "codex-cli-probe"
+    fixture_root = project_root / "experiments" / "codex-trigger-probe" / target_skill
     discover_prompt_source = fixture_root / "discover.md"
     trigger_prompt_source = fixture_root / "trigger.md"
     if not discover_prompt_source.is_file() or not trigger_prompt_source.is_file():
         raise FileNotFoundError(
-            f"Codex trigger probe fixtures are missing for skill '{target_skill}' under {fixture_root}."
+            f"Experimental Codex probe fixtures are missing for skill '{target_skill}' under {fixture_root}."
         )
 
     installed = _normalize_installed_skills(target_skill, installed_skills)
@@ -79,11 +83,12 @@ def summarize_codex_trigger_probe(
     discover_exit_code: int,
     trigger_exit_code: int,
 ) -> dict[str, Any]:
-    discover_events = _load_jsonl_events(discover_log)
-    trigger_events = _load_jsonl_events(trigger_log)
-    discover_messages = _extract_agent_messages(discover_events)
-    trigger_messages = _extract_agent_messages(trigger_events)
-    read_skill_files = _extract_read_skill_files(trigger_events)
+    discover_events = load_codex_jsonl_events(discover_log)
+    trigger_events = load_codex_jsonl_events(trigger_log)
+    discover_messages = extract_agent_messages(discover_events)
+    trigger_messages = extract_agent_messages(trigger_events)
+    trigger_timeline = analyze_codex_jsonl(trigger_log, skill_names=installed_skills)
+    read_skill_files = _unique_skill_file_reads(trigger_timeline)
     first_trigger_message = trigger_messages[0] if trigger_messages else ""
     summary = {
         "target_skill": target_skill,
@@ -93,13 +98,13 @@ def summarize_codex_trigger_probe(
         "trigger_log": str(trigger_log),
         "discover_exit_code": discover_exit_code,
         "trigger_exit_code": trigger_exit_code,
-        "discover_completed": _turn_completed(discover_events),
-        "trigger_completed": _turn_completed(trigger_events),
+        "discover_completed": count_completed_turns(discover_events) > 0,
+        "trigger_completed": count_completed_turns(trigger_events) > 0,
         "discover_first_message": discover_messages[0] if discover_messages else "",
         "discover_last_message": discover_messages[-1] if discover_messages else "",
         "trigger_first_message": first_trigger_message,
         "trigger_last_message": trigger_messages[-1] if trigger_messages else "",
-        "trigger_usage": _extract_turn_usage(trigger_events),
+        "trigger_usage": _last_turn_usage(trigger_events),
         "read_skill_files": read_skill_files,
         "first_message_mentions_target": _message_mentions_skill(first_trigger_message, target_skill),
         "first_read_skill": read_skill_files[0] if read_skill_files else None,
@@ -187,66 +192,23 @@ def _run_codex_exec(
     return int(result.returncode)
 
 
-def _load_jsonl_events(path: Path) -> list[dict[str, Any]]:
-    if not path.is_file():
-        return []
-    events: list[dict[str, Any]] = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or not line.startswith("{"):
-            continue
-        try:
-            payload = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if isinstance(payload, dict):
-            events.append(payload)
-    return events
-
-
-def _extract_agent_messages(events: list[dict[str, Any]]) -> list[str]:
-    messages: list[str] = []
-    for event in events:
-        if event.get("type") != "item.completed":
-            continue
-        item = event.get("item") or {}
-        if item.get("type") == "agent_message":
-            messages.append(str(item.get("text") or ""))
-    return messages
-
-
-def _extract_read_skill_files(events: list[dict[str, Any]]) -> list[str]:
-    seen: list[str] = []
-    for event in events:
-        if event.get("type") not in {"item.started", "item.completed"}:
-            continue
-        item = event.get("item") or {}
-        if item.get("type") != "command_execution":
-            continue
-        command = str(item.get("command") or "")
-        match = SKILL_PATH_PATTERN.search(command)
-        if match:
-            skill_name = match.group("skill_name")
-            if skill_name not in seen:
-                seen.append(skill_name)
-    return seen
-
-
-def _turn_completed(events: list[dict[str, Any]]) -> bool:
-    return any(event.get("type") == "turn.completed" for event in events)
-
-
-def _extract_turn_usage(events: list[dict[str, Any]]) -> dict[str, int]:
+def _last_turn_usage(events: list[dict[str, Any]]) -> dict[str, int]:
     for event in events:
         if event.get("type") != "turn.completed":
             continue
-        usage = event.get("usage") or {}
-        return {
-            "input_tokens": int(usage.get("input_tokens", 0) or 0),
-            "cached_input_tokens": int(usage.get("cached_input_tokens", 0) or 0),
-            "output_tokens": int(usage.get("output_tokens", 0) or 0),
-        }
+        return extract_turn_usage(event)
     return {"input_tokens": 0, "cached_input_tokens": 0, "output_tokens": 0}
+
+
+def _unique_skill_file_reads(timeline: dict[str, Any]) -> list[str]:
+    seen: list[str] = []
+    for event in timeline.get("events", []):
+        if event.get("event_type") != "skill_file_read":
+            continue
+        skill_name = str(event.get("skill_name") or "")
+        if skill_name and skill_name not in seen:
+            seen.append(skill_name)
+    return seen
 
 
 def _message_mentions_skill(message: str, skill_name: str) -> bool:

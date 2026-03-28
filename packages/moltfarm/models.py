@@ -6,6 +6,13 @@ from typing import Any
 
 
 @dataclass(slots=True)
+class EvalCheck:
+    text: str
+    category: str = "goal"
+    weight: float = 1.0
+
+
+@dataclass(slots=True)
 class SkillResources:
     scripts: list[Path] = field(default_factory=list)
     references: list[Path] = field(default_factory=list)
@@ -50,7 +57,7 @@ class SkillEvalCase:
     prompt: str
     expected_output: str
     files: list[Path] = field(default_factory=list)
-    assertions: list[str] = field(default_factory=list)
+    checks: list[EvalCheck] = field(default_factory=list)
     required_skill_activations: list[str] = field(default_factory=list)
 
 
@@ -74,14 +81,13 @@ class AgentDefinition:
 
 
 @dataclass(slots=True)
-class WorkflowDefinition:
+class OperationDefinition:
     name: str
     description: str
-    entry_agent: str
+    agent: AgentDefinition
     inputs: dict[str, Any] = field(default_factory=dict)
     logging_policy: str = "per_run"
     execution_policy: str = "local"
-    path: Path | None = None
 
 
 @dataclass(slots=True)

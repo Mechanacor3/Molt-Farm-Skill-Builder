@@ -1,8 +1,0 @@
-name: run-summarizer-worker
-description: Minimal local worker for summarizing completed runs.
-model: gpt-5
-skills:
-  - run-summarizer
-tools: []
-context_policy: least_context
-runtime: openai_agents

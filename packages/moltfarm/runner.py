@@ -9,11 +9,10 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-from .agent_loader import load_agent
 from .models import AgentDefinition, RunResult, Skill
+from .operations import load_operation
 from .skill_loader import discover_skills
 from .storage import generate_run_id, result_to_payload, write_log, write_run_record
-from .workflow_loader import load_workflow
 
 COMPACTION_TOKEN_THRESHOLD = 100_000
 COMPACTION_TARGET_TOKENS = 20_000
@@ -179,12 +178,12 @@ def run_workflow(
     workflow_name: str,
     overrides: dict[str, Any] | None = None,
 ) -> RunResult:
-    workflow = load_workflow(project_root / "workflows", workflow_name)
-    agent = load_agent(project_root / "agents", workflow.entry_agent)
+    operation = load_operation(workflow_name)
+    agent = operation.agent
     skills_by_name = discover_skills(project_root / "skills")
     attached_skills = _resolve_skills(agent, skills_by_name)
 
-    task_input = dict(workflow.inputs)
+    task_input = dict(operation.inputs)
     if overrides:
         task_input.update(overrides)
     _augment_task_input_with_local_skill_paths(
@@ -210,7 +209,7 @@ def run_workflow(
 
     result = RunResult(
         run_id=run_id,
-        workflow=workflow.name,
+        workflow=operation.name,
         agent=agent.name,
         status=status,
         inputs=task_input,
@@ -283,22 +282,112 @@ def _augment_task_input_with_local_skill_paths(
     if skill is None:
         return
     skill_file = skill.path / "SKILL.md"
-    task_input.setdefault(
+    _set_default_if_blank(
+        task_input,
         "target_skill_path",
         str(skill_file.relative_to(project_root)),
     )
     evals_file = skill.path / "evals" / "evals.json"
     if evals_file.is_file():
-        task_input.setdefault(
+        _set_default_if_blank(
+            task_input,
             "target_skill_evals_path",
             str(evals_file.relative_to(project_root)),
         )
     workspace_root = skill.path / "evals" / "workspace"
     if workspace_root.exists():
-        task_input.setdefault(
+        _set_default_if_blank(
+            task_input,
             "target_skill_workspace_path",
             str(workspace_root.relative_to(project_root)),
         )
+        latest_iteration = _find_latest_skill_iteration(workspace_root)
+        if latest_iteration is not None:
+            _set_default_if_blank(
+                task_input,
+                "target_skill_latest_iteration_path",
+                str(latest_iteration.relative_to(project_root)),
+            )
+            _set_default_if_blank(
+                task_input,
+                "benchmark_path",
+                _relative_if_file(project_root, latest_iteration / "benchmark.json"),
+            )
+            _set_default_if_blank(
+                task_input,
+                "feedback_path",
+                _relative_if_file(project_root, latest_iteration / "feedback.json"),
+            )
+            _set_default_path_series(
+                task_input=task_input,
+                base_key="comparison_path",
+                project_root=project_root,
+                paths=sorted(latest_iteration.glob("eval-*/comparison.json")),
+            )
+            _set_default_path_series(
+                task_input=task_input,
+                base_key="grading_path",
+                project_root=project_root,
+                paths=sorted(latest_iteration.glob("eval-*/with_skill/grading.json")),
+            )
+            _set_default_path_series(
+                task_input=task_input,
+                base_key="trace_path",
+                project_root=project_root,
+                paths=sorted(latest_iteration.glob("eval-*/with_skill/trace.json")),
+            )
+
+
+def _set_default_if_blank(task_input: dict[str, Any], key: str, value: str | None) -> None:
+    if not value:
+        return
+    current_value = task_input.get(key)
+    if isinstance(current_value, str) and current_value.strip():
+        return
+    if current_value is not None and current_value != "" and not isinstance(current_value, str):
+        return
+    task_input[key] = value
+
+
+def _relative_if_file(project_root: Path, path: Path) -> str | None:
+    if not path.is_file():
+        return None
+    return str(path.relative_to(project_root))
+
+
+def _set_default_path_series(
+    *,
+    task_input: dict[str, Any],
+    base_key: str,
+    project_root: Path,
+    paths: list[Path],
+) -> None:
+    current_value = task_input.get(base_key)
+    if isinstance(current_value, str) and current_value.strip():
+        return
+    if any(str(key).startswith(f"{base_key}_") for key in task_input):
+        return
+
+    relative_paths = [str(path.relative_to(project_root)) for path in paths if path.is_file()]
+    if not relative_paths:
+        return
+
+    task_input[base_key] = relative_paths[0]
+    for index, relative_path in enumerate(relative_paths[1:], start=2):
+        task_input[f"{base_key}_{index}"] = relative_path
+
+
+def _find_latest_skill_iteration(workspace_root: Path) -> Path | None:
+    candidates = sorted(
+        (
+            child
+            for child in workspace_root.iterdir()
+            if child.is_dir() and child.name.startswith("iteration-")
+        ),
+        key=lambda path: int(path.name.split("-")[1]),
+        reverse=True,
+    )
+    return candidates[0] if candidates else None
 
 
 def _build_sdk_instructions(agent: AgentDefinition, skills: list[Skill]) -> str:
@@ -840,7 +929,7 @@ def _load_dotenv(project_root: Path):
 def _import_openai_agents_sdk(project_root: Path):
     """
     Import the external `agents` SDK without being shadowed by this repo's
-    top-level `agents/` directory.
+    local checkout path.
     """
     with _sanitized_import_path(project_root):
         sys.modules.pop("agents", None)

@@ -59,11 +59,10 @@ Primary artifacts:
 - `runs/` = durable execution records
 - `packages/` = minimal runtime code that supports the skill loop
 
-Transitional scaffolding:
-- `agents/`
-- `workflows/`
-
-Those directories may still exist because they are useful execution machinery, but they are no longer the conceptual center of the project.
+Non-product or optional areas:
+- `experiments/` = optional research tooling that should not shape the main product surface
+- `tmp/` = local scratch artifacts
+- `example_upstream_skills/` = ignored local study material, not part of the runtime
 
 ---
 
@@ -74,7 +73,7 @@ The default command shape is:
 `molt skill-builder ...`
 
 Prefer:
-- `./molt skill-builder run <workflow> --input key=value`
+- `./molt skill-builder run <operation> --input key=value`
 - `./molt skill-builder eval-skill <skill>`
 
 Use the CLI lightly and inspectably:
@@ -87,8 +86,6 @@ After running commands, look at:
 - `logs/YYYY-MM-DD/`
 - `lessons/`
 - `skills/<skill>/evals/workspace/iteration-N/`
-
-Compatibility aliases may still exist, but the `skill-builder` namespace is the intended interface.
 
 ---
 

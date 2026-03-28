@@ -4,7 +4,7 @@
   - CLI help output
   - import success
   - one test command
-  - one workflow command
+  - one operation command
 - Reuse an existing image if the prompt already gives one.
 - Use `docker build` only when the image is part of what needs verification.
 - Default to `docker run --rm`.

@@ -1,8 +1,0 @@
-name: manual-skill-finding
-description: Choose the best existing skill or identify a missing one for a task.
-entry_agent: skill-finder-worker
-inputs:
-  task: ""
-  skill_inventory: ""
-logging_policy: per_run
-execution_policy: local

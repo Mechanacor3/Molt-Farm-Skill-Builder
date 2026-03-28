@@ -11,9 +11,10 @@ Use this skill when:
 - The output should become a reusable lesson, not a chat response.
 
 Instructions:
-1. Read only the provided run or log context.
+1. Read only the provided run, log, benchmark, grading, or comparison context.
 2. Identify the smallest set of actionable lessons.
 3. Keep each lesson specific, attributable, and short.
 4. Prefer concrete behavior changes over general advice.
-5. Do not expand beyond the evidence in the input.
-6. Use `@./references/lesson-format.md` to keep lessons short and reusable.
+5. If a comparison or benchmark is provided, cite its winner, category delta, or cost delta instead of relying only on the raw output text.
+6. Do not expand beyond the evidence in the input.
+7. Use `@./references/lesson-format.md` to keep lessons short and reusable.

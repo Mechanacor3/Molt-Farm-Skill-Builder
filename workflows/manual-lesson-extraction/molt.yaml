@@ -1,8 +1,0 @@
-name: manual-lesson-extraction
-description: Manually review a run or log and extract lessons.
-entry_agent: lesson-extractor-worker
-inputs:
-  task: extract lessons from the provided run or log
-  source: logs/2026-03-20/
-logging_policy: per_run
-execution_policy: local

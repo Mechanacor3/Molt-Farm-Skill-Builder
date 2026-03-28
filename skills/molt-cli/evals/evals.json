@@ -2,23 +2,84 @@
   "skill_name": "molt-cli",
   "evals": [
     {
-      "id": "run-workflow-command",
+      "id": "run-operation-command",
       "prompt": "I want to run a quick repo triage with Molt on this repo. Tell me the command I should run first and the first artifacts I should inspect after it completes.",
       "expected_output": "A concise answer that gives a concrete `./molt skill-builder run` command and points to the run and log artifacts to inspect.",
-      "assertions": [
-        "The answer includes a concrete `./molt skill-builder run` command",
-        "The answer names a workflow rather than speaking only in generalities",
-        "The answer points to `runs/` or a run JSON path and to `logs/` or a dated log path"
+      "checks": [
+        {
+          "text": "The answer includes a concrete `./molt skill-builder run` command",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer names a concrete operation rather than speaking only in generalities",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The answer points to `runs/` or a run JSON path and to `logs/` or a dated log path",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer stays narrow instead of describing the whole repo or CLI broadly",
+          "category": "format",
+          "weight": 1
+        }
       ]
     },
     {
       "id": "eval-skill-command",
       "prompt": "I want to evaluate the run-summarizer skill and keep a snapshot baseline. What Molt command should I run, and which iteration artifacts matter most afterward?",
       "expected_output": "A concise answer that gives a concrete `./molt skill-builder eval-skill` command with snapshot flags and points to the benchmark and feedback artifacts in the eval workspace.",
-      "assertions": [
-        "The answer includes a concrete `./molt skill-builder eval-skill run-summarizer` command",
-        "The answer includes both `--baseline snapshot` and `--snapshot-current`",
-        "The answer mentions `benchmark.json` and `feedback.json` or the eval workspace iteration paths"
+      "checks": [
+        {
+          "text": "The answer includes a concrete `./molt skill-builder eval-skill run-summarizer` command",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer includes both `--baseline snapshot` and `--snapshot-current`",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The answer mentions `benchmark.json` and `feedback.json` or the eval workspace iteration paths",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer stays focused on the requested command and artifacts",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "manual-lesson-extraction-command",
+      "prompt": "I want to extract lessons from `runs/run-20260320192451-9157aace.json` and compare it against `runs/run-20260320192637-6d787114.json`. What exact Molt command should I run, and which local artifact paths will the operation read?",
+      "expected_output": "A concise answer that gives one exact `./molt skill-builder run manual-lesson-extraction` command using `source_path` and `comparison_path`, and names the two provided run paths.",
+      "checks": [
+        {
+          "text": "The answer includes a concrete `./molt skill-builder run manual-lesson-extraction` command",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The command uses `source_path` and `comparison_path` inputs rather than a directory-style source",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer mentions both provided run paths exactly",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer stays narrow to one command and the local artifacts it will read",
+          "category": "format",
+          "weight": 1
+        }
       ]
     }
   ]
