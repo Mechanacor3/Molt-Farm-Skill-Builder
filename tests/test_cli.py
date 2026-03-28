@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+import io
+import json
+import runpy
 import sys
 import unittest
+import warnings
 from pathlib import Path
+from types import SimpleNamespace
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "packages"))
 
+from moltfarm import cli
 from moltfarm.cli import build_parser
 
 
@@ -183,6 +190,298 @@ class CliParserTests(unittest.TestCase):
         self.assertEqual("/tmp/.codex/skills", args.skills_root)
         self.assertEqual([".system", "root"], args.area)
         self.assertEqual("tmp/skill-near-dupes/report.json", args.output)
+
+
+class CliMainTests(unittest.TestCase):
+    def _run_main(self, argv: list[str]) -> tuple[int, str]:
+        stdout = io.StringIO()
+        with mock.patch.object(sys, "argv", ["molt", *argv]), mock.patch("sys.stdout", stdout):
+            code = cli.main()
+        return code, stdout.getvalue()
+
+    def test_parse_overrides_overwrites_duplicate_keys(self) -> None:
+        self.assertEqual(
+            {"target": "repo", "mode": "slow"},
+            cli.parse_overrides(["target=repo", "mode=fast", "mode=slow"]),
+        )
+
+    def test_parse_overrides_rejects_invalid_value(self) -> None:
+        with self.assertRaises(ValueError):
+            cli.parse_overrides(["missing-equals"])
+
+    def test_main_run_command_prints_result_and_returns_status_code(self) -> None:
+        for status, expected_code in [("completed", 0), ("failed", 1)]:
+            with self.subTest(status=status):
+                result = SimpleNamespace(
+                    run_id="run-1",
+                    workflow="manual-triage",
+                    agent="triage-worker",
+                    status=status,
+                    run_path="runs/run-1.json",
+                    log_path="logs/2026-03-28/run-1.json",
+                    output={"summary": f"{status} summary"},
+                )
+                with mock.patch("moltfarm.runner.run_workflow", return_value=result) as patched:
+                    code, stdout = self._run_main(
+                        [
+                            "skill-builder",
+                            "run",
+                            "manual-triage",
+                            "--input",
+                            "target=repo",
+                            "--input",
+                            "mode=fast",
+                        ]
+                    )
+
+                self.assertEqual(expected_code, code)
+                patched.assert_called_once_with(
+                    project_root=Path.cwd(),
+                    workflow_name="manual-triage",
+                    overrides={"target": "repo", "mode": "fast"},
+                )
+                self.assertEqual(
+                    {
+                        "run_id": "run-1",
+                        "workflow": "manual-triage",
+                        "agent": "triage-worker",
+                        "status": status,
+                        "run_path": "runs/run-1.json",
+                        "log_path": "logs/2026-03-28/run-1.json",
+                        "summary": f"{status} summary",
+                    },
+                    json.loads(stdout),
+                )
+
+    def test_main_eval_skill_dispatches(self) -> None:
+        result = {"skill": "run-summarizer", "status": "ok"}
+        with mock.patch("moltfarm.skill_evaluator.evaluate_skill", return_value=result) as patched:
+            code, stdout = self._run_main(
+                [
+                    "skill-builder",
+                    "eval-skill",
+                    "run-summarizer",
+                    "--baseline",
+                    "snapshot",
+                    "--snapshot-current",
+                    "--model",
+                    "gpt-5.4",
+                ]
+            )
+
+        self.assertEqual(0, code)
+        patched.assert_called_once_with(
+            project_root=Path.cwd(),
+            skill_name="run-summarizer",
+            model="gpt-5.4",
+            baseline="snapshot",
+            snapshot_current=True,
+        )
+        self.assertEqual(result, json.loads(stdout))
+
+    def test_main_create_evals_dispatches(self) -> None:
+        result = {"session_id": "session-1", "phase": "draft_ready"}
+        with mock.patch("moltfarm.eval_authoring.create_evals", return_value=result) as patched:
+            code, stdout = self._run_main(
+                [
+                    "skill-builder",
+                    "create-evals",
+                    "run-summarizer",
+                    "--session",
+                    "session-1",
+                    "--answer",
+                    "selected_flavors=core-task",
+                    "--answer",
+                    "author_notes=keep-it-local",
+                    "--promote",
+                    "--model",
+                    "gpt-5.4",
+                ]
+            )
+
+        self.assertEqual(0, code)
+        patched.assert_called_once_with(
+            project_root=Path.cwd(),
+            skill_name="run-summarizer",
+            session_id="session-1",
+            answers={"selected_flavors": "core-task", "author_notes": "keep-it-local"},
+            promote=True,
+            model="gpt-5.4",
+        )
+        self.assertEqual(result, json.loads(stdout))
+
+    def test_main_analyze_codex_run_dispatches(self) -> None:
+        result = {"timeline_path": "tmp/run.skill-trace.json"}
+        with (
+            mock.patch(
+                "moltfarm.experimental.codex_timeline.discover_analysis_skill_names",
+                return_value=["analyze-a", "analyze-b"],
+            ) as patched_discover,
+            mock.patch(
+                "moltfarm.experimental.codex_timeline.write_codex_skill_timeline",
+                return_value=result,
+            ) as patched_write,
+        ):
+            code, stdout = self._run_main(
+                [
+                    "skill-builder",
+                    "experimental",
+                    "analyze-codex-run",
+                    "tmp/run.jsonl",
+                    "--output",
+                    "tmp/run.skill-trace.json",
+                ]
+            )
+
+        self.assertEqual(0, code)
+        patched_discover.assert_called_once_with(project_root=Path.cwd())
+        patched_write.assert_called_once_with(
+            Path("tmp/run.jsonl"),
+            skill_names=["analyze-a", "analyze-b"],
+            output_path=Path("tmp/run.skill-trace.json"),
+        )
+        self.assertEqual(result, json.loads(stdout))
+
+    def test_main_analyze_codex_corpus_returns_failure_code_when_report_fails(self) -> None:
+        result = {"passed": False, "cases": []}
+        with mock.patch("moltfarm.experimental.codex_corpus.analyze_codex_corpus", return_value=result) as patched:
+            code, stdout = self._run_main(
+                [
+                    "skill-builder",
+                    "experimental",
+                    "analyze-codex-corpus",
+                    "--manifest",
+                    "tests/system/codex_skill_corpus.json",
+                    "--output-dir",
+                    "tmp/corpus-report",
+                ]
+            )
+
+        self.assertEqual(1, code)
+        patched.assert_called_once_with(
+            project_root=Path.cwd(),
+            manifest_path=Path("tests/system/codex_skill_corpus.json"),
+            output_dir=Path("tmp/corpus-report"),
+        )
+        self.assertEqual(result, json.loads(stdout))
+
+    def test_main_probe_codex_trigger_returns_failure_code_when_probe_is_incomplete(self) -> None:
+        result = {"discover_completed": False, "run_id": "probe-1"}
+        with mock.patch(
+            "moltfarm.experimental.codex_probe.run_codex_trigger_probe",
+            return_value=result,
+        ) as patched:
+            code, stdout = self._run_main(
+                [
+                    "skill-builder",
+                    "experimental",
+                    "probe-codex-trigger",
+                    "develop-web-game",
+                    "--with-skill",
+                    "game-bootstrap",
+                    "--model",
+                    "gpt-5.4",
+                ]
+            )
+
+        self.assertEqual(1, code)
+        patched.assert_called_once_with(
+            project_root=Path.cwd(),
+            target_skill="develop-web-game",
+            installed_skills=["game-bootstrap"],
+            model="gpt-5.4",
+        )
+        self.assertEqual(result, json.loads(stdout))
+
+    def test_main_find_near_dupe_skills_dispatches(self) -> None:
+        result = {"pairs": []}
+        with mock.patch(
+            "moltfarm.experimental.near_dupe_skills.write_skill_near_dupe_report",
+            return_value=result,
+        ) as patched:
+            code, stdout = self._run_main(
+                [
+                    "skill-builder",
+                    "experimental",
+                    "find-near-dupe-skills",
+                    "--skills-root",
+                    "/tmp/.codex/skills",
+                    "--area",
+                    ".system",
+                    "--output",
+                    "tmp/report.json",
+                ]
+            )
+
+        self.assertEqual(0, code)
+        patched.assert_called_once_with(
+            project_root=Path.cwd(),
+            skills_root=Path("/tmp/.codex/skills"),
+            areas=[".system"],
+            output_path=Path("tmp/report.json"),
+        )
+        self.assertEqual(result, json.loads(stdout))
+
+    def test_main_find_near_dupe_skills_uses_parser_error_for_user_input_failures(self) -> None:
+        def raising_error(self, message):
+            raise RuntimeError(message)
+
+        with (
+            mock.patch(
+                "moltfarm.experimental.near_dupe_skills.write_skill_near_dupe_report",
+                side_effect=ValueError("bad skills root"),
+            ),
+            mock.patch("argparse.ArgumentParser.error", new=raising_error),
+        ):
+            with self.assertRaises(RuntimeError) as raised:
+                self._run_main(
+                    [
+                        "skill-builder",
+                        "experimental",
+                        "find-near-dupe-skills",
+                        "--skills-root",
+                        "/tmp/.codex/skills",
+                    ]
+                )
+
+        self.assertEqual("bad skills root", str(raised.exception))
+
+    def test_main_unknown_command_uses_parser_error(self) -> None:
+        class FakeParser:
+            def parse_args(self):
+                return SimpleNamespace(command="mystery")
+
+            def error(self, message):
+                raise RuntimeError(message)
+
+        with mock.patch.object(cli, "build_parser", return_value=FakeParser()):
+            with self.assertRaises(RuntimeError) as raised:
+                cli.main()
+
+        self.assertEqual("Unknown command: mystery", str(raised.exception))
+
+    def test_module_entrypoint_raises_system_exit(self) -> None:
+        result = SimpleNamespace(
+            run_id="run-1",
+            workflow="manual-triage",
+            agent="triage-worker",
+            status="completed",
+            run_path="runs/run-1.json",
+            log_path="logs/2026-03-28/run-1.json",
+            output={"summary": "completed summary"},
+        )
+        stdout = io.StringIO()
+        with (
+            mock.patch.object(sys, "argv", ["molt", "skill-builder", "run", "manual-triage"]),
+            mock.patch("sys.stdout", stdout),
+            mock.patch("moltfarm.runner.run_workflow", return_value=result),
+        ):
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", RuntimeWarning)
+                with self.assertRaises(SystemExit) as raised:
+                    runpy.run_module("moltfarm.cli", run_name="__main__")
+
+        self.assertEqual(0, raised.exception.code)
 
 
 if __name__ == "__main__":
