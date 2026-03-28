@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "packages"))
 
-from moltfarm.skill_loader import discover_skills, load_skill
+from moltfarm.skill_loader import discover_skill_records, discover_skills, load_skill
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "upstream_skills"
 
@@ -60,6 +60,45 @@ class SkillLoaderReferenceTests(unittest.TestCase):
         self.assertEqual({"openai-docs", "playwright"}, set(skills))
         self.assertEqual("openai-docs", skills["openai-docs"].name)
         self.assertEqual("playwright", skills["playwright"].name)
+
+    def test_discover_skill_records_preserves_area_metadata_and_duplicate_names(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            skills_root = Path(temp_dir) / "skills"
+            _write_skill(
+                skills_root / "root-skill" / "SKILL.md",
+                name="shared-skill",
+                description="Root version.",
+            )
+            _write_skill(
+                skills_root / ".system" / "shared-skill" / "SKILL.md",
+                name="shared-skill",
+                description="System version.",
+            )
+            _write_skill(
+                skills_root / ".curated" / "curated-skill" / "SKILL.md",
+                name="curated-skill",
+                description="Curated version.",
+            )
+
+            records = discover_skill_records(skills_root)
+
+            self.assertEqual(3, len(records))
+            self.assertEqual(
+                [".curated", ".system", "root"],
+                sorted(record.area for record in records),
+            )
+            self.assertEqual(
+                [
+                    Path(".curated/curated-skill/SKILL.md"),
+                    Path(".system/shared-skill/SKILL.md"),
+                    Path("root-skill/SKILL.md"),
+                ],
+                sorted(record.relative_path for record in records),
+            )
+            self.assertEqual(
+                ["curated-skill", "shared-skill", "shared-skill"],
+                sorted(record.skill.name for record in records),
+            )
 
     def test_discover_skills_ignores_generated_eval_workspace_snapshots(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -124,6 +163,13 @@ class SkillLoaderReferenceTests(unittest.TestCase):
         self.assertIn('<file category="scripts">scripts/run.py</file>', wrapped)
         self.assertIn('<file category="references">references/guide.md</file>', wrapped)
         self.assertIn('<file category="other">LICENSE.txt</file>', wrapped)
+
+def _write_skill(skill_path: Path, *, name: str, description: str) -> None:
+    skill_path.parent.mkdir(parents=True, exist_ok=True)
+    skill_path.write_text(
+        f"---\nname: {name}\ndescription: {description}\n---\n\nUse it.\n",
+        encoding="utf-8",
+    )
 
 
 if __name__ == "__main__":

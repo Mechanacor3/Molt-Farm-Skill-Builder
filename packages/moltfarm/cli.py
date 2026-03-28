@@ -4,13 +4,6 @@ import argparse
 import json
 from pathlib import Path
 
-from .experimental.codex_corpus import analyze_codex_corpus
-from .experimental.codex_timeline import write_codex_skill_timeline
-from .experimental.codex_timeline import discover_analysis_skill_names
-from .experimental.codex_probe import run_codex_trigger_probe
-from .runner import run_workflow
-from .skill_evaluator import evaluate_skill
-
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -72,6 +65,7 @@ def _add_eval_skill_parser(subparsers) -> argparse.ArgumentParser:
     return eval_parser
 
 
+
 def _add_experimental_parser(subparsers) -> argparse.ArgumentParser:
     experimental_parser = subparsers.add_parser(
         "experimental",
@@ -84,6 +78,7 @@ def _add_experimental_parser(subparsers) -> argparse.ArgumentParser:
     _add_analyze_codex_run_parser(experimental_subparsers)
     _add_analyze_codex_corpus_parser(experimental_subparsers)
     _add_probe_codex_trigger_parser(experimental_subparsers)
+    _add_find_near_dupe_skills_parser(experimental_subparsers)
     return experimental_parser
 
 
@@ -142,6 +137,30 @@ def _add_probe_codex_trigger_parser(subparsers) -> argparse.ArgumentParser:
     return probe_parser
 
 
+def _add_find_near_dupe_skills_parser(subparsers) -> argparse.ArgumentParser:
+    near_dupe_parser = subparsers.add_parser(
+        "find-near-dupe-skills",
+        help="Experimental: scan a skills root for potentially confusing near-duplicate skills.",
+    )
+    near_dupe_parser.add_argument(
+        "--skills-root",
+        required=True,
+        help="Path to the skills root to scan.",
+    )
+    near_dupe_parser.add_argument(
+        "--area",
+        action="append",
+        default=[],
+        help="Optional top-level skill area to include. Can be repeated.",
+    )
+    near_dupe_parser.add_argument(
+        "--output",
+        default=None,
+        help="Optional output path for the near-dupe report JSON.",
+    )
+    return near_dupe_parser
+
+
 def parse_overrides(items: list[str]) -> dict[str, str]:
     overrides: dict[str, str] = {}
     for item in items:
@@ -164,6 +183,8 @@ def main() -> int:
             command = f"experimental:{args.experimental_command}"
 
     if command == "run":
+        from .runner import run_workflow
+
         result = run_workflow(
             project_root=project_root,
             workflow_name=args.operation,
@@ -186,6 +207,8 @@ def main() -> int:
         return 0 if result.status == "completed" else 1
 
     if command == "eval-skill":
+        from .skill_evaluator import evaluate_skill
+
         result = evaluate_skill(
             project_root=project_root,
             skill_name=args.skill,
@@ -196,7 +219,10 @@ def main() -> int:
         print(json.dumps(result, indent=2))
         return 0
 
+
     if command == "experimental:analyze-codex-run":
+        from .experimental.codex_timeline import discover_analysis_skill_names, write_codex_skill_timeline
+
         result = write_codex_skill_timeline(
             Path(args.source_path),
             skill_names=discover_analysis_skill_names(project_root=project_root),
@@ -206,6 +232,8 @@ def main() -> int:
         return 0
 
     if command == "experimental:analyze-codex-corpus":
+        from .experimental.codex_corpus import analyze_codex_corpus
+
         result = analyze_codex_corpus(
             project_root=project_root,
             manifest_path=Path(args.manifest),
@@ -215,6 +243,8 @@ def main() -> int:
         return 0 if result["passed"] else 1
 
     if command == "experimental:probe-codex-trigger":
+        from .experimental.codex_probe import run_codex_trigger_probe
+
         result = run_codex_trigger_probe(
             project_root=project_root,
             target_skill=args.skill,
@@ -223,6 +253,21 @@ def main() -> int:
         )
         print(json.dumps(result, indent=2))
         return 0 if result["discover_completed"] else 1
+
+    if command == "experimental:find-near-dupe-skills":
+        from .experimental.near_dupe_skills import write_skill_near_dupe_report
+
+        try:
+            result = write_skill_near_dupe_report(
+                project_root=project_root,
+                skills_root=Path(args.skills_root),
+                areas=args.area,
+                output_path=Path(args.output) if args.output is not None else None,
+            )
+        except (FileNotFoundError, ValueError) as exc:
+            parser.error(str(exc))
+        print(json.dumps(result, indent=2))
+        return 0
 
     parser.error(f"Unknown command: {command}")
     return 1

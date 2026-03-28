@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
@@ -10,21 +11,46 @@ from .models import Skill, SkillResources
 REFERENCE_PATTERN = re.compile(r"(?P<ref>@\./[A-Za-z0-9_./-]+)")
 
 
+@dataclass(slots=True)
+class DiscoveredSkillRecord:
+    skill: Skill
+    skill_file: Path
+    relative_path: Path
+    area: str
+
+
 def discover_skills(skills_root: Path) -> dict[str, Skill]:
     """Load skills from any nested directory under the configured skills root."""
     skills: dict[str, Skill] = {}
-    if not skills_root.exists():
-        return skills
+    for record in discover_skill_records(skills_root):
+        skills[record.skill.name] = record.skill
+    return skills
 
+
+def discover_skill_records(skills_root: Path) -> list[DiscoveredSkillRecord]:
+    """Load every discovered skill while preserving area and path metadata."""
+    if not skills_root.exists():
+        return []
+
+    resolved_root = skills_root.resolve()
+    records: list[DiscoveredSkillRecord] = []
     skill_files = sorted(
         skill_file
         for skill_file in skills_root.rglob("SKILL.md")
         if skill_file.is_file() and not _is_generated_skill_artifact(skill_file, skills_root)
     )
     for skill_file in skill_files:
-        skill = load_skill(skill_file)
-        skills[skill.name] = skill
-    return skills
+        resolved_skill_file = skill_file.resolve()
+        relative_path = resolved_skill_file.relative_to(resolved_root)
+        records.append(
+            DiscoveredSkillRecord(
+                skill=load_skill(resolved_skill_file),
+                skill_file=resolved_skill_file,
+                relative_path=relative_path,
+                area=_skill_area(relative_path),
+            )
+        )
+    return records
 
 
 def load_skill(skill_file: Path) -> Skill:
@@ -133,3 +159,10 @@ def _resource_category(relative_path: Path) -> str:
     if top_level in {"scripts", "references", "assets", "examples", "agents"}:
         return top_level
     return "other"
+
+
+def _skill_area(relative_path: Path) -> str:
+    parent_parts = relative_path.parent.parts
+    if len(parent_parts) <= 1:
+        return "root"
+    return parent_parts[0]

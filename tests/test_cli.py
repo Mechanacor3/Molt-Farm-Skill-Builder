@@ -124,6 +124,32 @@ class CliParserTests(unittest.TestCase):
         self.assertEqual("tests/system/codex_skill_corpus.json", args.manifest)
         self.assertEqual("tmp/corpus-report", args.output_dir)
 
+    def test_skill_builder_experimental_find_near_dupe_skills_parses(self) -> None:
+        parser = build_parser()
+
+        args = parser.parse_args(
+            [
+                "skill-builder",
+                "experimental",
+                "find-near-dupe-skills",
+                "--skills-root",
+                "/tmp/.codex/skills",
+                "--area",
+                ".system",
+                "--area",
+                "root",
+                "--output",
+                "tmp/skill-near-dupes/report.json",
+            ]
+        )
+
+        self.assertEqual("skill-builder", args.command)
+        self.assertEqual("experimental", args.skill_builder_command)
+        self.assertEqual("find-near-dupe-skills", args.experimental_command)
+        self.assertEqual("/tmp/.codex/skills", args.skills_root)
+        self.assertEqual([".system", "root"], args.area)
+        self.assertEqual("tmp/skill-near-dupes/report.json", args.output)
+
 
 if __name__ == "__main__":
     unittest.main()
