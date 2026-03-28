@@ -1,0 +1,137 @@
+{
+  "skill_name": "python-testing-bakeoff",
+  "evals": [
+    {
+      "id": "tdd-red-green-refactor",
+      "prompt": "I'm about to add a small pure helper in Python. Before I write the implementation, what testing workflow should I follow, and in what order?",
+      "expected_output": "A concise answer that recommends TDD with a failing test first, then minimal code to pass it, then refactoring.",
+      "checks": [
+        {
+          "text": "The answer recommends writing a failing test first and clearly references the TDD cycle or red-green-refactor order",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer says to write only the minimal implementation needed to make the test pass before refactoring",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The answer stays focused on workflow order instead of expanding into general tooling setup",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "parametrize-table-driven-test",
+      "prompt": "I need to test the same email validator against a table of valid and invalid inputs. What pytest pattern should I use, and what should the test shape look like?",
+      "expected_output": "A concise answer that recommends pytest parametrization with input/expected pairs instead of many repetitive test functions.",
+      "checks": [
+        {
+          "text": "The answer recommends `@pytest.mark.parametrize` for the repeated input cases",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer shows or describes a table of input and expected values in one focused test",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer avoids recommending many near-duplicate test functions for each case",
+          "category": "goal",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "shared-fixture-layout",
+      "prompt": "Several test modules need the same authenticated client and temporary database setup. Where should that shared setup live, and what pytest mechanism should I use?",
+      "expected_output": "A concise answer that recommends shared fixtures, places cross-module fixtures in conftest.py, and mentions choosing an appropriate fixture scope.",
+      "checks": [
+        {
+          "text": "The answer recommends using pytest fixtures for the shared setup",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The answer mentions `conftest.py` as the place for fixtures shared across multiple test modules",
+          "category": "evidence",
+          "weight": 3
+        },
+        {
+          "text": "The answer mentions choosing an appropriate fixture scope such as function, module, or session",
+          "category": "evidence",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "side-effects-temp-env",
+      "prompt": "A function reads `APP_MODE` from the environment and writes JSON files. I want a narrow pytest strategy that avoids touching the real environment or repo files. What built-in pytest tools fit this best?",
+      "expected_output": "A concise answer that recommends monkeypatch for environment control and tmp_path or another temp-path fixture for isolated file writes.",
+      "checks": [
+        {
+          "text": "The answer recommends `monkeypatch` for controlling environment variables",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer recommends `tmp_path` or an equivalent pytest temporary path fixture for isolated filesystem writes",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer keeps the strategy narrow and explicitly avoids relying on real environment state or repository files",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "async-pytest-pattern",
+      "prompt": "I need to test one async function and one async client fixture in pytest. What marker or plugin setup should I reach for, and how should the test look at a high level?",
+      "expected_output": "A concise answer that mentions pytest-asyncio or equivalent async pytest support, uses an async marker, and awaits the async function or fixture-backed calls.",
+      "checks": [
+        {
+          "text": "The answer mentions `pytest-asyncio` or equivalent async pytest support",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The answer includes `@pytest.mark.asyncio` or an equivalent async test marker",
+          "category": "evidence",
+          "weight": 3
+        },
+        {
+          "text": "The answer mentions awaiting the async function or using an async fixture pattern",
+          "category": "evidence",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "coverage-guidance",
+      "prompt": "Team coverage is stuck around 78%. Should we chase a percentage target everywhere, or focus effort differently? Give a concise pytest-oriented answer.",
+      "expected_output": "A concise answer that recommends measuring with pytest coverage tooling while focusing effort on meaningful or critical paths rather than treating one raw percentage as the only quality metric.",
+      "checks": [
+        {
+          "text": "The answer mentions `pytest --cov`, `pytest-cov`, or an equivalent pytest coverage command or plugin",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer recommends prioritizing meaningful, risky, or critical paths rather than blindly chasing one global percentage target",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer does not treat raw coverage percentage as the only quality signal",
+          "category": "goal",
+          "weight": 2
+        }
+      ]
+    }
+  ]
+}
