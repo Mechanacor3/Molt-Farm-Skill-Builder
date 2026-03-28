@@ -137,6 +137,7 @@ The current expectation for evals is:
 - grade goal, evidence, format, and trigger checks separately
 - treat goal and evidence as the main decision criteria
 - write a per-case `comparison.json` so a reviewer can see whether the skill actually helped
+- either hand-author `evals/evals.json` directly or use `./molt skill-builder create-evals <skill>` to draft it through a local session workspace
 
 When applying the framework here, favor:
 
@@ -156,11 +157,12 @@ When authoring or refining a skill, use this checklist:
 3. Keep instructions inspectable and concrete.
 4. Add only the references required for that job.
 5. Prefer simple scripts over complex abstractions.
-6. Run evals against realistic prompts or artifacts.
-7. Save outputs, grading, timing, comparison, and notes to disk.
-8. Promote repeated findings into lesson files.
-9. Refine the skill and rerun the eval.
-10. Compare results against the prior version or baseline, and prefer task-uplift wins over formatting wins.
+6. Draft eval coverage with `create-evals` when manual eval authoring is the bottleneck.
+7. Run evals against realistic prompts or artifacts.
+8. Save outputs, grading, timing, comparison, and notes to disk.
+9. Promote repeated findings into lesson files.
+10. Refine the skill and rerun the eval.
+11. Compare results against the prior version or baseline, and prefer task-uplift wins over formatting wins.
 
 ## Bottom Line
 

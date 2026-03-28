@@ -33,7 +33,7 @@ After it finishes, inspect:
 The normal authoring loop is:
 
 1. Create or edit `skills/<name>/SKILL.md`.
-2. Author `skills/<name>/evals/evals.json`.
+2. Run `./molt skill-builder create-evals <name>` or hand-author `skills/<name>/evals/evals.json`.
 3. Run `./molt skill-builder eval-skill <name>`.
 4. Inspect `benchmark.json`, `feedback.json`, and per-case `comparison.json`.
 5. Refine the skill and rerun the eval.
@@ -54,7 +54,37 @@ skills/<name>/
 
 ### Build Evals
 
-In this repo, “build evals” means authoring `skills/<name>/evals/evals.json`. There is no separate eval generator command.
+In this repo, “build evals” still means producing `skills/<name>/evals/evals.json`, but you can now either author that file directly or draft it through a resumable conversation.
+
+Draft a new suite or extension:
+
+```bash
+./molt skill-builder create-evals run-summarizer
+```
+
+That command creates a local draft session under:
+
+- `skills/<skill>/evals/workspace/create-evals/session-N/session.json`
+- `skills/<skill>/evals/workspace/create-evals/session-N/analysis/suggested-flavors.json`
+- `skills/<skill>/evals/workspace/create-evals/session-N/probes/`
+
+Select flavors and materialize the draft:
+
+```bash
+./molt skill-builder create-evals run-summarizer \
+  --session session-1 \
+  --answer selected_flavors=core-task,evidence-discipline
+```
+
+Promote the accepted draft into canonical eval files:
+
+```bash
+./molt skill-builder create-evals run-summarizer \
+  --session session-1 \
+  --promote
+```
+
+The promoted suite remains inspectable through the full session workspace, and the command stops before `eval-skill` so you can review the draft first.
 
 Example:
 
@@ -114,6 +144,8 @@ Important artifacts:
   - review notes keyed by eval case
 - `skills/<skill>/evals/workspace/iteration-N/eval-<case-id>/comparison.json`
   - winner, confidence, rationale, category deltas, and cost delta for that case
+- `skills/<skill>/evals/workspace/create-evals/session-N/`
+  - draft sessions, suggested flavors, probe evidence, draft fixtures, and promotion backups
 
 ## For CLI Users
 

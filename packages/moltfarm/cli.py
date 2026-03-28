@@ -23,6 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     _add_run_parser(skill_builder_subparsers)
     _add_eval_skill_parser(skill_builder_subparsers)
+    _add_create_evals_parser(skill_builder_subparsers)
     _add_experimental_parser(skill_builder_subparsers)
     return parser
 
@@ -64,6 +65,36 @@ def _add_eval_skill_parser(subparsers) -> argparse.ArgumentParser:
     )
     return eval_parser
 
+
+def _add_create_evals_parser(subparsers) -> argparse.ArgumentParser:
+    create_parser = subparsers.add_parser(
+        "create-evals",
+        help="Create or extend a skill eval suite through a resumable local draft session.",
+    )
+    create_parser.add_argument("skill", help="Skill folder name under skills/.")
+    create_parser.add_argument(
+        "--session",
+        default=None,
+        help="Resume an existing create-evals session such as session-1.",
+    )
+    create_parser.add_argument(
+        "--answer",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help="Provide one conversational answer such as selected_flavors=core-task,evidence-discipline.",
+    )
+    create_parser.add_argument(
+        "--promote",
+        action="store_true",
+        help="Promote the current draft eval suite into canonical skills/<name>/evals/ files.",
+    )
+    create_parser.add_argument(
+        "--model",
+        default="gpt-5",
+        help="Model to use for probe-authoring and draft generation.",
+    )
+    return create_parser
 
 
 def _add_experimental_parser(subparsers) -> argparse.ArgumentParser:
@@ -219,6 +250,19 @@ def main() -> int:
         print(json.dumps(result, indent=2))
         return 0
 
+    if command == "create-evals":
+        from .eval_authoring import create_evals
+
+        result = create_evals(
+            project_root=project_root,
+            skill_name=args.skill,
+            session_id=args.session,
+            answers=parse_overrides(args.answer),
+            promote=args.promote,
+            model=args.model,
+        )
+        print(json.dumps(result, indent=2))
+        return 0
 
     if command == "experimental:analyze-codex-run":
         from .experimental.codex_timeline import discover_analysis_skill_names, write_codex_skill_timeline

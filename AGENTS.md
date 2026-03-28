@@ -47,6 +47,7 @@ Current durable preferences:
 - prefer narrow context, inspectable files on disk, and low-export behavior by default
 - treat the repo as a skill foundry: look for reusable capabilities that should become portable `SKILL.md` artifacts
 - remember to keep work moving into git in small, coherent commits instead of leaving useful repo changes uncommitted
+- record meaningful implementation lessons in `lessons/` as part of feature work, not only after an explicit reminder
 
 ---
 

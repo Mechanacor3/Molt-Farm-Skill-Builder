@@ -60,6 +60,40 @@ class CliParserTests(unittest.TestCase):
         self.assertEqual("none", args.baseline)
         self.assertEqual("gpt-5.4-nano", args.model)
 
+    def test_skill_builder_create_evals_command_parses(self) -> None:
+        parser = build_parser()
+
+        args = parser.parse_args(
+            [
+                "skill-builder",
+                "create-evals",
+                "run-summarizer",
+                "--session",
+                "session-2",
+                "--answer",
+                "selected_flavors=core-task,evidence-discipline",
+                "--answer",
+                "author_notes=prefer file-backed cases",
+                "--promote",
+                "--model",
+                "gpt-5.4",
+            ]
+        )
+
+        self.assertEqual("skill-builder", args.command)
+        self.assertEqual("create-evals", args.skill_builder_command)
+        self.assertEqual("run-summarizer", args.skill)
+        self.assertEqual("session-2", args.session)
+        self.assertEqual(
+            [
+                "selected_flavors=core-task,evidence-discipline",
+                "author_notes=prefer file-backed cases",
+            ],
+            args.answer,
+        )
+        self.assertTrue(args.promote)
+        self.assertEqual("gpt-5.4", args.model)
+
     def test_skill_builder_experimental_probe_codex_trigger_parses(self) -> None:
         parser = build_parser()
 
