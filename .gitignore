@@ -5,6 +5,8 @@ tmp/
 __pycache__/
 *.pyc
 *.egg-info/
+.coverage
+.coverage.*
 uv.lock
 logs/*/
 runs/*.json

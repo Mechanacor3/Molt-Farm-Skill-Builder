@@ -15,6 +15,12 @@ dependencies = [
   "tiktoken>=0.8.0",
 ]
 
+[project.optional-dependencies]
+test = [
+  "pytest>=9.0.0",
+  "pytest-cov>=7.0.0",
+]
+
 [project.scripts]
 molt = "moltfarm.cli:main"
 
@@ -23,3 +29,12 @@ package-dir = {"" = "packages"}
 
 [tool.setuptools.packages.find]
 where = ["packages"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["moltfarm"]
+
+[tool.coverage.report]
+show_missing = true

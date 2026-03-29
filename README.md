@@ -28,6 +28,36 @@ After it finishes, inspect:
 - `skills/run-summarizer/evals/workspace/iteration-N/feedback.json`
 - `skills/run-summarizer/evals/workspace/iteration-N/eval-<case-id>/comparison.json`
 
+## Tests
+
+If you want local test tooling in your existing virtualenv, install the repo with the `test` extra:
+
+```bash
+pip install -e ".[test]"
+python -m pytest tests
+```
+
+Run coverage for the Python package:
+
+```bash
+python -m pytest tests --cov=moltfarm --cov-report=term-missing
+```
+
+Write an HTML coverage report:
+
+```bash
+python -m pytest tests --cov=moltfarm --cov-report=html
+```
+
+That HTML report is written to `htmlcov/index.html`.
+
+If you do not want to install test dependencies into `.venv`, run the same commands ad hoc with `uv`:
+
+```bash
+uv run --with pytest python -m pytest tests
+uv run --with pytest --with pytest-cov python -m pytest tests --cov=moltfarm --cov-report=term-missing
+```
+
 ## For Skill Authors
 
 The normal authoring loop is:

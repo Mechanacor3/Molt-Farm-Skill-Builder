@@ -1,0 +1,4 @@
+interface:
+  display_name: "Python Test Coverage Loop"
+  short_description: "Run, extend, and improve Python test coverage"
+  default_prompt: "Use this skill when a local Python repo needs concrete test commands, coverage checks, or targeted coverage-improvement guidance."

@@ -1,0 +1,125 @@
+{
+  "skill_name": "python-test-coverage-loop",
+  "evals": [
+    {
+      "id": "installed-test-extra-path",
+      "prompt": "This repo already exposes a `test` extra. I want the standard local install path for running tests and then an HTML coverage report. What exact commands should I run, and where does the report land?",
+      "expected_output": "A concise answer that uses the repo's `test` extra install path, gives exact `python -m pytest` commands for tests and HTML coverage, and points to `htmlcov/index.html`.",
+      "checks": [
+        {
+          "text": "The answer includes `pip install -e \".[test]\"` as the explicit local install path",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer includes `python -m pytest tests` as the test command",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer includes `python -m pytest tests --cov=moltfarm --cov-report=html` and points to `htmlcov/index.html`",
+          "category": "evidence",
+          "weight": 3
+        },
+        {
+          "text": "The answer stays focused on the requested commands and artifact path instead of expanding into a broad Python setup guide",
+          "category": "format",
+          "weight": 1
+        }
+      ],
+      "required_skill_activations": [
+        "python-test-coverage-loop"
+      ]
+    },
+    {
+      "id": "ad-hoc-uv-path",
+      "prompt": "I do not want to install pytest into my virtualenv. Give me the shortest ad hoc commands to run tests and then missing-line coverage in this repo.",
+      "expected_output": "A concise answer that uses `uv run --with ...` commands for tests and missing-line coverage without asking for a global `pytest` install.",
+      "checks": [
+        {
+          "text": "The answer includes `uv run --with pytest python -m pytest tests`",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer includes `uv run --with pytest --with pytest-cov python -m pytest tests --cov=moltfarm --cov-report=term-missing`",
+          "category": "evidence",
+          "weight": 3
+        },
+        {
+          "text": "The answer does not assume `pytest` is globally installed or tell the user to install it globally",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The answer stays narrow to the requested ad hoc commands",
+          "category": "format",
+          "weight": 1
+        }
+      ],
+      "required_skill_activations": [
+        "python-test-coverage-loop"
+      ]
+    },
+    {
+      "id": "helper-heavy-coverage-strategy",
+      "prompt": "Coverage is low in a Python module that mostly contains validation and path-normalization helpers, plus one thin CLI dispatch arm. Should I add more end-to-end setup or target something narrower?",
+      "expected_output": "A concise answer that recommends direct helper tests plus a few thin dispatch tests, uses small file-backed fixtures where helpful, and keeps end-to-end tests only for true orchestration seams.",
+      "checks": [
+        {
+          "text": "The answer recommends direct helper tests and a few thin dispatch tests instead of pushing first toward broader end-to-end setup",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer mentions small file-backed fixtures or direct assertions for helper branches",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer reserves end-to-end tests for orchestration seams that truly need them",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The answer stays practical instead of giving generic testing philosophy",
+          "category": "format",
+          "weight": 1
+        }
+      ],
+      "required_skill_activations": [
+        "python-test-coverage-loop"
+      ]
+    },
+    {
+      "id": "lightweight-cli-test-pattern",
+      "prompt": "I’m adding a lightweight Python CLI analysis command that should still let `--help` and parser tests run in an environment missing optional runtime dependencies. What design and test pattern should I use?",
+      "expected_output": "A concise answer that recommends lazy imports for optional command handlers, parser or help-path tests without the full dependency set, and an inspectable success artifact even when the analyzer returns zero findings.",
+      "checks": [
+        {
+          "text": "The answer recommends importing optional or heavy command handlers lazily inside the CLI branch that executes them",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The answer mentions testing `--help`, parser behavior, or a narrow command path without the optional runtime dependencies installed",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The answer says an analyzer can still succeed with zero findings if it writes an inspectable artifact",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The answer stays focused on design and targeted tests for the lightweight CLI path",
+          "category": "format",
+          "weight": 1
+        }
+      ],
+      "required_skill_activations": [
+        "python-test-coverage-loop"
+      ]
+    }
+  ]
+}
