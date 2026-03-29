@@ -4,6 +4,8 @@ example_upstream_skills/
 tmp/
 __pycache__/
 *.pyc
+*.egg-info/
+uv.lock
 logs/*/
 runs/*.json
 skills/*/evals/workspace/
