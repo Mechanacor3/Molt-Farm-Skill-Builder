@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import statistics
+from difflib import SequenceMatcher
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -257,6 +258,7 @@ def _grade_eval_output(
             model=model,
             instructions=(
                 "Grade eval checks against the provided output. "
+                "Copy each check text exactly into assertion_results.text, in the same order as provided. "
                 "Each assertion_result must include text, passed, and evidence. "
                 "Require concrete evidence for PASS. "
                 "If a check cannot be verified from the output, mark it false. "
@@ -369,15 +371,10 @@ def _align_grading_payload(
     mode: str,
 ) -> dict[str, Any]:
     raw_results = list(payload.get("assertion_results", []) or [])
-    results_by_text: dict[str, dict[str, Any]] = {}
-    for raw_result in raw_results:
-        text = str((raw_result or {}).get("text") or "").strip()
-        if text and text not in results_by_text:
-            results_by_text[text] = dict(raw_result)
-
+    matched_results = _match_grading_results(checks=checks, raw_results=raw_results)
     aligned_results: list[dict[str, Any]] = []
-    for check in checks:
-        raw_result = results_by_text.get(check.text, {})
+    for index, check in enumerate(checks):
+        raw_result = matched_results[index]
         aligned_results.append(
             {
                 "text": check.text,
@@ -397,6 +394,67 @@ def _align_grading_payload(
         "category_scores": _build_category_scores(aligned_results),
         "mode": mode,
     }
+
+
+def _match_grading_results(
+    *,
+    checks: list[EvalCheck],
+    raw_results: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    matched: list[dict[str, Any]] = [{} for _ in checks]
+    used_raw_indexes: set[int] = set()
+
+    # First prefer exact text matches.
+    for check_index, check in enumerate(checks):
+        for raw_index, raw_result in enumerate(raw_results):
+            if raw_index in used_raw_indexes:
+                continue
+            text = str((raw_result or {}).get("text") or "").strip()
+            if text == check.text:
+                matched[check_index] = dict(raw_result)
+                used_raw_indexes.add(raw_index)
+                break
+
+    # Then recover paraphrased outputs via conservative fuzzy matching.
+    for check_index, check in enumerate(checks):
+        if matched[check_index]:
+            continue
+        best_raw_index: int | None = None
+        best_score = 0.0
+        for raw_index, raw_result in enumerate(raw_results):
+            if raw_index in used_raw_indexes:
+                continue
+            text = str((raw_result or {}).get("text") or "").strip()
+            if not text:
+                continue
+            score = _grading_text_similarity(check.text, text)
+            if score > best_score:
+                best_score = score
+                best_raw_index = raw_index
+        if best_raw_index is not None and best_score >= 0.55:
+            matched[check_index] = dict(raw_results[best_raw_index])
+            used_raw_indexes.add(best_raw_index)
+
+    # Finally, if the grader returned one result per check in order but with weak text
+    # fidelity, align any remaining unmatched items by position.
+    if len(raw_results) == len(checks):
+        for check_index, raw_result in enumerate(raw_results):
+            if matched[check_index]:
+                continue
+            if check_index in used_raw_indexes:
+                continue
+            matched[check_index] = dict(raw_result)
+            used_raw_indexes.add(check_index)
+
+    return matched
+
+
+def _grading_text_similarity(expected: str, actual: str) -> float:
+    expected_text = " ".join(expected.lower().split())
+    actual_text = " ".join(actual.lower().split())
+    if not expected_text or not actual_text:
+        return 0.0
+    return SequenceMatcher(a=expected_text, b=actual_text).ratio()
 
 
 def _merge_grading_payloads(primary: dict[str, Any], secondary: dict[str, Any]) -> dict[str, Any]:

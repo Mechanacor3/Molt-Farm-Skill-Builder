@@ -1,0 +1,4 @@
+interface:
+  display_name: "Python Pytest Essentials"
+  short_description: "Compact pytest patterns for practical Python test work"
+  default_prompt: "Use this skill when a Python testing task needs concise pytest guidance for TDD, parametrization, fixtures, isolation, async tests, or coverage."

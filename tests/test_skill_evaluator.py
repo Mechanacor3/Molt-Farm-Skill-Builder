@@ -12,6 +12,75 @@ from moltfarm import skill_evaluator
 
 
 class SkillEvaluatorTests(unittest.TestCase):
+    def test_align_grading_payload_recovers_paraphrased_results_by_position(self) -> None:
+        checks = [
+            skill_evaluator.EvalCheck(text="The answer recommends pytest parametrization", category="goal", weight=3),
+            skill_evaluator.EvalCheck(text="The answer mentions input and expected pairs", category="evidence", weight=2),
+        ]
+
+        payload = {
+            "assertion_results": [
+                {
+                    "text": "Recommend using pytest parametrize for repeated cases",
+                    "passed": True,
+                    "evidence": "It explicitly recommends pytest parametrize.",
+                },
+                {
+                    "text": "Mention a single table with input/expected values",
+                    "passed": True,
+                    "evidence": "It describes input/expected pairs in one test.",
+                },
+            ]
+        }
+
+        aligned = skill_evaluator._align_grading_payload(
+            checks=checks,
+            payload=payload,
+            mode="llm_grader",
+        )
+
+        self.assertEqual(2, aligned["summary"]["passed"])
+        self.assertEqual(
+            "It explicitly recommends pytest parametrize.",
+            aligned["assertion_results"][0]["evidence"],
+        )
+        self.assertEqual(
+            "It describes input/expected pairs in one test.",
+            aligned["assertion_results"][1]["evidence"],
+        )
+
+    def test_align_grading_payload_prefers_exact_text_matches(self) -> None:
+        checks = [
+            skill_evaluator.EvalCheck(text="First exact check", category="goal", weight=1),
+            skill_evaluator.EvalCheck(text="Second exact check", category="goal", weight=1),
+        ]
+
+        payload = {
+            "assertion_results": [
+                {
+                    "text": "Second exact check",
+                    "passed": False,
+                    "evidence": "Second failed.",
+                },
+                {
+                    "text": "First exact check",
+                    "passed": True,
+                    "evidence": "First passed.",
+                },
+            ]
+        }
+
+        aligned = skill_evaluator._align_grading_payload(
+            checks=checks,
+            payload=payload,
+            mode="llm_grader",
+        )
+
+        self.assertTrue(aligned["assertion_results"][0]["passed"])
+        self.assertEqual("First passed.", aligned["assertion_results"][0]["evidence"])
+        self.assertFalse(aligned["assertion_results"][1]["passed"])
+        self.assertEqual("Second failed.", aligned["assertion_results"][1]["evidence"])
+
     def test_evaluate_skill_creates_comparison_and_task_uplift_summary(self) -> None:
         original_execute_task = skill_evaluator.execute_task
         original_load_sdk = skill_evaluator._load_sdk
