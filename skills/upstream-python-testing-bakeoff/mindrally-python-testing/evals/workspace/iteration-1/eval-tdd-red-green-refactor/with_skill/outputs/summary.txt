@@ -1,0 +1,48 @@
+Follow a tight red–green–refactor TDD loop. For a small, pure helper, keep it fast and example-driven:
+
+1) Clarify the contract first
+- Define the function’s name, signature, types, and return shape.
+- List a few concrete examples (inputs → outputs).
+- Note invariants (e.g., purity/determinism), boundaries, and error behavior.
+
+2) Create the test first
+- Add tests/test_<helper_name>.py with one smallest “happy path” example.
+- Use Arrange–Act–Assert and a descriptive test name.
+
+3) Run the test to see it fail (Red)
+- Ensure it fails for the right reason (e.g., AssertionError on wrong value, not ImportError/NameError).
+- If needed, add a stub (function exists but returns a placeholder) to move failure to an assertion.
+
+4) Make the test pass with the simplest code (Green)
+- Implement the minimal logic to satisfy only that test.
+- Avoid pre-optimizing or generalizing.
+
+5) Refactor safely (Refactor)
+- Improve names, structure, and duplication with tests green.
+- Keep behavior identical.
+
+6) Triangulate behavior
+- Add a second, different example that forces generalization (Red).
+- Generalize the implementation just enough to pass (Green).
+- Refactor again if helpful.
+
+7) Cover edges and error paths
+- Add tests for boundaries (empty input, single-element, max/min values), invalid inputs, and expected exceptions.
+- Use pytest.mark.parametrize to keep tests concise.
+
+8) Lock in properties (optional but great for pure helpers)
+- Add Hypothesis/property-based tests for invariants (e.g., idempotence, commutativity, monotonicity).
+- Keep them fast and focused.
+
+9) Document and type-check
+- Add/align docstring and type hints based on what the tests proved.
+- If using mypy/ruff, run them now.
+
+10) Check quality gates
+- Run the full suite and coverage; ensure key paths are covered.
+- Commit once green; repeat the loop for any new behavior.
+
+Practical tips for a pure helper
+- No mocks needed; keep tests deterministic and isolated.
+- Prefer multiple small, example-based tests over one big test.
+- Stop when: examples + edges are covered, properties hold, and refactoring yields no further simplification without breaking tests.

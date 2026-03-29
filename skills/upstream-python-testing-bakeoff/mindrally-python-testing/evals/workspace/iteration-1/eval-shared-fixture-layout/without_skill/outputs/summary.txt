@@ -1,0 +1,8 @@
+- Put the shared setup in a conftest.py located at the common tests directory (e.g., tests/conftest.py). Pytest auto-discovers fixtures there for all test modules under that directory.
+- Use pytest fixtures (prefer yield-style) to manage setup/teardown and compose them:
+  - A session-scoped database/engine fixture that creates a temporary database (e.g., via tmp_path_factory) and cleans it up after the session.
+  - A function- or module-scoped transaction/session fixture that rolls back between tests for isolation.
+  - A function-scoped test client fixture that depends on the app/db.
+  - An auth_client fixture that depends on client (and a user/token factory) to return an authenticated client.
+
+If you need to share this across multiple repositories, extract the fixtures into a small pytest plugin instead of conftest.py.

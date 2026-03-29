@@ -1,0 +1,57 @@
+Reach for one of these two well-supported setups:
+
+Option A: pytest-asyncio (asyncio-only)
+- Install: pytest-asyncio
+- Configure one of:
+  - Per-test marker: use @pytest.mark.asyncio on each async test, or
+  - Global auto mode: add to pytest.ini:
+    [pytest]
+    asyncio_mode = auto
+- Define async fixtures with pytest-asyncio’s decorator (important on recent versions):
+  import pytest
+  import pytest_asyncio
+
+  @pytest_asyncio.fixture
+  async def async_client():
+      # e.g., httpx.AsyncClient / aiohttp.ClientSession, etc.
+      async with make_async_client() as client:
+          yield client
+
+- High-level test shape:
+  # If not using asyncio_mode=auto, add @pytest.mark.asyncio to each test
+  async def test_async_function():
+      result = await some_async_func(...)
+      assert result == ...
+
+  async def test_uses_client(async_client):
+      resp = await async_client.get("/health")
+      assert resp.status_code == 200
+
+Option B: pytest-anyio (works with asyncio and trio via AnyIO)
+- Install: pytest-anyio
+- Mark async tests with @pytest.mark.anyio (no global ini setting needed).
+- Async fixtures can be regular pytest fixtures:
+  import pytest
+
+  @pytest.fixture
+  async def async_client():
+      async with make_async_client() as client:
+          yield client
+
+- High-level test shape:
+  import pytest
+
+  @pytest.mark.anyio
+  async def test_async_function():
+      result = await some_async_func(...)
+      assert result == ...
+
+  @pytest.mark.anyio
+  async def test_uses_client(async_client):
+      resp = await async_client.get("/health")
+      assert resp.status_code == 200
+
+Notes/pitfalls:
+- With pytest-asyncio, prefer asyncio_mode=auto or remember to mark each test; and use @pytest_asyncio.fixture for async fixtures.
+- Don’t wrap async tests with asyncio.run; let the plugin drive the loop.
+- Scope async client fixtures as function-scoped unless you know you need broader scope.

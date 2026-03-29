@@ -1,0 +1,11 @@
+- Put the shared setup in a conftest.py so it’s automatically available to all test modules that need it. Choose the nearest scope:
+  - tests/conftest.py for suite-wide sharing
+  - tests/<package>/conftest.py if only a subset of modules need it
+
+- Use pytest fixtures:
+  - A session-scoped fixture to create the temporary database (e.g., using tmp_path_factory), apply migrations/seed data, and tear it down once.
+  - A function- or module-scoped fixture for an authenticated client that depends on the db fixture. Use a yield fixture to log in before yielding and log out/cleanup after.
+  - If every test needs the DB, consider autouse=True on the db/transaction fixture; otherwise keep it explicit.
+  - If you need different user roles, make the authenticated client a factory or use parametrized fixtures.
+
+In short: shared setup lives in conftest.py; use pytest fixtures (session scope for DB, function/module scope for authenticated client, with yield for cleanup).

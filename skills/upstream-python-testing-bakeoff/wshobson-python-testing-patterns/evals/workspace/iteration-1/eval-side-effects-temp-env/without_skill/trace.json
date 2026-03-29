@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_04b1c337b5e9d2ec0069c8604c31d48195b27f2e45e322cc44"
+  ],
+  "request_ids": [
+    "req_23ec61fe7244419aa3f2f9c557b66c45"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_04b1c337b5e9d2ec0069c8604c93288195a5fcf5031511da31', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Use pytest\u2019s built-ins for environment and filesystem isolation:\n\n- monkeypatch\n  - monkeypatch.setenv(\"APP_MODE\", \"test\") to control the env var\n  - monkeypatch.delenv(\"APP_MODE\", raising=False) to simulate it missing\n  - monkeypatch.chdir"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_0d31b635288f141f0069c8601cbb988197815340281154b04c"
+  ],
+  "request_ids": [
+    "req_24eb88185dbc449f835e3cc250a244a7"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0d31b635288f141f0069c8601d0e0c8197bb5c80bc02e456f1', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "- Put the shared setup in a conftest.py located at the common tests directory (e.g., tests/conftest.py). Pytest auto-discovers fixtures there for all test modules under that directory.\n- Use pytest fixtures (prefer yield-style) to manage se"
+    }
+  ]
+}

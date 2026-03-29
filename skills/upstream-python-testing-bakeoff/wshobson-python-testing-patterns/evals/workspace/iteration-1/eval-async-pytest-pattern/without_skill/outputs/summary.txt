@@ -1,0 +1,63 @@
+Two solid, common options:
+
+Option A: pytest-asyncio (most popular for plain asyncio)
+- Install: pip install pytest-asyncio
+- In pytest.ini:
+  [pytest]
+  asyncio_mode = auto
+- High-level test layout:
+  - Mark async tests with @pytest.mark.asyncio (with asyncio_mode=auto you can skip the marker, but being explicit is fine).
+  - Define async fixtures with pytest-asyncio’s decorator, not pytest.fixture.
+
+Example:
+  import pytest
+  import pytest_asyncio
+  import httpx
+
+  async def double(x):
+      return x * 2
+
+  @pytest_asyncio.fixture
+  async def client():
+      async with httpx.AsyncClient() as c:
+          yield c
+
+  @pytest.mark.asyncio
+  async def test_double():
+      assert await double(2) == 4
+
+  @pytest.mark.asyncio
+  async def test_client_request(client):
+      resp = await client.get("https://example.org")
+      assert resp.status_code == 200
+
+Option B: anyio (backend-agnostic: asyncio or trio)
+- Install: pip install anyio
+- Mark async tests with @pytest.mark.anyio
+- You can write async fixtures with the regular @pytest.fixture when using the anyio plugin.
+
+Example:
+  import pytest
+  import httpx
+
+  async def double(x):
+      return x * 2
+
+  @pytest.fixture
+  async def client():
+      async with httpx.AsyncClient() as c:
+          yield c
+
+  @pytest.mark.anyio
+  async def test_double():
+      assert await double(2) == 4
+
+  @pytest.mark.anyio
+  async def test_client_request(client):
+      resp = await client.get("https://example.org")
+      assert resp.is_success
+
+Quick guidance:
+- If you’re on asyncio only, reach for pytest-asyncio; remember to use @pytest_asyncio.fixture for async fixtures.
+- If you want backend flexibility (asyncio/trio) or you’re already in an anyio-based stack, use @pytest.mark.anyio.
+- Keep tests async end-to-end: async test function, await your async function calls, and use an async client fixture that yields within an async context manager.

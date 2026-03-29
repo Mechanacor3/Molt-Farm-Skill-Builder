@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer recommends using pytest fixtures for the shared setup",
+      "passed": true,
+      "evidence": "\"Use pytest fixtures (prefer yield-style) to manage setup/teardown and compose them:\"",
+      "category": "goal",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer mentions `conftest.py` as the place for fixtures shared across multiple test modules",
+      "passed": true,
+      "evidence": "\"Put the shared setup in a conftest.py located at the common tests directory (e.g., tests/conftest.py). Pytest auto-discovers fixtures there for all test modules under that directory.\"",
+      "category": "evidence",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer mentions choosing an appropriate fixture scope such as function, module, or session",
+      "passed": true,
+      "evidence": "\"A session-scoped database/engine fixture...\"; \"A function- or module-scoped transaction/session fixture...\"; \"A function-scoped test client fixture...\"",
+      "category": "evidence",
+      "weight": 2.0
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0,
+    "weighted_pass_rate": 1.0
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "passed_weight": 2.0,
+      "total_weight": 2.0,
+      "score": 1.0
+    },
+    "evidence": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2,
+      "passed_weight": 5.0,
+      "total_weight": 5.0,
+      "score": 1.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

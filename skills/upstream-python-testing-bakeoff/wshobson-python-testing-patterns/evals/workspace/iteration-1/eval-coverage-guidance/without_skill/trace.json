@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_019883a5027e67fb0069c860d842c881938bdc2e3250a516f5"
+  ],
+  "request_ids": [
+    "req_a6c81e87ce7c47ae8e428c129c0d8617"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_019883a5027e67fb0069c860d87e7081939a35c4feb7cf296a', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Don\u2019t chase a single percentage everywhere\u2014use coverage as a guardrail, not the goal.\n\nRecommended pytest-focused approach:\n- Keep a modest global floor to stop regressions, then raise bars only where it matters.\n  - CI: pytest --cov=src --"
+    }
+  ]
+}

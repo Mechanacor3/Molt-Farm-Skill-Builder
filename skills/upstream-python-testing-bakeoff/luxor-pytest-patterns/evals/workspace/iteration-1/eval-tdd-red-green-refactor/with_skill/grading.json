@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer recommends writing a failing test first and clearly references the TDD cycle or red-green-refactor order",
+      "passed": true,
+      "evidence": "Explicitly states: \"Recommended TDD workflow (Red \u2192 Green \u2192 Refactor)\" and includes steps: \"Write the first test (fail on purpose)\" and \"Run tests to see it fail (Red)\".",
+      "category": "goal",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer says to write only the minimal implementation needed to make the test pass before refactoring",
+      "passed": true,
+      "evidence": "Step 4: \"Implement the minimal code to pass the test (Green) - Write the simplest implementation that only satisfies the current test. - Avoid generalizing early.\" Followed by Step 6: \"Refactor (Refactor)\".",
+      "category": "goal",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer stays focused on workflow order instead of expanding into general tooling setup",
+      "passed": false,
+      "evidence": "Includes tooling and extras beyond workflow order: commands like \"pytest -q\", coverage \"pytest --cov=mypkg --cov-report=term-missing\", property-based testing with \"Use Hypothesis\", and a section \"Handy pytest tips while iterating: - pytest -q -x --lf ... - pytest -k my_helper ...\".",
+      "category": "format",
+      "weight": 1.0
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 1,
+    "total": 3,
+    "pass_rate": 0.6666666666666666,
+    "weighted_pass_rate": 0.8333333333333334
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2,
+      "passed_weight": 5.0,
+      "total_weight": 5.0,
+      "score": 1.0
+    },
+    "format": {
+      "passed": 0,
+      "failed": 1,
+      "total": 1,
+      "passed_weight": 0.0,
+      "total_weight": 1.0,
+      "score": 0.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

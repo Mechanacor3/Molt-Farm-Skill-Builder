@@ -1,0 +1,84 @@
+{
+  "status": "completed",
+  "task_input": {
+    "task": "I need to test the same email validator against a table of valid and invalid inputs. What pytest pattern should I use, and what should the test shape look like?",
+    "output_dir": "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/eval-parametrize-table-driven-test/with_skill/outputs"
+  },
+  "output": {
+    "summary": "Use pytest\u2019s parameterization pattern (table-driven tests). You define a table of inputs and expected outcomes, and run the same assertion over each row.\n\nIf your validator returns a boolean:\n- Shape: one parameterized test with (email, expected_bool), optionally giving each case a readable id.\n\nExample:\nimport pytest\n\n# assume is_valid_email is your validator that returns True/False\n@pytest.mark.parametrize(\n    \"email, expected\",\n    [\n        pytest.param(\"user@example.com\", True, id=\"simple\"),\n        pytest.param(\"first.last@sub.domain.co.uk\", True, id=\"subdomain\"),\n        pytest.param(\"invalid.email\", False, id=\"missing-at\"),\n        pytest.param(\"@example.com\", False, id=\"missing-local\"),\n        pytest.param(\"user@domain\", False, id=\"no-tld\"),\n        pytest.param(\"\", False, id=\"empty\"),\n    ],\n)\ndef test_is_valid_email_table(email, expected):\n    assert is_valid_email(email) == expected\n\nIf your validator raises on invalid input:\n- Shape: split into two tests: one that expects success for valid inputs, and one that expects an exception for invalid inputs.\n\nExample:\nimport pytest\n\n# assume validate_email raises ValueError on invalid inputs\n@pytest.mark.parametrize(\n    \"email\",\n    [\n        pytest.param(\"user@example.com\", id=\"simple\"),\n        pytest.param(\"first.last@sub.domain.co.uk\", id=\"subdomain\"),\n    ],\n)\ndef test_validate_email_accepts_valid(email):\n    validate_email(email)  # no exception means pass\n\n@pytest.mark.parametrize(\n    \"email\",\n    [\n        pytest.param(\"invalid.email\", id=\"missing-at\"),\n        pytest.param(\"@example.com\", id=\"missing-local\"),\n        pytest.param(\"user@domain\", id=\"no-tld\"),\n        pytest.param(\"\", id=\"empty\"),\n    ],\n)\ndef test_validate_email_rejects_invalid(email):\n    with pytest.raises(ValueError, match=\"invalid email|Invalid email\"):\n        validate_email(email)\n\nTips:\n- Use pytest.param with id=... so failures are easy to read.\n- Keep one behavior per test: either \u201creturns True/False\u201d or \u201craises,\u201d not both in one function.\n- Add edge cases as needed (leading/trailing spaces, uppercase, plus addressing, unicode).",
+    "skill_names": [
+      "wshobson-python-testing-patterns"
+    ],
+    "skill_descriptions": {
+      "wshobson-python-testing-patterns": "Implement comprehensive testing strategies with pytest, fixtures, mocking, and test-driven development. Use when writing Python tests, setting up test suites, or implementing testing best practices."
+    },
+    "skill_references": {
+      "wshobson-python-testing-patterns": []
+    },
+    "skill_catalog": [
+      {
+        "name": "wshobson-python-testing-patterns",
+        "description": "Implement comprehensive testing strategies with pytest, fixtures, mocking, and test-driven development. Use when writing Python tests, setting up test suites, or implementing testing best practices."
+      }
+    ],
+    "context_files": [],
+    "context_directories": [
+      "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/eval-parametrize-table-driven-test/with_skill/outputs"
+    ],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "I need to test the same email validator against a table of valid and invalid inputs. What pytest pattern should I use, and what should the test shape look like?",
+      "output_dir": "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/eval-parametrize-table-driven-test/with_skill/outputs"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 130,
+      "input_compacted": false,
+      "output_tokens_estimate": 462,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 19986,
+      "usage": {
+        "requests": 2,
+        "input_tokens": 4995,
+        "output_tokens": 1672,
+        "total_tokens": 6667,
+        "request_usage_entries": []
+      }
+    },
+    "trace": {
+      "response_ids": [
+        "resp_091e6735a46e55a70069c85f9ee89881978c94129c84b9f19a",
+        "resp_091e6735a46e55a70069c85fa1e6648197a2eea4dd3a501cec"
+      ],
+      "request_ids": [
+        "req_65cc44a678874185810b006a4e7f07d1",
+        "req_2bfff0f0147e440794dc277040b2076d"
+      ],
+      "items": [
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_091e6735a46e55a70069c85f9f97388197a6e78a3cee780d1a', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "tool_call_item",
+          "summary": "function_call:activate_skill:wshobson-python-testing-patterns"
+        },
+        {
+          "type": "tool_call_output_item",
+          "summary": "function_call_output:call_F5DPLzWqI45iqUtzxxlFbbkw"
+        },
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_091e6735a46e55a70069c85fa2cd8c8197af0d64c999def371', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "message_output_item",
+          "summary": "Use pytest\u2019s parameterization pattern (table-driven tests). You define a table of inputs and expected outcomes, and run the same assertion over each row.\n\nIf your validator returns a boolean:\n- Shape: one parameterized test with (email, exp"
+        }
+      ]
+    }
+  }
+}

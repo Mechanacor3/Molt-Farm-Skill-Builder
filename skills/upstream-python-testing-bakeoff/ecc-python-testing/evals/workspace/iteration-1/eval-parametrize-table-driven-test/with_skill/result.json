@@ -1,0 +1,84 @@
+{
+  "status": "completed",
+  "task_input": {
+    "task": "I need to test the same email validator against a table of valid and invalid inputs. What pytest pattern should I use, and what should the test shape look like?",
+    "output_dir": "skills/upstream-python-testing-bakeoff/ecc-python-testing/evals/workspace/iteration-1/eval-parametrize-table-driven-test/with_skill/outputs"
+  },
+  "output": {
+    "summary": "Use pytest\u2019s parametrize pattern (table-driven tests). Keep a single test function and feed it rows of (email, expected). Two common shapes depending on your validator\u2019s contract:\n\n1) Validator returns a boolean\n- Pattern: one test, parametrize (email, expected), add readable ids.\n\nExample:\nimport pytest\n\n@pytest.mark.parametrize(\n    \"email, expected\",\n    [\n        (\"alice@example.com\", True),\n        (\"bob.smith+tag@sub.domain.co.uk\", True),\n        (\"\", False),\n        (\"no-at-symbol.com\", False),\n        (\"@nodomain\", False),\n        (\"user@\", False),\n    ],\n    ids=[\n        \"simple\",\n        \"plus-and-subdomain\",\n        \"empty\",\n        \"missing-at\",\n        \"missing-local\",\n        \"missing-domain\",\n    ],\n)\ndef test_is_valid_email(email, expected):\n    assert is_valid_email(email) is expected\n\n2) Validator raises on invalid input (e.g., ValueError) and returns None/normalized value on success\n- Pattern: single test, parametrize (email, ok) and use a conditional context manager to unify both paths.\n\nExample:\nimport contextlib\nimport pytest\n\n@pytest.mark.parametrize(\n    \"email, ok\",\n    [\n        (\"alice@example.com\", True),\n        (\"bob.smith+tag@sub.domain.co.uk\", True),\n        (\"\", False),\n        (\"no-at-symbol.com\", False),\n        (\"@nodomain\", False),\n        (\"user@\", False),\n    ],\n    ids=[\n        \"simple\",\n        \"plus-and-subdomain\",\n        \"empty\",\n        \"missing-at\",\n        \"missing-local\",\n        \"missing-domain\",\n    ],\n)\ndef test_validate_email(email, ok):\n    ctx = contextlib.nullcontext() if ok else pytest.raises(ValueError, match=\"invalid email\")\n    with ctx:\n        validate_email(email)\n\nNotes\n- Prefer a single parametrize table for both valid and invalid to avoid duplication.\n- Use ids for readability in test output.\n- If you prefer separate tests, you can split into test_accepts_valid_emails and test_rejects_invalid_emails with a single-parameter parametrize each, but the unified table is the canonical \u201ctable-driven\u201d pytest shape.",
+    "skill_names": [
+      "ecc-python-testing"
+    ],
+    "skill_descriptions": {
+      "ecc-python-testing": "Python testing strategies using pytest, TDD methodology, fixtures, mocking, parametrization, and coverage requirements."
+    },
+    "skill_references": {
+      "ecc-python-testing": []
+    },
+    "skill_catalog": [
+      {
+        "name": "ecc-python-testing",
+        "description": "Python testing strategies using pytest, TDD methodology, fixtures, mocking, parametrization, and coverage requirements."
+      }
+    ],
+    "context_files": [],
+    "context_directories": [
+      "skills/upstream-python-testing-bakeoff/ecc-python-testing/evals/workspace/iteration-1/eval-parametrize-table-driven-test/with_skill/outputs"
+    ],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "I need to test the same email validator against a table of valid and invalid inputs. What pytest pattern should I use, and what should the test shape look like?",
+      "output_dir": "skills/upstream-python-testing-bakeoff/ecc-python-testing/evals/workspace/iteration-1/eval-parametrize-table-driven-test/with_skill/outputs"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 122,
+      "input_compacted": false,
+      "output_tokens_estimate": 455,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 20143,
+      "usage": {
+        "requests": 2,
+        "input_tokens": 5494,
+        "output_tokens": 1840,
+        "total_tokens": 7334,
+        "request_usage_entries": []
+      }
+    },
+    "trace": {
+      "response_ids": [
+        "resp_0f0c0211b10bc2b90069c85f93b7f88194a8a61eb8891e37d6",
+        "resp_0f0c0211b10bc2b90069c85f9699208194a0260fa88e07beb2"
+      ],
+      "request_ids": [
+        "req_e228361016d942febc96686ea6f8966d",
+        "req_0b343bb5066344809d250671b5da0b24"
+      ],
+      "items": [
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_0f0c0211b10bc2b90069c85f9414788194a748cd2b1707caa0', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "tool_call_item",
+          "summary": "function_call:activate_skill:ecc-python-testing"
+        },
+        {
+          "type": "tool_call_output_item",
+          "summary": "function_call_output:call_uNEAN3PkqMOMSsby6ubHhu2Z"
+        },
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_0f0c0211b10bc2b90069c85f97d32481949da30b9fb250ce5b', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "message_output_item",
+          "summary": "Use pytest\u2019s parametrize pattern (table-driven tests). Keep a single test function and feed it rows of (email, expected). Two common shapes depending on your validator\u2019s contract:\n\n1) Validator returns a boolean\n- Pattern: one test, paramet"
+        }
+      ]
+    }
+  }
+}

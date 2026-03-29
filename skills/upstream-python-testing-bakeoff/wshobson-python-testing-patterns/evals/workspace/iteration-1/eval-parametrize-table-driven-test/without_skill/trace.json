@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_08f5f89174b64a260069c85fc6e5dc81948ac34be7392a4ccb"
+  ],
+  "request_ids": [
+    "req_4b41d52b97804cb089ec377ae3f1e4ce"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_08f5f89174b64a260069c85fc7333c8194abba534bcc1c6ebb', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Use pytest.mark.parametrize for a table-driven test. Drive one or two small test functions from a list of cases so each row is a separate subtest with clear IDs.\n\nIf your validator returns a boolean:\n- Keep one parametrized test with (email"
+    }
+  ]
+}

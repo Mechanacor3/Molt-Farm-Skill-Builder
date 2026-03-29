@@ -1,0 +1,55 @@
+Reach for pytest-asyncio (simple, asyncio-only) or pytest-anyio (if you might switch backends like Trio). For most projects using asyncio/httpx/aiohttp, pytest-asyncio is the straightforward choice.
+
+Setup (pytest-asyncio):
+- pip install pytest-asyncio
+- In pytest.ini:
+  [pytest]
+  asyncio_mode = auto    # or use "strict" and mark each async test
+
+High-level test shape with an async test and an async client fixture:
+- Use @pytest.mark.asyncio on async tests (not needed if asyncio_mode=auto).
+- Define async fixtures with @pytest_asyncio.fixture (important on recent versions).
+
+Example:
+- conftest.py or test file:
+  import pytest
+  import pytest_asyncio
+  import httpx
+
+  async def some_async_function(x):
+      return x + 1
+
+  @pytest_asyncio.fixture
+  async def client():
+      async with httpx.AsyncClient(base_url="http://testserver") as ac:
+          yield ac
+
+  @pytest.mark.asyncio  # omit if asyncio_mode=auto
+  async def test_async_function():
+      assert await some_async_function(1) == 2
+
+  @pytest.mark.asyncio  # omit if asyncio_mode=auto
+  async def test_client_call(client):
+      resp = await client.get("/health")
+      assert resp.status_code == 200
+
+Alternative (pytest-anyio):
+- pip install pytest-anyio
+- Mark tests with @pytest.mark.anyio
+- You can keep async fixtures as plain @pytest.fixture async def …:
+  import pytest
+  import httpx
+
+  @pytest.fixture
+  async def client():
+      async with httpx.AsyncClient() as ac:
+          yield ac
+
+  @pytest.mark.anyio
+  async def test_stuff(client):
+      resp = await client.get("/")
+      assert resp.is_success
+
+Summary:
+- Choose pytest-asyncio + @pytest.mark.asyncio (+ @pytest_asyncio.fixture for async fixtures), or pytest-anyio + @pytest.mark.anyio.
+- Mark the async tests, declare the async client fixture, await inside the test body.

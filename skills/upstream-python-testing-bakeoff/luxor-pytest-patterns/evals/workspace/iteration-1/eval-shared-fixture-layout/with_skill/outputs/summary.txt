@@ -1,0 +1,50 @@
+- Where it should live: Put the shared setup in a conftest.py at the root of your tests directory (tests/conftest.py) so every test module can use it automatically. If only a subset of tests need it, place a conftest.py in that subpackage. If you need to share across projects, move it into a small pytest plugin.
+
+- What mechanism to use: Use pytest fixtures (with yield for setup/teardown) and appropriate scoping. Typically:
+  - session-scoped fixture for the database engine/schema creation
+  - function-scoped fixture for a transactional session that rolls back after each test
+  - client fixture (e.g., web test client)
+  - authenticated_client fixture that depends on client + DB, creates a user, and attaches auth (token/cookie)
+
+Example (plain text):
+
+# tests/conftest.py
+import pytest
+
+@pytest.fixture(scope="session")
+def engine():
+    engine = make_engine("sqlite:///:memory:")  # or a tmp file/db
+    Base.metadata.create_all(engine)
+    yield engine
+    Base.metadata.drop_all(engine)
+    engine.dispose()
+
+@pytest.fixture
+def db_session(engine):
+    conn = engine.connect()
+    trans = conn.begin()
+    session = Session(bind=conn)
+    yield session
+    session.close()
+    trans.rollback()
+    conn.close()
+
+@pytest.fixture(scope="module")
+def app():
+    return create_app(config_name="testing")
+
+@pytest.fixture
+def client(app):
+    with app.test_client() as c:
+        yield c
+
+@pytest.fixture
+def auth_client(client, db_session, user_factory):
+    user = user_factory(email="test@example.com", password="password")
+    token = issue_token_for(user)
+    client.headers.update({"Authorization": f"Bearer {token}"})
+    return client
+
+Notes:
+- Use autouse=True only if every test needs a fixture.
+- For a “temporary DB,” you can point the engine to a tmp_path-backed SQLite file or spin up a disposable schema; keep data isolation at function scope with transaction rollback.

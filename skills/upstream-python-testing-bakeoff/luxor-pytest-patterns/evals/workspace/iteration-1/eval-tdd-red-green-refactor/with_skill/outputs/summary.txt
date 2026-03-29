@@ -1,0 +1,74 @@
+Recommended TDD workflow (Red → Green → Refactor) for a small pure helper:
+
+1) Define the contract
+- Clarify name, signature, valid inputs, expected outputs, and error behavior.
+- List 3–6 concrete examples: simplest happy path, a couple of typical cases, and edge cases (empty, None, boundaries, negatives, unicode, etc.).
+- Decide whether invalid inputs raise or return a sentinel.
+
+2) Write the first test (fail on purpose)
+- Create tests/test_<helper>_unit.py.
+- Add a single, smallest happy-path test that encodes the contract clearly (AAA: Arrange, Act, Assert).
+- Keep it minimal; don’t over-specify formatting or incidental details.
+
+Example:
+- from mypkg.utils import my_helper
+
+def test_my_helper_basic():
+    assert my_helper("abc") == "expected"
+
+3) Run tests to see it fail (Red)
+- pytest -q
+- Ensure it fails for the right reason (ImportError or AssertionError is fine). If it fails for the wrong reason, fix the test, not the code.
+
+4) Implement the minimal code to pass the test (Green)
+- Write the simplest implementation that only satisfies the current test.
+- Avoid generalizing early.
+
+5) Re-run tests (Green)
+- pytest -q
+- Confirm the test passes.
+
+6) Refactor (Refactor)
+- Improve names, remove duplication, clarify logic.
+- Keep behavior identical. Re-run tests after each small change.
+
+7) Triangulate with more tests
+- Add parametrized tests to cover typical cases, edge cases, and error paths.
+- Use pytest.raises for error behavior.
+
+Example:
+- import pytest
+
+@pytest.mark.parametrize("inp,expected", [
+    ("", "expected_for_empty"),
+    ("abc", "expected"),
+    ("AbC", "expected_case"),
+    ("🙂", "expected_unicode"),
+])
+def test_my_helper_cases(inp, expected):
+    assert my_helper(inp) == expected
+
+def test_my_helper_invalid_type():
+    with pytest.raises(TypeError):
+        my_helper(123)
+
+8) Iterate Red → Green → Refactor
+- Add one new failing example at a time, make it pass minimally, then refactor.
+- Repeat until the contract is fully expressed by tests.
+
+9) Optional: add property-based checks (great for pure functions)
+- Use Hypothesis to encode invariants (idempotence, reversibility, monotonicity, lengths, set membership, etc.).
+- Example: reversing twice returns original; normalization is idempotent; output length relation holds.
+
+10) Verify coverage (aim for near 100% incl. branches for small helpers)
+- pytest --cov=mypkg --cov-report=term-missing
+- Add tests for any missed branches.
+
+11) Finalize
+- Add a concise docstring with examples (doctest-friendly if useful).
+- Commit history (ideal): failing test → minimal implementation → refactor (and repeat for each behavior).
+
+Handy pytest tips while iterating:
+- pytest -q -x --lf to focus on the last failure quickly
+- pytest -k my_helper to run just this helper’s tests
+- Use descriptive test names: test_my_helper_trims_whitespace, etc.

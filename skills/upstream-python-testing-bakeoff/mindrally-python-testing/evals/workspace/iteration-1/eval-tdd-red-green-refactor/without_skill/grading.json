@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer recommends writing a failing test first and clearly references the TDD cycle or red-green-refactor order",
+      "passed": true,
+      "evidence": "\"Follow a tight Red\u2013Green\u2013Refactor TDD loop.\" and \"4) RED: write the smallest failing test\" and \"Run the suite and confirm it fails for the right reason\"",
+      "category": "goal",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer says to write only the minimal implementation needed to make the test pass before refactoring",
+      "passed": true,
+      "evidence": "\"5) GREEN: implement the minimum to pass\" and \"Write the least code needed to make that test pass\" followed by \"6) REFACTOR: improve design with safety\"",
+      "category": "goal",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer stays focused on workflow order instead of expanding into general tooling setup",
+      "passed": false,
+      "evidence": "It expands into tooling and extras: \"9) Hardening and quality gates - Type hints + mypy/pyright - Lint/format (ruff/flake8, black) - Consider mutation testing (mutmut/cosmic-ray) ...\" and \"8) Add property-based checks (optional ...) - Use Hypothesis ...\" which go beyond workflow order.",
+      "category": "format",
+      "weight": 1.0
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 1,
+    "total": 3,
+    "pass_rate": 0.6666666666666666,
+    "weighted_pass_rate": 0.8333333333333334
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2,
+      "passed_weight": 5.0,
+      "total_weight": 5.0,
+      "score": 1.0
+    },
+    "format": {
+      "passed": 0,
+      "failed": 1,
+      "total": 1,
+      "passed_weight": 0.0,
+      "total_weight": 1.0,
+      "score": 0.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

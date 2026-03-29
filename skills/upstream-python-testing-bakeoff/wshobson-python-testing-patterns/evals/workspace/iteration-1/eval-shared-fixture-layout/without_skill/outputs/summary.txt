@@ -1,0 +1,11 @@
+- Put the shared setup in a conftest.py so pytest can auto-discover it.
+- Place it at the root of your test suite (e.g., tests/conftest.py) if many modules need it, or in a subpackage’s conftest.py to limit scope to a subset of tests.
+- Use pytest fixtures as the mechanism for both the temporary database and the authenticated client.
+- Use yield-fixtures for setup/teardown.
+- Scope guidance:
+  - Temporary database/bootstrap: session or module scope (create schema once; dispose at end).
+  - Per-test isolation: a function-scoped fixture that opens a transaction/savepoint and rolls back after each test (or provides a fresh in-memory DB).
+  - Authenticated client: typically function-scoped; have it depend on the DB fixture and perform login/setup of a test user.
+- Use tmp_path_factory to create a temporary DB file when using SQLite, or create a throwaway schema/database for other backends.
+- Prefer explicit fixture use over autouse; reserve autouse=True only if all tests need the setup.
+- If you need to share this across multiple projects, extract the fixtures into a small pytest plugin and load it via pytest_plugins.

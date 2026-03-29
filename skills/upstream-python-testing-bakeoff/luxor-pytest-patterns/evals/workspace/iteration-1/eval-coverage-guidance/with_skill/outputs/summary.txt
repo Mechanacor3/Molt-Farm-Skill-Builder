@@ -1,0 +1,16 @@
+Don’t chase a blanket percentage. Use coverage as a guardrail, not the goal. In pytest, set a reasonable floor to prevent backslides, then prioritize tests by risk and impact.
+
+Practical pytest approach:
+- Set a floor and keep reports actionable:
+  - pytest -q --cov=mypackage --cov-report=term-missing --cov-fail-under=78
+  - In pytest.ini/coverage config, omit generated/boilerplate and exclude trivial lines (e.g., def __repr__, if __name__ == "__main__":) or mark with pragma: no cover.
+- Focus effort where tests pay off:
+  - Critical business logic, complex/branchy code, error paths, and bug-prone/churn-heavy modules.
+  - Use parametrization to cover input matrices quickly; fixtures to hit edge cases; monkeypatch/mocks to exercise failure paths without external calls.
+- Ratchet, don’t mandate 100%:
+  - Keep a global floor (e.g., ~78–80%) and add stricter checks only for key modules:
+    - pytest --cov=mypackage.core --cov-fail-under=90
+- Track what’s missing and act:
+  - Use term-missing/HTML reports to target uncovered lines; add concise tests that assert behavior, not implementation.
+
+Summary: Maintain a modest global threshold, concentrate new tests on high-risk/high-value code, exclude noise, and increment module-specific targets over time.

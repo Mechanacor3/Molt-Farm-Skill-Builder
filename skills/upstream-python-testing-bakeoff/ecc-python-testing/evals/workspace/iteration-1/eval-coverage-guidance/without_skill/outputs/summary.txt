@@ -1,0 +1,19 @@
+Short answer: don’t chase a blanket percentage. Keep a sane floor, then target coverage where it reduces risk the most.
+
+Pytest-oriented plan:
+- Keep a global guardrail (e.g., 80%) but gate new/changed code with higher diff coverage (e.g., 90–100% on the PR).
+  - Commands: pytest --cov=src --cov-branch --cov-report=xml --cov-report=term-missing
+  - CI gates: --cov-fail-under=80 and diff-cover coverage.xml --compare-branch=origin/main --fail-under=90
+- Prioritize by risk/impact:
+  - Focus on complex, bug-prone, and business-critical paths first (use git blame/bug history + radon complexity).
+  - Add integration/contract tests around public APIs; unit-test tricky pure logic.
+- Improve test quality over count:
+  - Prefer behavior assertions over implementation details; avoid excessive mocking of your own code.
+  - Use pytest parametrize and property-based tests (hypothesis) to hit edge cases efficiently.
+- Make coverage meaningful:
+  - Enable branch coverage: --cov-branch and watch term-missing/HTML to hunt gaps.
+  - Exclude noise in .coveragerc (migrations, vendored, generated code; use “pragma: no cover” for truly unreachable).
+- Legacy code: add characterization tests around current behavior, then refactor for testability before deep unit coverage.
+- Keep feedback fast: pytest -n auto (xdist) and focused markers (e.g., -m "not slow") to iterate quickly.
+
+Result: steady quality gains and fewer escapes without burning time pushing low-value files to an arbitrary percentage.

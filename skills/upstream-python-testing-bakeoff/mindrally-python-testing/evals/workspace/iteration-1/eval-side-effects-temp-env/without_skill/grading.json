@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer recommends `monkeypatch` for controlling environment variables",
+      "passed": true,
+      "evidence": "Mentions: \"monkeypatch: isolate and control environment and globals\" and uses \"monkeypatch.setenv(\"APP_MODE\", \"prod\")\" and \"monkeypatch.delenv(\"APP_MODE\", raising=False)\" to control env vars.",
+      "category": "goal",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer recommends `tmp_path` or an equivalent pytest temporary path fixture for isolated filesystem writes",
+      "passed": true,
+      "evidence": "Explicitly lists: \"tmp_path: per-test temporary directory for file writes/reads that\u2019s auto-cleaned\" and uses it in example (monkeypatch.chdir(tmp_path), read JSON from tmp_path).",
+      "category": "goal",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer keeps the strategy narrow and explicitly avoids relying on real environment state or repository files",
+      "passed": true,
+      "evidence": "States: \"This keeps tests narrow, avoids touching the real environment or repo files, and uses only pytest\u2019s built-ins.\"",
+      "category": "format",
+      "weight": 1.0
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0,
+    "weighted_pass_rate": 1.0
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2,
+      "passed_weight": 6.0,
+      "total_weight": 6.0,
+      "score": 1.0
+    },
+    "format": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "passed_weight": 1.0,
+      "total_weight": 1.0,
+      "score": 1.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

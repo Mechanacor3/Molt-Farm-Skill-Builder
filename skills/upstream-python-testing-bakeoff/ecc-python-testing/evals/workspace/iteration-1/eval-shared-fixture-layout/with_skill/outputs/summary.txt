@@ -1,0 +1,53 @@
+- Where it should live: Put the shared setup in a conftest.py located at the highest common tests directory that contains those test modules (for all tests, tests/conftest.py; for a subset, the subpackage’s conftest.py). Pytest auto-discovers fixtures there without imports.
+
+- What mechanism to use: Pytest fixtures (with yield for setup/teardown and appropriate scopes). Typically:
+  - Session-scoped DB/engine (or temp DB) fixture to create/drop once.
+  - Function-scoped DB session/transaction fixture to keep tests isolated via rollback.
+  - Client fixture that depends on the DB session.
+  - Authenticated client or auth_headers fixture that depends on client.
+
+Example (adapt to your stack):
+
+# tests/conftest.py
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+# from yourapp import create_app, Base  # adjust imports
+
+@pytest.fixture(scope="session")
+def db_engine():
+    engine = create_engine("sqlite:///:memory:")  # or temp file/URL
+    Base.metadata.create_all(engine)
+    yield engine
+    Base.metadata.drop_all(engine)
+    engine.dispose()
+
+@pytest.fixture
+def db_session(db_engine):
+    conn = db_engine.connect()
+    txn = conn.begin()
+    SessionLocal = sessionmaker(bind=conn)
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+        txn.rollback()
+        conn.close()
+
+@pytest.fixture
+def client(db_session):
+    app = create_app(testing=True, db_session=db_session)
+    with app.test_client() as c:
+        yield c
+
+@pytest.fixture
+def auth_headers(client):
+    resp = client.post("/api/login", json={"username": "test", "password": "test"})
+    token = resp.json["token"]
+    return {"Authorization": f"Bearer {token}"}
+
+Notes:
+- Use scope="session" for the expensive/temporary DB, and function scope for the session/transaction to isolate tests.
+- Prefer an auth_headers fixture to keep the client stateless; if you must, you can return an auth_client fixture that sets headers before returning.
+- Only use autouse=True if you truly want a fixture to run for every test in that directory tree.

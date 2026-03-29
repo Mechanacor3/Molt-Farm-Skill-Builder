@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_0aae6ac93d30542a0069c8608cbd588196926a5cd74591ffb0"
+  ],
+  "request_ids": [
+    "req_a492e0e51324421db17a5470e916dedf"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0aae6ac93d30542a0069c8608d0bbc8196883ccb8160177789', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Two solid, common options:\n\nOption A: pytest-asyncio (most popular for plain asyncio)\n- Install: pip install pytest-asyncio\n- In pytest.ini:\n  [pytest]\n  asyncio_mode = auto\n- High-level test layout:\n  - Mark async tests with @pytest.mark.a"
+    }
+  ]
+}

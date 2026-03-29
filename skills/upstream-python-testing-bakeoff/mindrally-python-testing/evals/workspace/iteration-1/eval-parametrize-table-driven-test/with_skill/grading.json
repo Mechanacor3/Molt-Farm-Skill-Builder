@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer recommends `@pytest.mark.parametrize` for the repeated input cases",
+      "passed": true,
+      "evidence": "Direct statement: \"Use pytest.mark.parametrize for a table-driven test.\" and multiple examples decorated with @pytest.mark.parametrize, e.g.,\n\n@pytest.mark.parametrize(\n    \"email\",\n    [\n        \"a@b.com\",\n        ...\n    ],\n)\ndef test_valid_emails(email):\n    assert validate_email(email) is True",
+      "category": "goal",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer shows or describes a table of input and expected values in one focused test",
+      "passed": true,
+      "evidence": "Option B explicitly shows a single table with input and expected outcome:\n\n@pytest.mark.parametrize(\n    \"email, expected\",\n    [\n        (\"a@b.com\", True),\n        (\"user.name+tag@sub.example.co.uk\", True),\n        (\"plainaddress\", False),\n        (\"user@\", False),\n    ],\n    ids=[\"simple\", \"plus-subdomain\", \"no-at\", \"no-domain\"]\n)\ndef test_validate_email_table(email, expected):\n    assert validate_email(email) is expected",
+      "category": "evidence",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer avoids recommending many near-duplicate test functions for each case",
+      "passed": true,
+      "evidence": "It proposes parameterized tests rather than separate functions per case, offering either two focused parameterized tests (valid vs invalid) or a single parameterized table:\n- \"Option A: Separate tests, simplest and clear\" with @pytest.mark.parametrize used for inputs.\n- \"Option B: Single table with expected outcome\" using @pytest.mark.parametrize with (email, expected).",
+      "category": "goal",
+      "weight": 1.0
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0,
+    "weighted_pass_rate": 1.0
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2,
+      "passed_weight": 4.0,
+      "total_weight": 4.0,
+      "score": 1.0
+    },
+    "evidence": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "passed_weight": 2.0,
+      "total_weight": 2.0,
+      "score": 1.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

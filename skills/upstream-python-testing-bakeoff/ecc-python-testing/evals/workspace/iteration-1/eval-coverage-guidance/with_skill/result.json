@@ -1,0 +1,84 @@
+{
+  "status": "completed",
+  "task_input": {
+    "task": "Team coverage is stuck around 78%. Should we chase a percentage target everywhere, or focus effort differently? Give a concise pytest-oriented answer.",
+    "output_dir": "skills/upstream-python-testing-bakeoff/ecc-python-testing/evals/workspace/iteration-1/eval-coverage-guidance/with_skill/outputs"
+  },
+  "output": {
+    "summary": "Short answer: don\u2019t chase a blanket percentage. Keep an overall floor, but target coverage where risk and defects are.\n\nPytest-oriented guidance:\n- Set a sane floor and branch coverage: pytest --cov=yourpkg --cov-branch --cov-report=term-missing --cov-fail-under=80\n- Push critical paths to 100%: core business rules, auth/permissions, money/data integrity, public APIs, error handling.\n- Grow coverage efficiently:\n  - Use @pytest.mark.parametrize to hit boundary/edge cases fast.\n  - Add tests around branching logic and error paths (with pytest.raises).\n  - Isolate I/O via fixtures and mocks so you can cover failure modes without flakiness.\n  - Write characterization tests for legacy hot spots before refactoring.\n- Reduce noise:\n  - Exclude low-value code (migrations, trivial getters, generated code) in .coveragerc omit, and mark unreachable guards with # pragma: no cover.\n- Make it sustainable:\n  - Gate changes with diff coverage in CI (require tests for changed lines).\n  - Use markers (unit, integration, slow) to keep the fast suite green on every PR; run the full/slow nightly.\n  - For critical modules, consider mutation testing (e.g., mutmut) to validate test effectiveness.\n\nAim: \u226580% overall, 100% on critical paths, and prioritize risk over uniform percentage chasing.",
+    "skill_names": [
+      "ecc-python-testing"
+    ],
+    "skill_descriptions": {
+      "ecc-python-testing": "Python testing strategies using pytest, TDD methodology, fixtures, mocking, parametrization, and coverage requirements."
+    },
+    "skill_references": {
+      "ecc-python-testing": []
+    },
+    "skill_catalog": [
+      {
+        "name": "ecc-python-testing",
+        "description": "Python testing strategies using pytest, TDD methodology, fixtures, mocking, parametrization, and coverage requirements."
+      }
+    ],
+    "context_files": [],
+    "context_directories": [
+      "skills/upstream-python-testing-bakeoff/ecc-python-testing/evals/workspace/iteration-1/eval-coverage-guidance/with_skill/outputs"
+    ],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "Team coverage is stuck around 78%. Should we chase a percentage target everywhere, or focus effort differently? Give a concise pytest-oriented answer.",
+      "output_dir": "skills/upstream-python-testing-bakeoff/ecc-python-testing/evals/workspace/iteration-1/eval-coverage-guidance/with_skill/outputs"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 115,
+      "input_compacted": false,
+      "output_tokens_estimate": 290,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 18925,
+      "usage": {
+        "requests": 2,
+        "input_tokens": 5407,
+        "output_tokens": 1237,
+        "total_tokens": 6644,
+        "request_usage_entries": []
+      }
+    },
+    "trace": {
+      "response_ids": [
+        "resp_0ba8f4bd69986d5c0069c86098bcf48197a0123cc849a4f44a",
+        "resp_0ba8f4bd69986d5c0069c8609aebf48197b9ba04bd934452bd"
+      ],
+      "request_ids": [
+        "req_0c8ae81b8ba0456ab9c0bf831cdc5410",
+        "req_43d5d22a04034992ac3847dd5d788cde"
+      ],
+      "items": [
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_0ba8f4bd69986d5c0069c8609911d48197acf92477828023f3', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "tool_call_item",
+          "summary": "function_call:activate_skill:ecc-python-testing"
+        },
+        {
+          "type": "tool_call_output_item",
+          "summary": "function_call_output:call_JXwEgmXd3toi2q6zrHJJ1McH"
+        },
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_0ba8f4bd69986d5c0069c8609b63b88197b1faa340dd986352', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "message_output_item",
+          "summary": "Short answer: don\u2019t chase a blanket percentage. Keep an overall floor, but target coverage where risk and defects are.\n\nPytest-oriented guidance:\n- Set a sane floor and branch coverage: pytest --cov=yourpkg --cov-branch --cov-report=term-mi"
+        }
+      ]
+    }
+  }
+}

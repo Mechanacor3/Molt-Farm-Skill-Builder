@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer mentions `pytest-asyncio` or equivalent async pytest support",
+      "passed": true,
+      "evidence": "Mentions both: \"Recommended (asyncio-only): pytest-asyncio\" and \"Alternative (backend-agnostic): pytest-anyio\"",
+      "category": "goal",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer includes `@pytest.mark.asyncio` or an equivalent async test marker",
+      "passed": true,
+      "evidence": "Shows markers: \"Use marks on async tests: @pytest.mark.asyncio\" and alternative: \"Mark tests with @pytest.mark.anyio\"; code snippets include:\n\"@pytest.mark.asyncio\\nasync def test_async_function(): ...\" and \"@pytest.mark.anyio\\nasync def test_with_client(async_client): ...\"",
+      "category": "evidence",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer mentions awaiting the async function or using an async fixture pattern",
+      "passed": true,
+      "evidence": "Awaiting calls shown: \"result = await some_async_function()\" and \"resp = await async_client.get(\\\"/health\\\")\". Async fixture pattern included with: \"@pytest_asyncio.fixture\\nasync def async_client():\\n    async with httpx.AsyncClient(...) as client:\\n        yield client\" and an async pytest fixture under pytest-anyio.",
+      "category": "evidence",
+      "weight": 2.0
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0,
+    "weighted_pass_rate": 1.0
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "passed_weight": 2.0,
+      "total_weight": 2.0,
+      "score": 1.0
+    },
+    "evidence": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2,
+      "passed_weight": 5.0,
+      "total_weight": 5.0,
+      "score": 1.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

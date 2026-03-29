@@ -1,0 +1,32 @@
+{
+  "response_ids": [
+    "resp_049f3bdf9342bdce0069c85f2da11c819692ae22574426c2d8",
+    "resp_049f3bdf9342bdce0069c85f3438288196a22db34325ce431f"
+  ],
+  "request_ids": [
+    "req_ce0a5f5841a54e2c9030b9ac04f73247",
+    "req_3b0f1c3110bb42d4b35a6ebe8e4bc640"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_049f3bdf9342bdce0069c85f2e2d2481968634fa30c59aa6ba', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:activate_skill:luxor-pytest-patterns"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_glYZrCCP9Kqd0Xf8qPjSMmCi"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_049f3bdf9342bdce0069c85f355e248196bc807501bb08601d', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Use pytest\u2019s parametrize pattern (table-driven testing). You define a table of cases and run the same assertion over each row.\n\nRecommended shapes\n\n1) Single table with expected outcome\n- Keeps valid and invalid cases together, each row is "
+    }
+  ]
+}

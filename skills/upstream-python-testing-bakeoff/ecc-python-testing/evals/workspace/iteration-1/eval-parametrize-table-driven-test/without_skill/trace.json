@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_09c097a398ac032b0069c85fb66cf48194a987cd3256790bf0"
+  ],
+  "request_ids": [
+    "req_dfaa2b5ecc55476e9113d35bd87c934c"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_09c097a398ac032b0069c85fb70bc88194a741b37cbb44e76b', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Use pytest\u2019s parametrize to drive a table of inputs. Two common shapes:\n\nA) One table with expected outcome (recommended when you want one place to see all cases)\n- Keeps valid/invalid together and makes it easy to add edge cases.\n\nExample:"
+    }
+  ]
+}

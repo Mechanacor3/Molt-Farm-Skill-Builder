@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_0ef7212ee502e8560069c860b6216881949137183e44a3bc1d"
+  ],
+  "request_ids": [
+    "req_aaca7155930247cf9ebe9cc7ac215356"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0ef7212ee502e8560069c860b67ec48194ba9909c0dbee5200', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Short answer: don\u2019t chase a blanket percentage. Keep a sane floor, then target coverage where it reduces risk the most.\n\nPytest-oriented plan:\n- Keep a global guardrail (e.g., 80%) but gate new/changed code with higher diff coverage (e.g., "
+    }
+  ]
+}

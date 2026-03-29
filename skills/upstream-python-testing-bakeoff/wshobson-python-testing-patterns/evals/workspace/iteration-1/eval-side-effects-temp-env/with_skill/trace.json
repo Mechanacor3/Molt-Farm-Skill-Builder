@@ -1,0 +1,46 @@
+{
+  "response_ids": [
+    "resp_0ffbf4a3a6da24bb0069c860201a1c81948e120ef670e90fec",
+    "resp_0ffbf4a3a6da24bb0069c8602bcc34819497f7050290c3e36d",
+    "resp_0ffbf4a3a6da24bb0069c8602d4db08194abeceb2dd2188482"
+  ],
+  "request_ids": [
+    "req_8e417dd96c854c14be58e9bc860cc57b",
+    "req_1f4354a5bbca460db1c81d05a10e0a14",
+    "req_5926dfa79a5f4268a670f535eec401a4"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0ffbf4a3a6da24bb0069c8602079e4819490423abc44084362', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:activate_skill:wshobson-python-testing-patterns"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_WluREBITWf7sSnuoZAZLvEI1"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0ffbf4a3a6da24bb0069c8602c35508194a5ed26da784316a5', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:read_skill_resource:wshobson-python-testing-patterns:references/advanced-patterns.md"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_4qbqx9Fgwk0DrN5ISoFJvIjO"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0ffbf4a3a6da24bb0069c8602dcc1c8194a37276d7d5a805ab', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Best built-in pytest tools for this:\n\n- monkeypatch\n  - monkeypatch.setenv(\"APP_MODE\", \"test\") to control the environment per test\n  - monkeypatch.delenv(\"APP_MODE\", raising=False) to simulate \u201cnot set\u201d\n  - monkeypatch.chdir(tmp_path) to fo"
+    }
+  ]
+}

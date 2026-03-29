@@ -1,0 +1,49 @@
+Follow a tight TDD loop: Red → Green → Refactor, repeated until the helper’s behavior is fully specified.
+
+1) Prep
+- Start from a green baseline (run tests; they should pass).
+- Decide the tiny slice of behavior and API: name, signature, return type, and one concrete example.
+
+2) Red
+- Write a single, smallest, behavior-focused unit test that demonstrates the desired example.
+  - Use Arrange–Act–Assert (Given–When–Then) style.
+  - If the function doesn’t exist yet, import it and start with a stub (or expect NotImplementedError).
+- Run the full test suite and confirm this test fails for the right reason.
+
+3) Green
+- Implement the minimal code to make that one test pass (even if it’s naive or partially hard-coded).
+- Run the tests; ensure all are green.
+
+4) Refactor
+- Improve the implementation: remove duplication, clarify names, simplify logic.
+- Refactor tests for clarity (parametrize similar cases, better names), without changing behavior.
+- Keep tests green after each small change.
+
+5) Triangulate behavior
+- Add another small test that forces generalization (a different input shape, edge, or boundary).
+- Repeat Red → Green → Refactor.
+- Grow coverage via multiple examples rather than over-generalizing early.
+
+6) Cover edges and invalid inputs
+- Decide and test behavior for:
+  - Empty/minimal inputs, large inputs, Unicode/locale quirks, ordering, precision/rounding, etc.
+  - Invalid inputs: assert raised exceptions or documented defaults.
+
+7) Properties (great for pure helpers)
+- Add property-based tests (e.g., with Hypothesis) for invariants:
+  - Idempotence, commutativity/associativity, monotonicity, reversibility, bounds, length preservation, etc.
+- Keep examples alongside properties to aid diagnostics.
+
+8) Finish and document
+- Add/confirm type hints; run a type checker if used.
+- Add a docstring with examples; optional doctest for simple helpers.
+- Check coverage (lines/branches) to ensure meaningful paths are exercised, not just lines touched.
+
+Practical tips
+- Keep each step tiny; commit after each Green (and sometimes after Refactor).
+- Run the whole suite each time; use watch mode for fast feedback.
+- Test public behavior, not implementation details.
+- Prefer pytest parametrization for many small cases; name tests after the behavior (“returns_empty_on_empty_input”) rather than the method name.
+
+Order summary
+- Baseline green → Write 1 failing test (Red) → Minimal implementation (Green) → Refactor → Add next test (Red) → Green → Refactor → … → Edge cases → Properties → Final refactor/docs/types.

@@ -1,0 +1,84 @@
+{
+  "status": "completed",
+  "task_input": {
+    "task": "I need to test the same email validator against a table of valid and invalid inputs. What pytest pattern should I use, and what should the test shape look like?",
+    "output_dir": "skills/upstream-python-testing-bakeoff/luxor-pytest-patterns/evals/workspace/iteration-1/eval-parametrize-table-driven-test/with_skill/outputs"
+  },
+  "output": {
+    "summary": "Use pytest\u2019s parametrize pattern (table-driven testing). You define a table of cases and run the same assertion over each row.\n\nRecommended shapes\n\n1) Single table with expected outcome\n- Keeps valid and invalid cases together, each row is (email, expected_bool).\n- Add readable ids so the test output names each case.\n\nExample:\nimport pytest\nfrom yourpkg.validators import is_valid_email\n\nVALID_EMAILS = [\n    \"user@example.com\",\n    \"user.name+tag@example.co.uk\",\n    '\"quoted\"@example.com',\n    \"\u00fc\u00f1\u00ee\u00e7\u00f8\u00f0\u00e9@example.com\",\n]\n\nINVALID_EMAILS = [\n    \"plainaddress\",\n    \"@missing-local.org\",\n    \"user@.invalid\",\n    \"user..dots@example.com\",\n    \"user@example..com\",\n]\n\n@pytest.mark.parametrize(\n    \"email,expected\",\n    [\n        *[pytest.param(e, True, id=f\"valid:{e}\") for e in VALID_EMAILS],\n        *[pytest.param(e, False, id=f\"invalid:{e}\") for e in INVALID_EMAILS],\n        # Example of a known edge you can xfail until fixed:\n        # pytest.param(\"a@b\", False, id=\"invalid:too-short\", marks=pytest.mark.xfail(reason=\"bug #123\")),\n    ],\n)\ndef test_is_valid_email(email, expected):\n    assert is_valid_email(email) == expected\n\n2) Two tests: one for valids, one for invalids\n- Slightly clearer failures (accept vs reject).\n- Good when you don\u2019t care about the expected value beyond True/False.\n\nExample:\nimport pytest\nfrom yourpkg.validators import is_valid_email\n\nVALID_EMAILS = [\n    \"user@example.com\",\n    \"user.name+tag@example.co.uk\",\n]\n\nINVALID_EMAILS = [\n    \"plainaddress\",\n    \"@missing-local.org\",\n]\n\n@pytest.mark.parametrize(\"email\", VALID_EMAILS, ids=lambda e: f\"valid:{e}\")\ndef test_email_validator_accepts_valid(email):\n    assert is_valid_email(email)\n\n@pytest.mark.parametrize(\"email\", INVALID_EMAILS, ids=lambda e: f\"invalid:{e}\")\ndef test_email_validator_rejects_invalid(email):\n    assert not is_valid_email(email)\n\nTips\n- Use ids (pytest.param(..., id=\"...\") or ids=...) to make case names readable.\n- Keep the tables close to the test or in a small helper module if reused.\n- For tricky/known-bad edge cases, use pytest.param with marks=pytest.mark.xfail and a reason.\n- If you need richer expectations (e.g., normalized output), switch to a small case object (namedtuple/dataclass) but keep the same parametrize pattern.",
+    "skill_names": [
+      "luxor-pytest-patterns"
+    ],
+    "skill_descriptions": {
+      "luxor-pytest-patterns": "Python testing with pytest covering fixtures, parametrization, mocking, and test organization for reliable test suites"
+    },
+    "skill_references": {
+      "luxor-pytest-patterns": []
+    },
+    "skill_catalog": [
+      {
+        "name": "luxor-pytest-patterns",
+        "description": "Python testing with pytest covering fixtures, parametrization, mocking, and test organization for reliable test suites"
+      }
+    ],
+    "context_files": [],
+    "context_directories": [
+      "skills/upstream-python-testing-bakeoff/luxor-pytest-patterns/evals/workspace/iteration-1/eval-parametrize-table-driven-test/with_skill/outputs"
+    ],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "I need to test the same email validator against a table of valid and invalid inputs. What pytest pattern should I use, and what should the test shape look like?",
+      "output_dir": "skills/upstream-python-testing-bakeoff/luxor-pytest-patterns/evals/workspace/iteration-1/eval-parametrize-table-driven-test/with_skill/outputs"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 130,
+      "input_compacted": false,
+      "output_tokens_estimate": 550,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 49928,
+      "usage": {
+        "requests": 2,
+        "input_tokens": 12443,
+        "output_tokens": 2355,
+        "total_tokens": 14798,
+        "request_usage_entries": []
+      }
+    },
+    "trace": {
+      "response_ids": [
+        "resp_049f3bdf9342bdce0069c85f2da11c819692ae22574426c2d8",
+        "resp_049f3bdf9342bdce0069c85f3438288196a22db34325ce431f"
+      ],
+      "request_ids": [
+        "req_ce0a5f5841a54e2c9030b9ac04f73247",
+        "req_3b0f1c3110bb42d4b35a6ebe8e4bc640"
+      ],
+      "items": [
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_049f3bdf9342bdce0069c85f2e2d2481968634fa30c59aa6ba', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "tool_call_item",
+          "summary": "function_call:activate_skill:luxor-pytest-patterns"
+        },
+        {
+          "type": "tool_call_output_item",
+          "summary": "function_call_output:call_glYZrCCP9Kqd0Xf8qPjSMmCi"
+        },
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_049f3bdf9342bdce0069c85f355e248196bc807501bb08601d', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "message_output_item",
+          "summary": "Use pytest\u2019s parametrize pattern (table-driven testing). You define a table of cases and run the same assertion over each row.\n\nRecommended shapes\n\n1) Single table with expected outcome\n- Keeps valid and invalid cases together, each row is "
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "response_ids": [
+    "resp_0f6f1b498c24a8490069c8606c363081969afaee1ea9ba8b12",
+    "resp_0f6f1b498c24a8490069c86071dda88196a99a91d01cff202d",
+    "resp_0f6f1b498c24a8490069c86073e7f081969598563ffac55aff"
+  ],
+  "request_ids": [
+    "req_91d5ad0cd6f649ca85084de1607fa5ef",
+    "req_0933a8c6635d47baa7c968b8f8dfe156",
+    "req_56753088efec4e28b19be3569d679ff1"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0f6f1b498c24a8490069c8606c8e388196968740a9937af779', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:activate_skill:wshobson-python-testing-patterns"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_UKU1BjeK1agbwVp9dbFGfHYV"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0f6f1b498c24a8490069c8607257708196a76f020e94697179', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:read_skill_resource:wshobson-python-testing-patterns:references/advanced-patterns.md"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_DjQGfS1hPqa4qJaWbVFcOq3q"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0f6f1b498c24a8490069c8607460a481969a3ba9091e37663c', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Short answer:\n- Use pytest-asyncio (most common) or pytest-anyio (if you want backend-agnostic tests).\n- With pytest-asyncio, either mark tests with @pytest.mark.asyncio or enable asyncio_mode = auto in pytest.ini so plain async test functi"
+    }
+  ]
+}

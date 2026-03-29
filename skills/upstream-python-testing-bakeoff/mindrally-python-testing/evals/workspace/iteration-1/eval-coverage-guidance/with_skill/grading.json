@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer mentions `pytest --cov`, `pytest-cov`, or an equivalent pytest coverage command or plugin",
+      "passed": false,
+      "evidence": "The grader did not return a result for this check.",
+      "category": "evidence",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer recommends prioritizing meaningful, risky, or critical paths rather than blindly chasing one global percentage target",
+      "passed": true,
+      "evidence": "States: \"don\u2019t chase a single global percentage. Use it as a guardrail, not the goal. Focus effort where risk and complexity are highest,\" and \"Prioritize critical paths and branchy/bug\u2011prone modules.\"",
+      "category": "goal",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer does not treat raw coverage percentage as the only quality signal",
+      "passed": true,
+      "evidence": "States: \"don\u2019t chase a single global percentage. Use it as a guardrail, not the goal.\" Also suggests diff coverage and other practices: \"enforce high diff coverage (\u226590\u2013100%) on new/changed lines in CI. Use coverage xml plus a diff-coverage gate.\"",
+      "category": "goal",
+      "weight": 2.0
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 1,
+    "total": 3,
+    "pass_rate": 0.6666666666666666,
+    "weighted_pass_rate": 0.7142857142857143
+  },
+  "category_scores": {
+    "evidence": {
+      "passed": 0,
+      "failed": 1,
+      "total": 1,
+      "passed_weight": 0.0,
+      "total_weight": 2.0,
+      "score": 0.0
+    },
+    "goal": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2,
+      "passed_weight": 5.0,
+      "total_weight": 5.0,
+      "score": 1.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

@@ -1,0 +1,58 @@
+Reach for one of the async test plugins, then either mark your async tests or enable auto mode.
+
+Recommended (asyncio-only): pytest-asyncio
+- Install: pip install pytest-asyncio
+- Configure one of:
+  - Use marks on async tests: @pytest.mark.asyncio
+  - Or enable auto mode in pytest.ini so you don’t need the mark:
+    [pytest]
+    asyncio_mode = auto
+- Define async fixtures with pytest-asyncio’s decorator:
+  - Use @pytest_asyncio.fixture for async fixtures (so the plugin awaits them properly).
+
+High-level shape
+
+- conftest.py (async client fixture)
+  import pytest_asyncio
+  import httpx
+
+  @pytest_asyncio.fixture
+  async def async_client():
+      async with httpx.AsyncClient(base_url="http://testserver") as client:
+          yield client
+
+- test file (async function and using the client)
+  import pytest
+
+  # If not using asyncio_mode=auto:
+  @pytest.mark.asyncio
+  async def test_async_function():
+      result = await some_async_function()
+      assert result == "expected"
+
+  # If not using asyncio_mode=auto, keep the mark here as well
+  @pytest.mark.asyncio
+  async def test_with_client(async_client):
+      resp = await async_client.get("/health")
+      assert resp.status_code == 200
+
+Alternative (backend-agnostic): pytest-anyio
+- Install: pip install pytest-anyio
+- Mark tests with @pytest.mark.anyio
+- You can keep async fixtures as normal pytest fixtures:
+  import pytest
+  import httpx
+
+  @pytest.fixture
+  async def async_client():
+      async with httpx.AsyncClient(base_url="http://testserver") as client:
+          yield client
+
+  @pytest.mark.anyio
+  async def test_with_client(async_client):
+      resp = await async_client.get("/health")
+      assert resp.status_code == 200
+
+Rule of thumb
+- If your code is asyncio-only, pytest-asyncio with asyncio_mode=auto is simple and robust (and use @pytest_asyncio.fixture for async fixtures).
+- If you might switch between asyncio/trio or want backend flexibility, use pytest-anyio and mark tests with @pytest.mark.anyio.

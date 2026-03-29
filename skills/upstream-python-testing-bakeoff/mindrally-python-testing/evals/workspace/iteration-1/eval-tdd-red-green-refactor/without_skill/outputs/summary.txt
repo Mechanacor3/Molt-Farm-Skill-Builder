@@ -1,0 +1,52 @@
+Follow a tight Red–Green–Refactor TDD loop. For a small pure helper, this is the order that works best:
+
+1) Specify the contract
+- Name, inputs and types, return type/shape
+- Error behavior (exceptions vs. sentinels)
+- Purity expectations: deterministic, no side effects, input not mutated
+- A few concrete examples
+
+2) Choose test cases before code
+- Minimal happy path example
+- Representative variations
+- Edge/boundary cases (empty, min/max, None/invalid where applicable)
+- Error paths (assert the exact exception and message)
+- Pure-function properties you care about (e.g., idempotence, commutativity, invariants)
+
+3) Scaffold tests and a stub
+- Create tests/test_<helper>.py with clear test names (test_func__scenario__expected)
+- If the function doesn’t exist yet, add a stub that raises NotImplementedError so tests import correctly
+
+4) RED: write the smallest failing test
+- Start with the simplest happy path
+- Run the suite and confirm it fails for the right reason
+
+5) GREEN: implement the minimum to pass
+- Write the least code needed to make that test pass
+- Run tests; ensure green
+
+6) REFACTOR: improve design with safety
+- Refactor the implementation (naming, duplication, clarity, complexity)
+- Refactor tests (dedupe with parametrization, helper fixtures)
+- Keep behavior identical; tests stay green
+
+7) Grow coverage iteratively
+- Add the next test (new example, boundary, or error case) → RED
+- Adjust/extend implementation → GREEN
+- Refactor again → REFACTOR
+- Repeat until the contract is fully expressed by tests
+
+8) Add property-based checks (optional but great for pure helpers)
+- Use Hypothesis to encode invariants (e.g., for all valid inputs, f is deterministic; input objects remain unchanged; algebraic properties if relevant)
+
+9) Hardening and quality gates
+- Type hints + mypy/pyright
+- Lint/format (ruff/flake8, black)
+- Consider mutation testing (mutmut/cosmic-ray) to ensure tests are effective
+- Micro-bench only if performance matters
+
+10) Workflow hygiene
+- Commit at each stage: red (test added), green (code passes), refactor (no behavior change)
+- Keep tests focused on observable behavior, not implementation details
+
+This sequence keeps you honest: define behavior first, prove it with a failing test, make it pass minimally, then clean it up—repeat until done.

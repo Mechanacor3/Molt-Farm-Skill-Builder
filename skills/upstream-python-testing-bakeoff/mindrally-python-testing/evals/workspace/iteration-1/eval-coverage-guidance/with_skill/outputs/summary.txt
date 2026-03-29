@@ -1,0 +1,11 @@
+Short answer: don’t chase a single global percentage. Use it as a guardrail, not the goal. Focus effort where risk and complexity are highest, and hold new/changed code to a higher bar.
+
+Pytest-oriented plan:
+- Set a modest repo floor to stop regressions (e.g., pytest --cov --cov-fail-under=78) and enforce high diff coverage (≥90–100%) on new/changed lines in CI. Use coverage xml plus a diff-coverage gate.
+- Prioritize critical paths and branchy/bug‑prone modules. Run with branch coverage and see gaps: pytest --cov --cov-branch --cov-report=term-missing.
+- Exclude noise (migrations, generated/vendor code) in .coveragerc [report] omit=… so the signal is clean.
+- Add fast, focused unit tests first: use @pytest.mark.parametrize for edge cases; hypothesis for tricky logic; mock I/O and external services.
+- For legacy hotspots, write characterization tests, then refactor to expose test seams.
+- Keep a small set of integration/functional tests for key flows; mark and run selectively (e.g., -m "not slow" on PRs, full suite nightly).
+
+Raise thresholds gradually and per-area as coverage and confidence improve.

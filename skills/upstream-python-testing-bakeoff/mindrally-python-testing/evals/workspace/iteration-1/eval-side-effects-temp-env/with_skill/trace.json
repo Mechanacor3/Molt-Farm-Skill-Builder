@@ -1,0 +1,32 @@
+{
+  "response_ids": [
+    "resp_00ba847a620e22a40069c8603b5bdc81909d402509e1767e18",
+    "resp_00ba847a620e22a40069c8604e08688190b23d0da824fe1e70"
+  ],
+  "request_ids": [
+    "req_4c669358b905400890bc40c5bf5ef976",
+    "req_13ac228f971f450989771c8f3c5e899f"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_00ba847a620e22a40069c8603bb3e881908873f024de6d1655', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:activate_skill:mindrally-python-testing"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_A9IE2F9uBGMgVS8PFV17HB7Z"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_00ba847a620e22a40069c8604e838481909f6257a677b97be9', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Use pytest\u2019s built-in isolation fixtures:\n\n- monkeypatch\n  - monkeypatch.setenv(\"APP_MODE\", \"test\") to control the env var.\n  - monkeypatch.delenv(\"APP_MODE\", raising=False) to simulate it missing.\n  - monkeypatch.chdir(tmp_path) if the cod"
+    }
+  ]
+}

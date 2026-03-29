@@ -1,0 +1,32 @@
+{
+  "response_ids": [
+    "resp_094de0b81d92c04d0069c85f9f4dc08195bc9aabb862b9a200",
+    "resp_094de0b81d92c04d0069c85fac83d48195893d1c1ba259419d"
+  ],
+  "request_ids": [
+    "req_8b36239d0f884624aab0063571f116d3",
+    "req_e13bc240b4b14e1cb3cdff333db9edb2"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_094de0b81d92c04d0069c85fa001248195b0bbceaed007d845', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:activate_skill:luxor-pytest-patterns"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_fvkiLFjLek2u4jK3GAJLRhiy"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_094de0b81d92c04d0069c85fade21081958f6f3a8979ee79a0', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "- Where it should live: Put the shared setup in a conftest.py at the root of your tests directory (tests/conftest.py) so every test module can use it automatically. If only a subset of tests need it, place a conftest.py in that subpackage. "
+    }
+  ]
+}

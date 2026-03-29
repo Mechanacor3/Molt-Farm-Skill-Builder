@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_0b0d2a0ca450fd4b0069c860a3db388190a87762e81efed016"
+  ],
+  "request_ids": [
+    "req_1794c2afb81b41eaa497132c7b9e6336"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0b0d2a0ca450fd4b0069c860a4390081909e804975f1a95804', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Short answer:\n- Use pytest-asyncio.\n- Mark async tests with pytest.mark.asyncio or set asyncio_mode=auto in pytest.ini.\n- Define async fixtures with pytest_asyncio.fixture.\n\nSetup:\n- pip install pytest-asyncio\n- pytest.ini:\n  [pytest]\n  asy"
+    }
+  ]
+}

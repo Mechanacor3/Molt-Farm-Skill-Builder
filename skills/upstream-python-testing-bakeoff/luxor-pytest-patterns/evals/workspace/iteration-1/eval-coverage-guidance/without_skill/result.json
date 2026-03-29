@@ -1,0 +1,59 @@
+{
+  "status": "completed",
+  "task_input": {
+    "task": "Team coverage is stuck around 78%. Should we chase a percentage target everywhere, or focus effort differently? Give a concise pytest-oriented answer.",
+    "output_dir": "skills/upstream-python-testing-bakeoff/luxor-pytest-patterns/evals/workspace/iteration-1/eval-coverage-guidance/without_skill/outputs"
+  },
+  "output": {
+    "summary": "Don\u2019t chase a blanket percentage. Use coverage as a guardrail, not the goal.\n\n- Keep a modest global threshold to prevent regressions (e.g., pytest -q --cov=src --cov-branch --cov-report=term-missing --cov-fail-under=80).\n- Improve where it matters: core domain logic, public APIs, complex/branch-heavy code, error paths, recent bugs and high-churn modules.\n- Gate changes, not history: enforce diff coverage on PRs (coverage.py \u201ccoverage diff\u201d or diff-cover) so new/changed lines meet a higher bar.\n- Prefer high-value tests: assert meaningful behavior, hit boundary cases with pytest.mark.parametrize, isolate I/O via fixtures/monkeypatch/fakes; mark slow/integration tests and run them separately.\n- Turn on branch coverage to expose missed decision paths; use term-missing output to target gaps.\n- Exclude low-value code (generated/defensive/unreachable) with # pragma: no cover and .coveragerc omit rules.\n- Ratchet thresholds per module only when risk justifies it; avoid writing trivial tests just to push the number.",
+    "skill_names": [],
+    "skill_descriptions": {},
+    "skill_references": {},
+    "skill_catalog": [],
+    "context_files": [],
+    "context_directories": [
+      "skills/upstream-python-testing-bakeoff/luxor-pytest-patterns/evals/workspace/iteration-1/eval-coverage-guidance/without_skill/outputs"
+    ],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "Team coverage is stuck around 78%. Should we chase a percentage target everywhere, or focus effort differently? Give a concise pytest-oriented answer.",
+      "output_dir": "skills/upstream-python-testing-bakeoff/luxor-pytest-patterns/evals/workspace/iteration-1/eval-coverage-guidance/without_skill/outputs"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 123,
+      "input_compacted": false,
+      "output_tokens_estimate": 233,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 25173,
+      "usage": {
+        "requests": 1,
+        "input_tokens": 182,
+        "output_tokens": 1480,
+        "total_tokens": 1662,
+        "request_usage_entries": []
+      }
+    },
+    "trace": {
+      "response_ids": [
+        "resp_01d19af5b059ce500069c860b031dc81949c7ef7de84cbe5d8"
+      ],
+      "request_ids": [
+        "req_9e06c692c9d747d384a5f3d5b42a6ff2"
+      ],
+      "items": [
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_01d19af5b059ce500069c860b0863481949046b638df918c3e', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "message_output_item",
+          "summary": "Don\u2019t chase a blanket percentage. Use coverage as a guardrail, not the goal.\n\n- Keep a modest global threshold to prevent regressions (e.g., pytest -q --cov=src --cov-branch --cov-report=term-missing --cov-fail-under=80).\n- Improve where it"
+        }
+      ]
+    }
+  }
+}

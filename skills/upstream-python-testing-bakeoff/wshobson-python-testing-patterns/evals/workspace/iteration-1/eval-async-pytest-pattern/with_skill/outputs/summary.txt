@@ -1,0 +1,73 @@
+Short answer:
+- Use pytest-asyncio (most common) or pytest-anyio (if you want backend-agnostic tests).
+- With pytest-asyncio, either mark tests with @pytest.mark.asyncio or enable asyncio_mode = auto in pytest.ini so plain async test functions just work.
+- Define async fixtures with pytest_asyncio.fixture (preferred) and await/async with them in tests.
+
+Option A: pytest-asyncio (recommended default)
+1) Install: pip install pytest-asyncio
+2) Configure one of:
+- pytest.ini:
+  [pytest]
+  asyncio_mode = auto
+- Or mark each async test: @pytest.mark.asyncio
+
+3) High-level structure:
+- conftest.py (async client fixture)
+  import pytest_asyncio
+  import httpx
+
+  @pytest_asyncio.fixture
+  async def async_client():
+      async with httpx.AsyncClient(base_url="http://testserver") as client:
+          yield client  # auto-closes after test
+
+- tests/test_example.py (async function test + client use)
+  import asyncio
+
+  async def do_work(x: int) -> int:
+      await asyncio.sleep(0)
+      return x * 2
+
+  # If using asyncio_mode=auto, no marker needed
+  async def test_do_work():
+      assert await do_work(2) == 4
+
+  async def test_uses_async_client(async_client):
+      resp = await async_client.get("/ping")
+      assert resp.status_code == 200
+      # e.g., assert resp.json() == {"status": "ok"}
+
+If you don’t set asyncio_mode=auto, add @pytest.mark.asyncio above each async test.
+
+Option B: pytest-anyio (backend-agnostic: asyncio/trio)
+1) Install: pip install pytest-anyio
+2) Mark async tests with @pytest.mark.anyio (no global setting needed).
+3) Async fixtures can be defined with plain pytest.fixture or kept with pytest_asyncio.fixture if you already use pytest-asyncio.
+
+Example:
+- conftest.py
+  import pytest, httpx
+
+  @pytest.fixture
+  async def async_client():
+      async with httpx.AsyncClient(base_url="http://testserver") as client:
+          yield client
+
+- tests/test_example.py
+  import pytest
+  import asyncio
+
+  async def do_work(x): await asyncio.sleep(0); return x * 2
+
+  @pytest.mark.anyio
+  async def test_do_work():
+      assert await do_work(2) == 4
+
+  @pytest.mark.anyio
+  async def test_uses_async_client(async_client):
+      resp = await async_client.get("/ping")
+      assert resp.status_code == 200
+
+Rule of thumb:
+- Use pytest-asyncio + asyncio_mode=auto for straightforward asyncio projects.
+- Use pytest-anyio when libraries (e.g., httpx/FastAPI) or your code may swap between asyncio and trio, or you need anyio features.

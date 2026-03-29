@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer mentions `pytest-asyncio` or equivalent async pytest support",
+      "passed": false,
+      "evidence": "The grader did not return a result for this check.",
+      "category": "goal",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer includes `@pytest.mark.asyncio` or an equivalent async test marker",
+      "passed": false,
+      "evidence": "The grader did not return a result for this check.",
+      "category": "evidence",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer mentions awaiting the async function or using an async fixture pattern",
+      "passed": false,
+      "evidence": "The grader did not return a result for this check.",
+      "category": "evidence",
+      "weight": 2.0
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 3,
+    "total": 3,
+    "pass_rate": 0.0,
+    "weighted_pass_rate": 0.0
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 0,
+      "failed": 1,
+      "total": 1,
+      "passed_weight": 0.0,
+      "total_weight": 2.0,
+      "score": 0.0
+    },
+    "evidence": {
+      "passed": 0,
+      "failed": 2,
+      "total": 2,
+      "passed_weight": 0.0,
+      "total_weight": 5.0,
+      "score": 0.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

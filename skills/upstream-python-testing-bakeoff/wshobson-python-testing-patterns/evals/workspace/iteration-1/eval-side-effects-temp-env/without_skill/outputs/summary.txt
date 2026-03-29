@@ -1,0 +1,22 @@
+Use pytest’s built-ins for environment and filesystem isolation:
+
+- monkeypatch
+  - monkeypatch.setenv("APP_MODE", "test") to control the env var
+  - monkeypatch.delenv("APP_MODE", raising=False) to simulate it missing
+  - monkeypatch.chdir(tmp_path) to force all relative writes into a temp dir
+  - monkeypatch.setattr(...) if you need to redirect any path helpers your code uses
+  - If APP_MODE is read at import time, setenv first and then import or importlib.reload(module)
+
+- tmp_path (or tmp_path_factory if you need a shared temp dir across tests)
+  - Per-test temporary directory for JSON outputs; cleaned up automatically
+
+Example:
+
+def test_writes_json_in_test_mode(tmp_path, monkeypatch):
+    monkeypatch.setenv("APP_MODE", "test")
+    monkeypatch.chdir(tmp_path)  # isolate writes
+    write_json_files()  # function under test
+    files = list(tmp_path.glob("*.json"))
+    assert files and all(f.is_file() for f in files)
+
+This keeps tests hermetic: no real env leakage and no writes to the repo.

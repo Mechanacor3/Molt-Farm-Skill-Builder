@@ -1,0 +1,68 @@
+Short answer:
+- Use pytest-asyncio if you’re only targeting asyncio. Configure asyncio_mode=auto so you can write async def tests without a marker, and declare async fixtures with @pytest_asyncio.fixture.
+- Use pytest-anyio if you might switch backends (asyncio/trio) or want simpler async fixtures with @pytest.fixture. Mark tests with @pytest.mark.anyio.
+
+High-level setups and examples:
+
+Option A: pytest-asyncio (pure asyncio)
+- Install: pip install pytest-asyncio
+- Configure once:
+  - pyproject.toml:
+    [tool.pytest.ini_options]
+    asyncio_mode = "auto"
+  - or pytest.ini:
+    [pytest]
+    asyncio_mode = auto
+- Write tests and fixtures:
+  - conftest.py
+    import pytest_asyncio
+    from httpx import AsyncClient
+
+    @pytest_asyncio.fixture
+    async def async_client():
+        async with AsyncClient(base_url="http://testserver") as client:
+            yield client
+
+  - test_example.py
+    async def test_async_func():
+        result = await do_work()
+        assert result == 42
+
+    async def test_with_client(async_client):
+        resp = await async_client.get("/health")
+        assert resp.status_code == 200
+
+  - If you don’t set asyncio_mode=auto, add @pytest.mark.asyncio to each async test.
+
+Option B: pytest-anyio (backend-agnostic)
+- Install: pip install pytest-anyio
+- Write tests and fixtures:
+  - conftest.py
+    import pytest
+    from httpx import AsyncClient
+
+    @pytest.fixture
+    async def async_client():
+        async with AsyncClient(base_url="http://testserver") as client:
+            yield client
+
+    # Optional: pin backend
+    @pytest.fixture
+    def anyio_backend():
+        return "asyncio"
+
+  - test_example.py
+    import pytest
+
+    @pytest.mark.anyio
+    async def test_async_func():
+        assert await do_work() == 42
+
+    @pytest.mark.anyio
+    async def test_with_client(async_client):
+        resp = await async_client.get("/health")
+        assert resp.is_success
+
+Rule of thumb:
+- Pick pytest-asyncio + asyncio_mode=auto for straightforward asyncio projects.
+- Pick pytest-anyio if you want the flexibility to run under different async backends or prefer plain @pytest.fixture for async fixtures.

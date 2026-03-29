@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer recommends `@pytest.mark.parametrize` for the repeated input cases",
+      "passed": true,
+      "evidence": "Direct recommendation and usage: \"Use pytest.mark.parametrize for a table-driven test.\" and in code: \"@pytest.mark.parametrize(\"email, expected\", CASES)\"; also later: \"@pytest.mark.parametrize(\"email\", VALIDS)\" and \"@pytest.mark.parametrize(\"email, exc\", INVALIDS)\"",
+      "category": "goal",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer shows or describes a table of input and expected values in one focused test",
+      "passed": true,
+      "evidence": "Provides a single focused test driven by a table of pairs: \"CASES = [ pytest.param(\"simple@example.com\", True, id=\"simple\"), ... ]\" and \"@pytest.mark.parametrize(\"email, expected\", CASES)\\ndef test_is_valid_email(email, expected):\\n    assert is_valid_email(email) is expected\"",
+      "category": "evidence",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer avoids recommending many near-duplicate test functions for each case",
+      "passed": true,
+      "evidence": "States: \"Drive one or two small test functions from a list of cases so each row is a separate subtest with clear IDs.\" and \"Keep one parametrized test with (email, expected) rows.\" The examples use parametrization rather than separate near-duplicate tests per case.",
+      "category": "goal",
+      "weight": 1.0
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0,
+    "weighted_pass_rate": 1.0
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2,
+      "passed_weight": 4.0,
+      "total_weight": 4.0,
+      "score": 1.0
+    },
+    "evidence": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "passed_weight": 2.0,
+      "total_weight": 2.0,
+      "score": 1.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

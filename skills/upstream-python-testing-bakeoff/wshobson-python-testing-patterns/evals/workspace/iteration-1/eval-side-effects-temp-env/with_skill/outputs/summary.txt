@@ -1,0 +1,21 @@
+Best built-in pytest tools for this:
+
+- monkeypatch
+  - monkeypatch.setenv("APP_MODE", "test") to control the environment per test
+  - monkeypatch.delenv("APP_MODE", raising=False) to simulate “not set”
+  - monkeypatch.chdir(tmp_path) to force any relative file writes into a temp directory
+  - monkeypatch.setattr(module_or_obj, "OUTPUT_DIR", tmp_path, raising=False) if the code uses a module-level output path
+
+- tmp_path (or tmp_path_factory if you need a session-scoped/shared temp dir)
+  - Use tmp_path to create an isolated directory for JSON outputs
+  - Pass tmp_path (or a subdir) to your function if it accepts an output path; otherwise chdir into it
+
+Minimal sketch:
+- Arrange:
+  - monkeypatch.setenv("APP_MODE", "test")
+  - outdir = tmp_path / "out"; outdir.mkdir()
+  - monkeypatch.chdir(outdir) (or monkeypatch.setattr(your_module, "OUTPUT_DIR", outdir))
+- Act: call the function that writes JSON
+- Assert: check files in outdir (exists, contents)
+
+Tip: If APP_MODE is read at import time, set the env with monkeypatch.setenv first, then import or importlib.reload the module under test.

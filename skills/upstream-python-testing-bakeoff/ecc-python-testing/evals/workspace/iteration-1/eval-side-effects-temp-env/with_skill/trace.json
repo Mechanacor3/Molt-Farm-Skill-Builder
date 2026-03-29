@@ -1,0 +1,32 @@
+{
+  "response_ids": [
+    "resp_0f3648487a10abc50069c8600e27908193aef0fd4b01f2c87b",
+    "resp_0f3648487a10abc50069c860109c4c8193a5a212356b7a49bb"
+  ],
+  "request_ids": [
+    "req_82d4b0fa8a544220af08f05e4ed02ba6",
+    "req_4dca0fcae74a426fa5bfaebc1db9f026"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0f3648487a10abc50069c8600e803c8193bb5bab5a4d3dc140', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:activate_skill:ecc-python-testing"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_JtX8ZWNEhzoXrrnJjDWvbjmA"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0f3648487a10abc50069c8601134c08193972f70bceec14737', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Use these built-in pytest tools:\n\n- monkeypatch\n  - Set/clear APP_MODE without affecting the real environment:\n    - monkeypatch.setenv(\"APP_MODE\", \"test\")\n    - monkeypatch.delenv(\"APP_MODE\", raising=False) to simulate missing var\n  - Redi"
+    }
+  ]
+}

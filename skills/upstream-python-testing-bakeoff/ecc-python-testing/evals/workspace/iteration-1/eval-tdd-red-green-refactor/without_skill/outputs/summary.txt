@@ -1,0 +1,37 @@
+Follow a tight TDD “red–green–refactor” loop:
+
+1) Clarify the contract
+- Define the function name, signature, types, and behavior.
+- List a few concrete examples (inputs → outputs), edge cases, and error conditions.
+- Note invariants/properties (e.g., pure, deterministic, no side effects).
+
+2) Write the first test (red)
+- Create a test file named after the helper.
+- Write one small, clear test for the primary happy-path behavior.
+- Use Arrange–Act–Assert style and behavior-focused naming.
+- Optionally start with a stub that raises NotImplementedError so the failure is explicit.
+
+3) Run tests and confirm the failure
+- Verify it fails for the expected reason (not a typo or import issue).
+
+4) Implement the minimal code (green)
+- Write the smallest implementation that makes that one test pass (even if it’s naive).
+- Run tests to confirm green.
+
+5) Refactor
+- Clean up duplication in code and tests.
+- Improve naming, structure, and add type hints/docstring.
+- Keep behavior identical; rerun tests to ensure still green.
+
+6) Expand tests, iterate
+- Add more cases one by one: edge/boundary values, empty inputs, error handling, tricky ordering, idempotency.
+- After each new test: red → minimal code to pass → green → refactor.
+- Consider parameterized tests for multiple examples.
+- For pure helpers, consider a lightweight property-based test (e.g., Hypothesis) for key invariants.
+
+7) Quality gates
+- Keep tests fast and isolated (no I/O, no globals).
+- Run linters/formatters; aim for near-100% coverage for this small unit.
+- Commit after stable green, especially post-refactor.
+
+This order keeps feedback quick and ensures the implementation is driven by verified behavior.

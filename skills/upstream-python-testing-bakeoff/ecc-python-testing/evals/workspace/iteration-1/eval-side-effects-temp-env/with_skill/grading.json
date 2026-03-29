@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer recommends `monkeypatch` for controlling environment variables",
+      "passed": false,
+      "evidence": "The grader did not return a result for this check.",
+      "category": "goal",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer recommends `tmp_path` or an equivalent pytest temporary path fixture for isolated filesystem writes",
+      "passed": false,
+      "evidence": "The grader did not return a result for this check.",
+      "category": "goal",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer keeps the strategy narrow and explicitly avoids relying on real environment state or repository files",
+      "passed": true,
+      "evidence": "Explicit phrases: 'Set/clear APP_MODE without affecting the real environment' and 'to avoid touching repo files.' It focuses on built-ins 'monkeypatch' and 'tmp_path' (with 'pytest.mark.parametrize' marked optional).",
+      "category": "format",
+      "weight": 1.0
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 2,
+    "total": 3,
+    "pass_rate": 0.3333333333333333,
+    "weighted_pass_rate": 0.14285714285714285
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 0,
+      "failed": 2,
+      "total": 2,
+      "passed_weight": 0.0,
+      "total_weight": 6.0,
+      "score": 0.0
+    },
+    "format": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "passed_weight": 1.0,
+      "total_weight": 1.0,
+      "score": 1.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

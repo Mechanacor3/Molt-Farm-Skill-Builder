@@ -1,0 +1,18 @@
+Short answer: don’t chase a blanket percentage. Keep an overall floor, but target coverage where risk and defects are.
+
+Pytest-oriented guidance:
+- Set a sane floor and branch coverage: pytest --cov=yourpkg --cov-branch --cov-report=term-missing --cov-fail-under=80
+- Push critical paths to 100%: core business rules, auth/permissions, money/data integrity, public APIs, error handling.
+- Grow coverage efficiently:
+  - Use @pytest.mark.parametrize to hit boundary/edge cases fast.
+  - Add tests around branching logic and error paths (with pytest.raises).
+  - Isolate I/O via fixtures and mocks so you can cover failure modes without flakiness.
+  - Write characterization tests for legacy hot spots before refactoring.
+- Reduce noise:
+  - Exclude low-value code (migrations, trivial getters, generated code) in .coveragerc omit, and mark unreachable guards with # pragma: no cover.
+- Make it sustainable:
+  - Gate changes with diff coverage in CI (require tests for changed lines).
+  - Use markers (unit, integration, slow) to keep the fast suite green on every PR; run the full/slow nightly.
+  - For critical modules, consider mutation testing (e.g., mutmut) to validate test effectiveness.
+
+Aim: ≥80% overall, 100% on critical paths, and prioritize risk over uniform percentage chasing.

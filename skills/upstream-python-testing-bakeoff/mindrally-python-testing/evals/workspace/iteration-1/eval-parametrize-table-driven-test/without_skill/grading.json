@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer recommends `@pytest.mark.parametrize` for the repeated input cases",
+      "passed": false,
+      "evidence": "The grader did not return a result for this check.",
+      "category": "goal",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer shows or describes a table of input and expected values in one focused test",
+      "passed": true,
+      "evidence": "The output states: \"Single table with (email, expected) pairs.\" and provides a focused test: \"@pytest.mark.parametrize(\\n    \\\"email, expected\\\",\\n    [\\n        (\\\"alice@example.com\\\", True),\\n        (\\\"bob.smith@sub.domain.co.uk\\\", True),\\n        (\\\"no-at.example.com\\\", False),\\n        (\\\"bad@\\\", False),\\n        (\\\"@example.com\\\", False),\\n        pytest.param(\\\"UPPER@EXAMPLE.COM\\\", True, id=\\\"upper-case\\\"),\\n        pytest.param(\\\"trailing-space@example.com \\\", False, id=\\\"trailing-space\\\"),\\n    ],\\n)\\ndef test_is_valid_email(email, expected):\\n    assert is_valid_email(email) == expected\"",
+      "category": "evidence",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer avoids recommending many near-duplicate test functions for each case",
+      "passed": true,
+      "evidence": "The output explicitly advises a single parameterized test: \"have one test function iterate over the rows.\" and shows exactly one test function for the boolean-returning validator: \"def test_is_valid_email(email, expected): ...\" rather than separate near-duplicate tests per case.",
+      "category": "goal",
+      "weight": 1.0
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 1,
+    "total": 3,
+    "pass_rate": 0.6666666666666666,
+    "weighted_pass_rate": 0.5
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 1,
+      "failed": 1,
+      "total": 2,
+      "passed_weight": 1.0,
+      "total_weight": 4.0,
+      "score": 0.25
+    },
+    "evidence": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "passed_weight": 2.0,
+      "total_weight": 2.0,
+      "score": 1.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

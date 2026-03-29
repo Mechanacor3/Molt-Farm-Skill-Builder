@@ -1,0 +1,32 @@
+{
+  "response_ids": [
+    "resp_04e97b12b2c0a6ce0069c8602367688194b9fd309354e8dd6a",
+    "resp_04e97b12b2c0a6ce0069c860380f9081948ba1f4895404fe92"
+  ],
+  "request_ids": [
+    "req_4c6fbc1cb6cc49e7996b776259df88ab",
+    "req_d0d9f53b6d144193a256d7a84fd0b406"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_04e97b12b2c0a6ce0069c86023dbd481949c5f71c6b895d190', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:activate_skill:luxor-pytest-patterns"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_o63OVZCqmrvWZa1YfQ4w0wzP"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_04e97b12b2c0a6ce0069c86039fc2c8194b101bc64e54204f1', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Reach for one of the async test plugins, then either mark your async tests or enable auto mode.\n\nRecommended (asyncio-only): pytest-asyncio\n- Install: pip install pytest-asyncio\n- Configure one of:\n  - Use marks on async tests: @pytest.mark"
+    }
+  ]
+}

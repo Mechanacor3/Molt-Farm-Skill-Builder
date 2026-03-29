@@ -1,0 +1,32 @@
+Use these built-in pytest tools:
+
+- monkeypatch
+  - Set/clear APP_MODE without affecting the real environment:
+    - monkeypatch.setenv("APP_MODE", "test")
+    - monkeypatch.delenv("APP_MODE", raising=False) to simulate missing var
+  - Redirect outputs if your code uses module-level paths or cwd:
+    - monkeypatch.chdir(tmp_path) to force relative writes into a temp dir
+    - monkeypatch.setattr(module, "OUTPUT_DIR", tmp_path) if there’s a constant
+
+- tmp_path
+  - Provides an isolated temporary directory for JSON outputs that’s automatically cleaned up.
+  - Pass it into your function or chdir into it to avoid touching repo files.
+
+- pytest.mark.parametrize (optional)
+  - Combine with monkeypatch to exercise multiple APP_MODE values in one test file.
+
+Example sketch:
+def test_writes_json_in_isolated_env(tmp_path, monkeypatch):
+    monkeypatch.setenv("APP_MODE", "test")
+    monkeypatch.chdir(tmp_path)  # ensure relative writes go here
+    write_json_files()  # function under test
+    assert (tmp_path / "output.json").is_file()
+
+If APP_MODE is read at import time, set env first and reload:
+def test_import_time_env(tmp_path, monkeypatch):
+    monkeypatch.setenv("APP_MODE", "prod")
+    monkeypatch.chdir(tmp_path)
+    import importlib, mymodule
+    importlib.reload(mymodule)
+    mymodule.write_json_files()
+    assert (tmp_path / "prod.json").exists()

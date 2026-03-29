@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_04507b5d926d589b0069c8602df75c81949f03a656a0d86319"
+  ],
+  "request_ids": [
+    "req_45596feef4704103a7925430ac66870b"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_04507b5d926d589b0069c8602e457c8194a255d99f83e1d5e5', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Use these built-in pytest tools:\n\n- monkeypatch\n  - monkeypatch.setenv(\"APP_MODE\", \"value\") to control the env var\n  - monkeypatch.delenv(\"APP_MODE\", raising=False) to simulate it missing\n  - monkeypatch.chdir(tmp_path) to force writes into"
+    }
+  ]
+}

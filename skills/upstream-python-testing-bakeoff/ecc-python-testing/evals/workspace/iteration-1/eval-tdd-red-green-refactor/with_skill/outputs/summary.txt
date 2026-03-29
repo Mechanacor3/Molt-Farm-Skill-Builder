@@ -1,0 +1,49 @@
+Recommended workflow (TDD: red → green → refactor), tailored for a small pure helper:
+
+1) Specify behavior before code
+- Define the function name, inputs/outputs, edge cases, and error handling.
+- Decide: what should be accepted/rejected; how to handle None/empty values/bounds; determinism and invariants.
+
+2) Write the first test (RED)
+- Start with the simplest happy-path example.
+- Put it in tests/unit/test_<module>.py with a clear name describing behavior.
+- Run pytest and confirm it fails for the right reason.
+
+3) Implement the minimum to pass (GREEN)
+- Write the smallest possible implementation that satisfies only that test.
+- Run the full test suite to ensure only the intended test flips to green.
+
+4) Refactor (REFACTOR)
+- Improve names, remove duplication, simplify logic, keep behavior unchanged.
+- Re-run tests; they must remain green.
+
+5) Grow coverage with more examples
+- Add representative cases: typical inputs, boundaries, empty/None (if applicable), Unicode/whitespace/casing for strings, negatives/zeros for numbers, order/duplicates for collections.
+- Consolidate example-based checks with pytest.mark.parametrize to keep tests DRY.
+- Add failure-mode tests using pytest.raises for invalid inputs.
+
+6) Check invariants for pure helpers
+- Add tests for properties like idempotence, commutativity/associativity (if applicable), length preservation, monotonicity, or “round-trip” behavior.
+
+7) Keep the loop tight
+- After each new test: see it fail (RED) → adjust code minimally (GREEN) → refactor.
+- Prefer small iterative steps over large batches.
+
+8) Validate coverage
+- Run pytest --cov to verify the new helper is fully exercised; for small pure helpers, target 100% lines/branches.
+- Add a missing-case test rather than testing implementation details.
+
+9) Finalize
+- Ensure tests are readable and named by behavior.
+- Commit tests and code together.
+
+Optional quick test skeleton you can adapt:
+- Happy path
+  - test_my_helper_simple_case()
+- Parametrized examples
+  - @pytest.mark.parametrize("inp,expected", [(..., ...), (..., ...)]) def test_my_helper_examples(inp, expected): ...
+- Edge cases
+  - def test_my_helper_empty_input(): ...
+  - def test_my_helper_none_input_raises(): with pytest.raises(ValueError): my_helper(None)
+
+Follow this order every time: write failing test → make it pass → refactor → expand cases → re-check coverage.

@@ -1,0 +1,24 @@
+Short answer: don’t chase a single global % everywhere. Keep a modest floor to prevent backsliding, but focus test effort where it reduces risk and catches real bugs.
+
+Pytest-oriented plan:
+- Keep a global floor (e.g., 75–80%) to stop regressions; raise it slowly per component as quality improves.
+- Gate PRs on diff coverage (new/changed lines), not just total coverage.
+- Prioritize tests for:
+  - Critical user/business flows and security-sensitive code
+  - Recently bug-fixed or high-churn files (add regression tests first)
+  - Complex/branchy logic and error paths/boundaries
+- Use branch coverage and show gaps to guide work:
+  - pytest -q --cov=yourpkg --cov-branch --cov-report=term-missing
+- Exclude noise so the signal is meaningful (migrations, generated/vendor code, entrypoints) via .coveragerc:
+  - [run] branch = True
+  - [report] omit = yourpkg/migrations/*, yourpkg/_generated/*, */venv/*
+- Enforce per-area targets in CI by running separate jobs per package/module with appropriate --cov and --cov-fail-under.
+- Favor high-value tests:
+  - Parametrized tests for business rules
+  - Failure paths and retries with mocks
+  - Integration tests at critical seams; unit tests for tricky logic
+- Use markers to keep the suite healthy (e.g., mark slow/integration; xfail known issues) and avoid chasing trivial getters/setters.
+
+Typical CI commands:
+- pytest --cov=yourpkg --cov-branch --cov-report=term-missing --cov-fail-under=78
+- coverage xml && diff-cover coverage.xml --compare=origin/main --fail-under=90

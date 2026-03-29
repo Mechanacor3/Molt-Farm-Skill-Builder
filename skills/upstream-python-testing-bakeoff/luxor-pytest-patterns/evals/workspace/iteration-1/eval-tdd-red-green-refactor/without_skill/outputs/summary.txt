@@ -1,0 +1,36 @@
+Follow classic TDD: Red → Green → Refactor. For a small pure helper, keep each loop tiny.
+
+1) Specify the behavior
+- Write down the function’s contract: name, inputs, output, edge cases, and error conditions.
+- Pick 1–2 concrete examples that nail the core behavior.
+
+2) Red: write a failing test first
+- Create tests/test_<module>_helper.py (or add to an existing test file).
+- Write a single, smallest happy-path test with a clear name using Arrange–Act–Assert.
+- Run pytest and confirm it fails for the right reason (e.g., NameError/NotImplementedError or an assertion failure). This proves the test is wired.
+
+3) Green: make the test pass with the smallest change
+- Add the helper with just enough code to satisfy that one test (don’t generalize yet).
+- Run pytest again and get to green.
+
+4) Refactor
+- Improve names, remove duplication, clarify intent, add type hints/docstring.
+- Keep tests green after each tiny refactor.
+
+5) Grow coverage iteratively
+- Add another example test (including edge/boundary cases), watch it go Red → implement minimal change → Green → Refactor.
+- Use pytest.mark.parametrize for multiple examples once the shape is stable.
+- Add negative/error-handling tests if applicable.
+
+6) Consider property-based tests (pure helpers shine here)
+- If there’s a useful invariant, add a Hypothesis test after a few example tests.
+- Keep properties small and focused to avoid flakiness.
+
+7) Finish strong
+- Ensure all tests pass, code is clean, and behavior is well-specified in docstrings (optionally with doctest examples).
+- Optionally check coverage/mutation testing if the helper is critical.
+
+Practical tips
+- Run only the new test while iterating (pytest -k <name> -q) to stay fast.
+- Don’t mock; pure helpers shouldn’t need it.
+- Commit in small steps: after green, after refactor, and after each new test+implementation loop.

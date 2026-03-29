@@ -1,0 +1,51 @@
+Use pytest.mark.parametrize for a table-driven test. Drive one or two small test functions from a list of cases so each row is a separate subtest with clear IDs.
+
+If your validator returns a boolean:
+- Keep one parametrized test with (email, expected) rows.
+
+Example:
+import pytest
+
+# Table of cases
+CASES = [
+    pytest.param("simple@example.com", True, id="simple"),
+    pytest.param("user+tag@example.co.uk", True, id="plus-tag-multi-tld"),
+    pytest.param("bad@", False, id="missing-domain"),
+    pytest.param("@bad.com", False, id="missing-local"),
+    pytest.param("a..b@example.com", False, id="consecutive-dots"),
+]
+
+@pytest.mark.parametrize("email, expected", CASES)
+def test_is_valid_email(email, expected):
+    assert is_valid_email(email) is expected
+
+If your validator raises on invalid input:
+- Split valid and invalid paths so assertions are simple and failure output is clear.
+
+Example:
+import pytest
+
+VALIDS = [
+    pytest.param("simple@example.com", id="simple"),
+    pytest.param("user+tag@example.co.uk", id="plus-tag-multi-tld"),
+]
+
+INVALIDS = [
+    pytest.param("bad@", ValueError, id="missing-domain"),
+    pytest.param("@bad.com", ValueError, id="missing-local"),
+    pytest.param("a..b@example.com", ValueError, id="consecutive-dots"),
+]
+
+@pytest.mark.parametrize("email", VALIDS)
+def test_validate_email_accepts_valid(email):
+    validate_email(email)  # should not raise
+
+@pytest.mark.parametrize("email, exc", INVALIDS)
+def test_validate_email_rejects_invalid(email, exc):
+    with pytest.raises(exc):
+        validate_email(email)
+
+Notes:
+- Use pytest.param with id=... for readable failure messages.
+- Keep the table near the test so adding new cases is trivial.
+- Prefer separate tests for accept vs reject if the behavior differs (return vs raise).

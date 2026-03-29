@@ -1,0 +1,31 @@
+Use two built-in pytest fixtures:
+
+- monkeypatch for environment and working directory
+  - monkeypatch.setenv("APP_MODE", "test") to control the env var
+  - monkeypatch.delenv("APP_MODE", raising=False) to test missing var
+  - monkeypatch.chdir(tmp_path) to force all relative writes into a temp dir
+  - If the code uses a module-level constant/path, monkeypatch.setattr(...) to redirect it to tmp_path
+
+- tmp_path for an isolated, auto-cleaned temporary directory to hold the JSON outputs
+
+Minimal pattern:
+
+import json
+import pytest
+from mypkg import writer  # module with function under test
+
+def test_writes_json_in_temp_dir(monkeypatch, tmp_path):
+    monkeypatch.setenv("APP_MODE", "test")
+    monkeypatch.chdir(tmp_path)  # keep repo clean
+
+    writer.write_json_files()  # reads APP_MODE, writes relative paths
+
+    files = list(tmp_path.glob("*.json"))
+    assert files
+    data = json.loads(files[0].read_text())
+    assert data.get("mode") == "test"
+
+Notes:
+- Prefer tmp_path over legacy tmpdir.
+- If your function accepts an output path, pass tmp_path directly and skip chdir.
+- You can parametrize APP_MODE values and reuse the same pattern; monkeypatch automatically restores state after each test.

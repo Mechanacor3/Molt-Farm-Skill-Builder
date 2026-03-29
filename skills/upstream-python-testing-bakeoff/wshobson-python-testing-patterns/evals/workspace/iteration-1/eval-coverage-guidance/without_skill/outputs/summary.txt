@@ -1,0 +1,16 @@
+Don’t chase a single percentage everywhere—use coverage as a guardrail, not the goal.
+
+Recommended pytest-focused approach:
+- Keep a modest global floor to stop regressions, then raise bars only where it matters.
+  - CI: pytest --cov=src --cov-branch --cov-report=term-missing:skip-covered --cov-fail-under=80
+- Enforce higher coverage on changed/critical code instead of the whole repo.
+  - After tests: coverage xml && diff-cover coverage.xml --compare-branch=origin/main --fail-under=90
+- Target behavior and risk:
+  - Prioritize public APIs, money/availability paths, bug-prone and complex modules (use radon cc to spot complexity).
+- Improve signal, not just percentage:
+  - Use branch coverage to catch logic gaps; parametrize and property-based (hypothesis) tests for edge cases.
+  - Consider mutation testing (mutmut) on key modules to validate test effectiveness.
+- Reduce noise so the metric reflects value:
+  - .coveragerc: branch = True; omit/generated/migrations/CLI glue; use “# pragma: no cover” for defensive/unreachable lines.
+
+Summary: keep a sane global threshold, gate diffs and critical packages more strictly, and focus on high-risk behavior with high-quality tests.

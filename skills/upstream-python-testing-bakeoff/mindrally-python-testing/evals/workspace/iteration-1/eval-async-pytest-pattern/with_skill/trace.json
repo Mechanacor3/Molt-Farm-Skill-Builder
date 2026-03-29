@@ -1,0 +1,32 @@
+{
+  "response_ids": [
+    "resp_0618aa7cd69ea1ff0069c8607f826c8197b0f31abd5841ccc3",
+    "resp_0618aa7cd69ea1ff0069c86081cf408197a3e8da85edeea92f"
+  ],
+  "request_ids": [
+    "req_4985c8f27f8e47beaa8a0ea9eb2785e8",
+    "req_449633ee376547c9acdac72d0a467876"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0618aa7cd69ea1ff0069c8607fe2248197894ae722cec44ce9', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:activate_skill:mindrally-python-testing"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_V2RZH2KoD0lBnt1tFYDzl8pr"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0618aa7cd69ea1ff0069c860822ed0819782f506e0d854ffba', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Reach for one of these two well-supported setups:\n\nOption A: pytest-asyncio (asyncio-only)\n- Install: pytest-asyncio\n- Configure one of:\n  - Per-test marker: use @pytest.mark.asyncio on each async test, or\n  - Global auto mode: add to pytes"
+    }
+  ]
+}

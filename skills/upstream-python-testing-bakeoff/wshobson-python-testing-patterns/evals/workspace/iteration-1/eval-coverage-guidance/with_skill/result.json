@@ -1,0 +1,84 @@
+{
+  "status": "completed",
+  "task_input": {
+    "task": "Team coverage is stuck around 78%. Should we chase a percentage target everywhere, or focus effort differently? Give a concise pytest-oriented answer.",
+    "output_dir": "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/eval-coverage-guidance/with_skill/outputs"
+  },
+  "output": {
+    "summary": "Short answer: don\u2019t chase a single global % everywhere. Keep a modest floor to prevent backsliding, but focus test effort where it reduces risk and catches real bugs.\n\nPytest-oriented plan:\n- Keep a global floor (e.g., 75\u201380%) to stop regressions; raise it slowly per component as quality improves.\n- Gate PRs on diff coverage (new/changed lines), not just total coverage.\n- Prioritize tests for:\n  - Critical user/business flows and security-sensitive code\n  - Recently bug-fixed or high-churn files (add regression tests first)\n  - Complex/branchy logic and error paths/boundaries\n- Use branch coverage and show gaps to guide work:\n  - pytest -q --cov=yourpkg --cov-branch --cov-report=term-missing\n- Exclude noise so the signal is meaningful (migrations, generated/vendor code, entrypoints) via .coveragerc:\n  - [run] branch = True\n  - [report] omit = yourpkg/migrations/*, yourpkg/_generated/*, */venv/*\n- Enforce per-area targets in CI by running separate jobs per package/module with appropriate --cov and --cov-fail-under.\n- Favor high-value tests:\n  - Parametrized tests for business rules\n  - Failure paths and retries with mocks\n  - Integration tests at critical seams; unit tests for tricky logic\n- Use markers to keep the suite healthy (e.g., mark slow/integration; xfail known issues) and avoid chasing trivial getters/setters.\n\nTypical CI commands:\n- pytest --cov=yourpkg --cov-branch --cov-report=term-missing --cov-fail-under=78\n- coverage xml && diff-cover coverage.xml --compare=origin/main --fail-under=90",
+    "skill_names": [
+      "wshobson-python-testing-patterns"
+    ],
+    "skill_descriptions": {
+      "wshobson-python-testing-patterns": "Implement comprehensive testing strategies with pytest, fixtures, mocking, and test-driven development. Use when writing Python tests, setting up test suites, or implementing testing best practices."
+    },
+    "skill_references": {
+      "wshobson-python-testing-patterns": []
+    },
+    "skill_catalog": [
+      {
+        "name": "wshobson-python-testing-patterns",
+        "description": "Implement comprehensive testing strategies with pytest, fixtures, mocking, and test-driven development. Use when writing Python tests, setting up test suites, or implementing testing best practices."
+      }
+    ],
+    "context_files": [],
+    "context_directories": [
+      "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/eval-coverage-guidance/with_skill/outputs"
+    ],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "Team coverage is stuck around 78%. Should we chase a percentage target everywhere, or focus effort differently? Give a concise pytest-oriented answer.",
+      "output_dir": "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/eval-coverage-guidance/with_skill/outputs"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 123,
+      "input_compacted": false,
+      "output_tokens_estimate": 367,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 22421,
+      "usage": {
+        "requests": 2,
+        "input_tokens": 4969,
+        "output_tokens": 1468,
+        "total_tokens": 6437,
+        "request_usage_entries": []
+      }
+    },
+    "trace": {
+      "response_ids": [
+        "resp_03a37176bb0c7cdc0069c860afc34881969dd6a51bcae60d9f",
+        "resp_03a37176bb0c7cdc0069c860b23e1c8196a07382d5657cadd8"
+      ],
+      "request_ids": [
+        "req_7ca0dce1dc1f401e8c29cc91802f2007",
+        "req_679235adbf804f22866c4fb39176d9f1"
+      ],
+      "items": [
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_03a37176bb0c7cdc0069c860b022cc8196a302c77ca2bfd1c1', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "tool_call_item",
+          "summary": "function_call:activate_skill:wshobson-python-testing-patterns"
+        },
+        {
+          "type": "tool_call_output_item",
+          "summary": "function_call_output:call_ucdwSRKc6CV9iOOIkTHheLhB"
+        },
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_03a37176bb0c7cdc0069c860b2acac8196aca78ef2fa8b87bd', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "message_output_item",
+          "summary": "Short answer: don\u2019t chase a single global % everywhere. Keep a modest floor to prevent backsliding, but focus test effort where it reduces risk and catches real bugs.\n\nPytest-oriented plan:\n- Keep a global floor (e.g., 75\u201380%) to stop regre"
+        }
+      ]
+    }
+  }
+}

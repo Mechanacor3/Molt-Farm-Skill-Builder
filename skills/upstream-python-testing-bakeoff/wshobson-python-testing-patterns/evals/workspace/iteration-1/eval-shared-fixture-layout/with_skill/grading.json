@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer recommends using pytest fixtures for the shared setup",
+      "passed": true,
+      "evidence": "\"Use pytest fixtures:\" with details like \"A session-scoped fixture to create the temporary database...\" and \"A function- or module-scoped fixture for an authenticated client...\"",
+      "category": "goal",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer mentions `conftest.py` as the place for fixtures shared across multiple test modules",
+      "passed": false,
+      "evidence": "The grader did not return a result for this check.",
+      "category": "evidence",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer mentions choosing an appropriate fixture scope such as function, module, or session",
+      "passed": true,
+      "evidence": "Mentions \"A session-scoped fixture...\" and \"A function- or module-scoped fixture...\" plus \"In short: ... session scope for DB, function/module scope for authenticated client\"",
+      "category": "evidence",
+      "weight": 2.0
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 1,
+    "total": 3,
+    "pass_rate": 0.6666666666666666,
+    "weighted_pass_rate": 0.5714285714285714
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "passed_weight": 2.0,
+      "total_weight": 2.0,
+      "score": 1.0
+    },
+    "evidence": {
+      "passed": 1,
+      "failed": 1,
+      "total": 2,
+      "passed_weight": 2.0,
+      "total_weight": 5.0,
+      "score": 0.4
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

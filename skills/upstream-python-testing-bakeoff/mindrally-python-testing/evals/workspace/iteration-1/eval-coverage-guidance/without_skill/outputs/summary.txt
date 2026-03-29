@@ -1,0 +1,18 @@
+Short answer: don’t chase a single % everywhere. Use coverage as a guardrail, and focus test effort on high‑risk, high‑value code.
+
+Pytest-oriented plan:
+- Set a modest global floor to prevent regressions, but gate new/changed code more strictly.
+  - pytest -q --cov=yourpkg --cov-branch --cov-report=term-missing:skip-covered --cov-fail-under=78
+  - In CI, add diff coverage: coverage xml && diff-cover coverage.xml --compare-branch=origin/main --fail-under=90
+- Focus tests on:
+  - Core business logic, public APIs, complex branches, bug-prone areas, security/IO boundaries.
+  - Use pytest.mark.parametrize and property-based tests (hypothesis) to hit edge cases quickly.
+- Improve signal over %:
+  - Turn on branch coverage and inspect gaps (term-missing).
+  - Add mutation testing on hotspots (mutmut) to check test effectiveness.
+- Reduce noise:
+  - Exclude low-value code (migrations, generated files, trivial wrappers) in pyproject.toml/.coveragerc.
+    - [tool.coverage.run] omit = ["*/migrations/*", "*/_version.py", "*/cli.py"]
+    - [tool.coverage.report] exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]
+
+Ratcheting: keep the overall floor near current (~78) and raise it gradually; demand high diff coverage on new code and elevate coverage targets only for critical modules.

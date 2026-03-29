@@ -1,0 +1,34 @@
+Use pytest’s built-in isolation fixtures:
+
+- monkeypatch
+  - monkeypatch.setenv("APP_MODE", "test") to control the env var.
+  - monkeypatch.delenv("APP_MODE", raising=False) to simulate it missing.
+  - monkeypatch.chdir(tmp_path) if the code writes to relative paths.
+  - monkeypatch.setattr(module, "OUTPUT_DIR", tmp_path) if your code uses a module-level path/constant.
+
+- tmp_path (or tmpdir)
+  - Gives you an isolated temporary directory for JSON output with automatic cleanup.
+
+Tips:
+- If the module reads APP_MODE at import time, set the env with monkeypatch first, then import/reload the module.
+
+Example pattern:
+- Arrange: set APP_MODE with monkeypatch, create tmp_path, redirect writes (either pass tmp_path to the function, chdir into it, or patch a path constant).
+- Act: call the function.
+- Assert: read files from tmp_path and validate contents.
+
+Minimal example:
+- def test_writes_json_uses_app_mode(monkeypatch, tmp_path):
+    monkeypatch.setenv("APP_MODE", "test")
+    monkeypatch.chdir(tmp_path)  # if code writes relative paths
+    # or: monkeypatch.setattr(mymodule, "OUTPUT_DIR", tmp_path)
+
+    # call function under test
+    mymodule.write_json_payload({"x": 1})
+
+    files = list(tmp_path.glob("*.json"))
+    assert len(files) == 1
+    data = json.loads(files[0].read_text())
+    assert data["mode"] == "test"
+
+This combo (monkeypatch + tmp_path) keeps tests hermetic without touching the real environment or repo files.

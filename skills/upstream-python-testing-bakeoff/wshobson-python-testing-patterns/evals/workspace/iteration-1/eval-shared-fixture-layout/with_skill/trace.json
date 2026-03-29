@@ -1,0 +1,32 @@
+{
+  "response_ids": [
+    "resp_0fcc0257664d7c940069c85fe492648194a9125d0d09d9d0df",
+    "resp_0fcc0257664d7c940069c85ff0cd588194bbd1fd7c9c9a63ae"
+  ],
+  "request_ids": [
+    "req_6c0da6bdc2074727bebf8a5b880caefd",
+    "req_0af598fde72749e286fbf17f7c2cb683"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0fcc0257664d7c940069c85fe4e7d08194bdc53b0ba33de1ae', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:activate_skill:wshobson-python-testing-patterns"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_WIt4OkCmuBvec6pJDPHKC6aA"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0fcc0257664d7c940069c85ff16b288194b64b2e1c1aa5cbc8', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "- Put the shared setup in a conftest.py so it\u2019s automatically available to all test modules that need it. Choose the nearest scope:\n  - tests/conftest.py for suite-wide sharing\n  - tests/<package>/conftest.py if only a subset of modules nee"
+    }
+  ]
+}

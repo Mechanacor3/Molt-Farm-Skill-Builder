@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer mentions `pytest-asyncio` or equivalent async pytest support",
+      "passed": true,
+      "evidence": "\"Option A: pytest-asyncio (asyncio-only)\"\n\"- Install: pytest-asyncio\"\n\"Option B: pytest-anyio (works with asyncio and trio via AnyIO)\"\n\"- Install: pytest-anyio\"",
+      "category": "goal",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer includes `@pytest.mark.asyncio` or an equivalent async test marker",
+      "passed": true,
+      "evidence": "\"- Per-test marker: use @pytest.mark.asyncio on each async test, or\"\n\"- Mark async tests with @pytest.mark.anyio (no global ini setting needed).\"\n\"@pytest.mark.anyio\nasync def test_async_function():\n    result = await some_async_func(...)\n    assert result == ...\"",
+      "category": "evidence",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer mentions awaiting the async function or using an async fixture pattern",
+      "passed": true,
+      "evidence": "\"result = await some_async_func(...)\"\n\"resp = await async_client.get('/health')\"\n\"@pytest_asyncio.fixture\nasync def async_client():\n    async with make_async_client() as client:\n        yield client\"\n\"@pytest.fixture\nasync def async_client():\n    async with make_async_client() as client:\n        yield client\"",
+      "category": "evidence",
+      "weight": 2.0
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0,
+    "weighted_pass_rate": 1.0
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "passed_weight": 2.0,
+      "total_weight": 2.0,
+      "score": 1.0
+    },
+    "evidence": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2,
+      "passed_weight": 5.0,
+      "total_weight": 5.0,
+      "score": 1.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

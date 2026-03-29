@@ -1,0 +1,16 @@
+{
+  "baseline_label": "without_skill",
+  "winner": "without_skill",
+  "confidence": "medium",
+  "reason": "without_skill led on task-relevant checks. goal=+0.00, evidence=-0.60, format=+0.00, trigger=+0.00 (positive favors with_skill).",
+  "task_uplift_score": -0.3,
+  "goal_score_delta": 0.0,
+  "evidence_score_delta": -0.6,
+  "format_score_delta": 0.0,
+  "trigger_score_delta": 0.0,
+  "cost_delta": {
+    "duration_ms": 1368,
+    "tokens": 5609,
+    "requests": 1
+  }
+}

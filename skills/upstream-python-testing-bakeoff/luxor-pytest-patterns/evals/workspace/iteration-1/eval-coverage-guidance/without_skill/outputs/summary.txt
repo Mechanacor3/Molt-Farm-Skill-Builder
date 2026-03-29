@@ -1,0 +1,9 @@
+Don’t chase a blanket percentage. Use coverage as a guardrail, not the goal.
+
+- Keep a modest global threshold to prevent regressions (e.g., pytest -q --cov=src --cov-branch --cov-report=term-missing --cov-fail-under=80).
+- Improve where it matters: core domain logic, public APIs, complex/branch-heavy code, error paths, recent bugs and high-churn modules.
+- Gate changes, not history: enforce diff coverage on PRs (coverage.py “coverage diff” or diff-cover) so new/changed lines meet a higher bar.
+- Prefer high-value tests: assert meaningful behavior, hit boundary cases with pytest.mark.parametrize, isolate I/O via fixtures/monkeypatch/fakes; mark slow/integration tests and run them separately.
+- Turn on branch coverage to expose missed decision paths; use term-missing output to target gaps.
+- Exclude low-value code (generated/defensive/unreachable) with # pragma: no cover and .coveragerc omit rules.
+- Ratchet thresholds per module only when risk justifies it; avoid writing trivial tests just to push the number.

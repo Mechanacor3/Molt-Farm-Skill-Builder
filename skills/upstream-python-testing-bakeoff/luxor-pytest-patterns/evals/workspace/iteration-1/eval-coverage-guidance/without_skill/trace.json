@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_01d19af5b059ce500069c860b031dc81949c7ef7de84cbe5d8"
+  ],
+  "request_ids": [
+    "req_9e06c692c9d747d384a5f3d5b42a6ff2"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_01d19af5b059ce500069c860b0863481949046b638df918c3e', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Don\u2019t chase a blanket percentage. Use coverage as a guardrail, not the goal.\n\n- Keep a modest global threshold to prevent regressions (e.g., pytest -q --cov=src --cov-branch --cov-report=term-missing --cov-fail-under=80).\n- Improve where it"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+Recommended setup
+
+Pick one of these (most teams use the first):
+- pytest-asyncio (asyncio-only)
+  - pip install pytest-asyncio
+  - pytest.ini:
+    [pytest]
+    asyncio_mode = auto
+  - Write async tests with async def; you can still add @pytest.mark.asyncio explicitly if you prefer.
+  - Define async fixtures with pytest_asyncio.fixture.
+
+- pytest-anyio (if you may run on multiple backends like asyncio/trio)
+  - pip install pytest-anyio
+  - Mark tests with @pytest.mark.anyio.
+  - Async fixtures can be async def fixtures (works fine under pytest-anyio).
+
+High-level test layout (pytest-asyncio example)
+
+- Async function under test
+  - Mark test with @pytest.mark.asyncio (optional if asyncio_mode=auto).
+  - Await the function directly.
+
+- Async client fixture (e.g., httpx.AsyncClient or aiohttp.ClientSession)
+  - Use an async context manager in the fixture and yield the client.
+  - Inject the fixture into tests and await client calls.
+
+Sketch
+
+# conftest.py (or the test module)
+import pytest
+import pytest_asyncio
+import httpx
+
+@pytest_asyncio.fixture
+async def async_client():
+    async with httpx.AsyncClient(base_url="http://testserver") as client:
+        yield client
+
+# If testing an ASGI app (FastAPI/Starlette):
+# from httpx import AsyncClient
+# @pytest_asyncio.fixture
+# async def async_client(app):
+#     async with AsyncClient(app=app, base_url="http://test") as client:
+#         yield client
+
+# tests/test_example.py
+import pytest
+
+@pytest.mark.asyncio  # optional with asyncio_mode=auto
+async def test_async_function():
+    result = await my_async_function()
+    assert result == "expected"
+
+@pytest.mark.asyncio  # optional with asyncio_mode=auto
+async def test_client_request(async_client):
+    resp = await async_client.get("/ping")
+    assert resp.status_code == 200
+
+If you choose pytest-anyio, just replace the marker:
+- Use @pytest.mark.anyio on the tests.
+- The fixture stays the same shape (async context manager + yield).

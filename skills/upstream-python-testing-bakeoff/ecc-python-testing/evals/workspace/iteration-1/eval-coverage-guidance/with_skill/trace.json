@@ -1,0 +1,32 @@
+{
+  "response_ids": [
+    "resp_0ba8f4bd69986d5c0069c86098bcf48197a0123cc849a4f44a",
+    "resp_0ba8f4bd69986d5c0069c8609aebf48197b9ba04bd934452bd"
+  ],
+  "request_ids": [
+    "req_0c8ae81b8ba0456ab9c0bf831cdc5410",
+    "req_43d5d22a04034992ac3847dd5d788cde"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0ba8f4bd69986d5c0069c8609911d48197acf92477828023f3', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:activate_skill:ecc-python-testing"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_JXwEgmXd3toi2q6zrHJJ1McH"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0ba8f4bd69986d5c0069c8609b63b88197b1faa340dd986352', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Short answer: don\u2019t chase a blanket percentage. Keep an overall floor, but target coverage where risk and defects are.\n\nPytest-oriented guidance:\n- Set a sane floor and branch coverage: pytest --cov=yourpkg --cov-branch --cov-report=term-mi"
+    }
+  ]
+}

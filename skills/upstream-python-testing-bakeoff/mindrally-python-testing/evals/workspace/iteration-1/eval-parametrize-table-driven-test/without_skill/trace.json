@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_0711008b685398ae0069c85fcd1da8819481b9928242977099"
+  ],
+  "request_ids": [
+    "req_a6f9aca369f744dab6beb4a81cd945f4"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0711008b685398ae0069c85fcd72688194ace7e899dc4262cb', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Use pytest\u2019s parameterization (table-driven test). Put your inputs and expected outcomes in a data table and have one test function iterate over the rows.\n\nIf your validator returns a boolean:\n- Single table with (email, expected) pairs.\n\nE"
+    }
+  ]
+}

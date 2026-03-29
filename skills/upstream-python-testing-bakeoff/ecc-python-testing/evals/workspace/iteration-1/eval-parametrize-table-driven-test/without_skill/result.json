@@ -1,0 +1,59 @@
+{
+  "status": "completed",
+  "task_input": {
+    "task": "I need to test the same email validator against a table of valid and invalid inputs. What pytest pattern should I use, and what should the test shape look like?",
+    "output_dir": "skills/upstream-python-testing-bakeoff/ecc-python-testing/evals/workspace/iteration-1/eval-parametrize-table-driven-test/without_skill/outputs"
+  },
+  "output": {
+    "summary": "Use pytest\u2019s parametrize to drive a table of inputs. Two common shapes:\n\nA) One table with expected outcome (recommended when you want one place to see all cases)\n- Keeps valid/invalid together and makes it easy to add edge cases.\n\nExample:\nimport pytest\n# from your_module import is_valid_email\n\n@pytest.mark.parametrize(\n    \"email, expected\",\n    [\n        (\"alice@example.com\", True),\n        (\"bob.smith+tag@sub.domain.co\", True),\n        (\"user_name@exa-mple.org\", True),\n        (\"bad@\", False),                    # missing domain\n        (\"@no-local\", False),               # missing local part\n        (\"no-at-sign.example.com\", False),  # no @\n        (\"trailingdot.@example.com\", False),\n        (\"space in@domain.com\", False),\n    ],\n    ids=[\n        \"simple\",\n        \"plus-and-subdomain\",\n        \"dash-in-domain\",\n        \"missing-domain\",\n        \"missing-local\",\n        \"no-at\",\n        \"trailing-dot-local\",\n        \"space-in-local\",\n    ],\n)\ndef test_is_valid_email_table(email, expected):\n    assert is_valid_email(email) == expected\n\nB) Two parametrized tests, one for valid and one for invalid (nice when you often run just failures or just valids)\nvalid_emails = [\n    \"alice@example.com\",\n    \"bob.smith+tag@sub.domain.co\",\n    \"user_name@exa-mple.org\",\n]\n\ninvalid_emails = [\n    \"bad@\",\n    \"@no-local\",\n    \"no-at-sign.example.com\",\n    \"trailingdot.@example.com\",\n    \"space in@domain.com\",\n]\n\nimport pytest\n# from your_module import is_valid_email\n\n@pytest.mark.parametrize(\"email\", valid_emails, ids=valid_emails)\ndef test_valid_emails(email):\n    assert is_valid_email(email)\n\n@pytest.mark.parametrize(\"email\", invalid_emails, ids=invalid_emails)\ndef test_invalid_emails(email):\n    assert not is_valid_email(email)\n\nOptional enhancement for readability: wrap cases with an id/reason\nfrom dataclasses import dataclass\nimport pytest\n\n@dataclass\nclass Case:\n    email: str\n    ok: bool\n    reason: str\n\nCASES = [\n    Case(\"alice@example.com\", True, \"simple\"),\n    Case(\"bad@\", False, \"missing-domain\"),\n]\n\n@pytest.mark.parametrize(\"case\", CASES, ids=lambda c: c.reason)\ndef test_is_valid_email_cases(case: Case):\n    assert is_valid_email(case.email) == case.ok\n\nPick A or B based on preference. In all cases, use ids to make parametrized cases readable in test output.",
+    "skill_names": [],
+    "skill_descriptions": {},
+    "skill_references": {},
+    "skill_catalog": [],
+    "context_files": [],
+    "context_directories": [
+      "skills/upstream-python-testing-bakeoff/ecc-python-testing/evals/workspace/iteration-1/eval-parametrize-table-driven-test/without_skill/outputs"
+    ],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "I need to test the same email validator against a table of valid and invalid inputs. What pytest pattern should I use, and what should the test shape look like?",
+      "output_dir": "skills/upstream-python-testing-bakeoff/ecc-python-testing/evals/workspace/iteration-1/eval-parametrize-table-driven-test/without_skill/outputs"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 122,
+      "input_compacted": false,
+      "output_tokens_estimate": 553,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 17543,
+      "usage": {
+        "requests": 1,
+        "input_tokens": 177,
+        "output_tokens": 1737,
+        "total_tokens": 1914,
+        "request_usage_entries": []
+      }
+    },
+    "trace": {
+      "response_ids": [
+        "resp_09c097a398ac032b0069c85fb66cf48194a987cd3256790bf0"
+      ],
+      "request_ids": [
+        "req_dfaa2b5ecc55476e9113d35bd87c934c"
+      ],
+      "items": [
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_09c097a398ac032b0069c85fb70bc88194a741b37cbb44e76b', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "message_output_item",
+          "summary": "Use pytest\u2019s parametrize to drive a table of inputs. Two common shapes:\n\nA) One table with expected outcome (recommended when you want one place to see all cases)\n- Keeps valid/invalid together and makes it easy to add edge cases.\n\nExample:"
+        }
+      ]
+    }
+  }
+}

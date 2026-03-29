@@ -1,0 +1,40 @@
+Short answer:
+- Use pytest-asyncio.
+- Mark async tests with pytest.mark.asyncio or set asyncio_mode=auto in pytest.ini.
+- Define async fixtures with pytest_asyncio.fixture.
+
+Setup:
+- pip install pytest-asyncio
+- pytest.ini:
+  [pytest]
+  asyncio_mode = auto
+
+High-level shape:
+
+# test_example.py
+import pytest
+import pytest_asyncio
+import httpx
+
+# The async function you want to test
+async def do_work(x):
+    return x * 2
+
+# Async client fixture (example with httpx)
+@pytest_asyncio.fixture
+async def client():
+    async with httpx.AsyncClient(base_url="http://example.test") as ac:
+        yield ac
+
+# Async test for the function (no marker needed if asyncio_mode=auto; otherwise add @pytest.mark.asyncio)
+async def test_do_work():
+    assert await do_work(21) == 42
+
+# Async test that uses the async client fixture
+async def test_client_get(client):
+    resp = await client.get("/")
+    assert resp.status_code in {200, 404}  # example assertion
+
+Notes:
+- If you don’t add asyncio_mode=auto, decorate each async test with @pytest.mark.asyncio.
+- Alternative: pytest-anyio with @pytest.mark.anyio if you want backend-agnostic tests (AnyIO/Trio), but pytest-asyncio is the most common for pure asyncio.

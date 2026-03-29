@@ -1,0 +1,32 @@
+{
+  "response_ids": [
+    "resp_0d63588f6c0ad5fc0069c8604d30488196a52bc00cc9ca9636",
+    "resp_0d63588f6c0ad5fc0069c86059e1ac81969b051aa78364e18d"
+  ],
+  "request_ids": [
+    "req_ceae1307742f407c81d7bde7c8dc223a",
+    "req_879959f406704152bb8a3b116f8efa22"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0d63588f6c0ad5fc0069c8604d86208196b80a619890d722ea', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:activate_skill:ecc-python-testing"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_lIWQYXqLjWsxGyjnHTVm5tmO"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0d63588f6c0ad5fc0069c8605a6ec08196a94bbde971bff8d1', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Recommended setup\n\nPick one of these (most teams use the first):\n- pytest-asyncio (asyncio-only)\n  - pip install pytest-asyncio\n  - pytest.ini:\n    [pytest]\n    asyncio_mode = auto\n  - Write async tests with async def; you can still add @py"
+    }
+  ]
+}

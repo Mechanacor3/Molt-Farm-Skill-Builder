@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer mentions `pytest --cov`, `pytest-cov`, or an equivalent pytest coverage command or plugin",
+      "passed": true,
+      "evidence": "Includes explicit commands: \"pytest -q --cov=mypackage --cov-report=term-missing --cov-fail-under=78\" and \"pytest --cov=mypackage.core --cov-fail-under=90\".",
+      "category": "evidence",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer recommends prioritizing meaningful, risky, or critical paths rather than blindly chasing one global percentage target",
+      "passed": true,
+      "evidence": "States: \"Don\u2019t chase a blanket percentage. Use coverage as a guardrail, not the goal... prioritize tests by risk and impact.\" and \"Focus effort where tests pay off: - Critical business logic, complex/branchy code, error paths, and bug-prone/churn-heavy modules.\"",
+      "category": "goal",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer does not treat raw coverage percentage as the only quality signal",
+      "passed": true,
+      "evidence": "Says: \"Use coverage as a guardrail, not the goal\" and recommends a modest global threshold with targeted increases, emphasizing behavior-focused tests and risk/impact over a single number.",
+      "category": "goal",
+      "weight": 2.0
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0,
+    "weighted_pass_rate": 1.0
+  },
+  "category_scores": {
+    "evidence": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "passed_weight": 2.0,
+      "total_weight": 2.0,
+      "score": 1.0
+    },
+    "goal": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2,
+      "passed_weight": 5.0,
+      "total_weight": 5.0,
+      "score": 1.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

@@ -1,0 +1,132 @@
+{
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.3333333333333333,
+        "stddev": 0.2721655269759087
+      },
+      "weighted_pass_rate": {
+        "mean": 0.2857142857142857,
+        "stddev": 0.2735506022160966
+      },
+      "duration_ms": {
+        "mean": 24780.166666666668,
+        "stddev": 6869.316206063664
+      },
+      "tokens": {
+        "mean": 9669.166666666666,
+        "stddev": 4081.6562576429137
+      },
+      "requests": {
+        "mean": 2.3333333333333335,
+        "stddev": 0.4714045207910317
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.5555555555555556,
+        "stddev": 0.41573970964154905
+      },
+      "weighted_pass_rate": {
+        "mean": 0.5912698412698413,
+        "stddev": 0.42954401693453137
+      },
+      "duration_ms": {
+        "mean": 18797.833333333332,
+        "stddev": 2521.799913862231
+      },
+      "tokens": {
+        "mean": 1746.3333333333333,
+        "stddev": 386.2981002052977
+      },
+      "requests": {
+        "mean": 1.0,
+        "stddev": 0.0
+      }
+    },
+    "delta": {
+      "pass_rate": -0.22222222222222227,
+      "weighted_pass_rate": -0.3055555555555556,
+      "duration_ms": 5982.333333333336,
+      "tokens": 7922.833333333333,
+      "requests": 1.3333333333333335,
+      "baseline": "without_skill"
+    }
+  },
+  "category_scores": {
+    "with_skill": {
+      "goal": {
+        "mean": 0.3333333333333333,
+        "stddev": 0.4714045207910317
+      },
+      "format": {
+        "mean": 0.5,
+        "stddev": 0.5
+      },
+      "evidence": {
+        "mean": 0.2,
+        "stddev": 0.2
+      }
+    },
+    "without_skill": {
+      "goal": {
+        "mean": 0.6666666666666666,
+        "stddev": 0.4714045207910317
+      },
+      "format": {
+        "mean": 0.0,
+        "stddev": 0.0
+      },
+      "evidence": {
+        "mean": 0.5,
+        "stddev": 0.5
+      }
+    }
+  },
+  "comparison_summary": {
+    "baseline_label": "without_skill",
+    "total_cases": 6,
+    "with_skill_win_rate": 0.16666666666666666,
+    "baseline_win_rate": 0.5,
+    "tie_rate": 0.3333333333333333,
+    "task_uplift_score": -0.26666666666666666,
+    "category_deltas": {
+      "goal": -0.3333333333333333,
+      "evidence": -0.19999999999999998,
+      "format": 0.16666666666666666,
+      "trigger": 0.0
+    },
+    "cost_deltas": {
+      "duration_ms": 5982.333333333333,
+      "tokens": 7922.833333333333,
+      "requests": 1.3333333333333333
+    },
+    "promotion_signal": {
+      "successful": false,
+      "reason": "with_skill did not clearly beat baseline on task-relevant checks."
+    }
+  },
+  "with_skill_win_rate": 0.16666666666666666,
+  "task_uplift_score": -0.26666666666666666,
+  "category_deltas": {
+    "goal": -0.3333333333333333,
+    "evidence": -0.19999999999999998,
+    "format": 0.16666666666666666,
+    "trigger": 0.0
+  },
+  "cost_deltas": {
+    "duration_ms": 5982.333333333333,
+    "tokens": 7922.833333333333,
+    "requests": 1.3333333333333333
+  },
+  "promotion_signal": {
+    "successful": false,
+    "reason": "with_skill did not clearly beat baseline on task-relevant checks."
+  },
+  "skill_name": "wshobson-python-testing-patterns",
+  "iteration_dir": "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1",
+  "baseline": "without-skill",
+  "snapshot_current": true,
+  "snapshot_dir": "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/skill-snapshot/wshobson-python-testing-patterns",
+  "feedback_path": "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/feedback.json"
+}

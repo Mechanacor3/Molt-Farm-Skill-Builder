@@ -1,0 +1,50 @@
+Recommended TDD workflow for a small pure helper (in order):
+
+1) Define behavior first
+- Clarify the function’s name, signature, valid input domain, output range, and error conditions.
+- List a few concrete examples (typical case, boundary case, invalid input).
+- Identify any useful properties for a pure function (deterministic, no side effects, e.g., commutativity, idempotence, monotonicity, invariants).
+
+2) Create the test first
+- Add a focused test module (e.g., tests/test_<helper>.py).
+- Write one clear, smallest-possible test for the primary “happy path” using Arrange-Act-Assert.
+- Prefer one behavior per test and a descriptive name.
+
+3) Run tests to see them fail (Red)
+- Run pytest and confirm the failure is meaningful.
+- If you get an ImportError/NameError, add a minimal stub (e.g., function exists but raises NotImplementedError), then re-run to get an assertion failure.
+
+4) Implement the minimal code to pass that test (Green)
+- Write the simplest implementation that satisfies only that one test.
+- Keep it small; resist the urge to generalize early.
+
+5) Triangulate with more examples
+- Add another example that would fail a naive solution; re-run (Red), then generalize just enough to pass (Green).
+- Use pytest parametrize to quickly add multiple input/output pairs for a pure function.
+
+6) Add edge and error cases
+- Test boundaries, empty inputs, Unicode/whitespace quirks, large values, and invalid types/values (asserting specific exceptions/messages as needed).
+
+7) Add property-based checks (optional but great for pure helpers)
+- If properties exist (e.g., f(a) >= 0, f(a) == f(a) idempotence), add a property-based test (Hypothesis) to explore more input space.
+
+8) Refactor (while green)
+- Remove duplication, improve names, simplify logic.
+- If refactoring introduces a new idea/branch, add/adjust tests first, then refactor.
+
+9) Keep tests isolated and focused
+- No shared mutable state, no I/O. Each test should be independent and verify exactly one behavior.
+
+10) Add a quick feedback loop
+- Use: pytest -q -x --maxfail=1 -k <helper_name> during the micro-cycle.
+- Consider coverage to catch untested branches: pytest --cov=<your_pkg> --cov-report=term-missing.
+
+11) Commit with intent
+- Commit after each green step with messages that reflect the TDD cycle (add failing test, make it pass, refactor).
+
+Micro-cycle summary you’ll repeat:
+- Write a failing test (Red)
+- Make it pass with the simplest change (Green)
+- Refactor safely (Refactor)
+
+For a small pure helper, most of your value comes from: parameterized example tests, a couple of well-chosen edge cases, and (optionally) a lightweight property-based test to guard against regressions.

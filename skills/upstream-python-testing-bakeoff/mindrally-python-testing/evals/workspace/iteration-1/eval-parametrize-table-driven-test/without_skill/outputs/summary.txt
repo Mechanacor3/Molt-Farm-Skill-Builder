@@ -1,0 +1,65 @@
+Use pytest’s parameterization (table-driven test). Put your inputs and expected outcomes in a data table and have one test function iterate over the rows.
+
+If your validator returns a boolean:
+- Single table with (email, expected) pairs.
+
+Example:
+import pytest
+
+from yourpkg.validators import is_valid_email  # the function under test
+
+@pytest.mark.parametrize(
+    "email, expected",
+    [
+        ("alice@example.com", True),
+        ("bob.smith@sub.domain.co.uk", True),
+        ("no-at.example.com", False),
+        ("bad@", False),
+        ("@example.com", False),
+        pytest.param("UPPER@EXAMPLE.COM", True, id="upper-case"),
+        pytest.param("trailing-space@example.com ", False, id="trailing-space"),
+    ],
+)
+def test_is_valid_email(email, expected):
+    assert is_valid_email(email) == expected
+
+If you prefer separate tables for readability:
+VALID_EMAILS = [
+    "alice@example.com",
+    "bob.smith@sub.domain.co.uk",
+    "UPPER@EXAMPLE.COM",
+]
+
+INVALID_EMAILS = [
+    "no-at.example.com",
+    "bad@",
+    "@example.com",
+    "trailing-space@example.com ",
+]
+
+@pytest.mark.parametrize("email", VALID_EMAILS, ids=repr)
+def test_accepts_valid_emails(email):
+    assert is_valid_email(email) is True
+
+@pytest.mark.parametrize("email", INVALID_EMAILS, ids=repr)
+def test_rejects_invalid_emails(email):
+    assert is_valid_email(email) is False
+
+If your validator raises on invalid input (e.g., ValueError):
+import pytest
+
+from yourpkg.validators import validate_email  # raises on invalid
+
+@pytest.mark.parametrize("email", VALID_EMAILS, ids=repr)
+def test_valid_emails_pass(email):
+    validate_email(email)  # no exception = pass
+
+@pytest.mark.parametrize("email", INVALID_EMAILS, ids=repr)
+def test_invalid_emails_raise(email):
+    with pytest.raises(ValueError):
+        validate_email(email)
+
+Notes on shape:
+- Keep the data table close to the test (or in a fixture/module-level constant).
+- Use pytest.param with id= or ids= to get descriptive test names.
+- Aim for one assertion per row: call validator, compare to expected (or assert raises).

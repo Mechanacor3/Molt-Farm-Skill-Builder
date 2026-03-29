@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer recommends using pytest fixtures for the shared setup",
+      "passed": true,
+      "evidence": "The output states: \"Use pytest fixtures as the mechanism for both the temporary database and the authenticated client.\"",
+      "category": "goal",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer mentions `conftest.py` as the place for fixtures shared across multiple test modules",
+      "passed": true,
+      "evidence": "The output states: \"Put the shared setup in a conftest.py so pytest can auto-discover it.\" and \"Place it at the root of your test suite (e.g., tests/conftest.py) if many modules need it, or in a subpackage\u2019s conftest.py to limit scope to a subset of tests.\"",
+      "category": "evidence",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer mentions choosing an appropriate fixture scope such as function, module, or session",
+      "passed": true,
+      "evidence": "The output includes: \"Scope guidance: Temporary database/bootstrap: session or module scope ... Per-test isolation: a function-scoped fixture ... Authenticated client: typically function-scoped.\"",
+      "category": "evidence",
+      "weight": 2.0
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0,
+    "weighted_pass_rate": 1.0
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "passed_weight": 2.0,
+      "total_weight": 2.0,
+      "score": 1.0
+    },
+    "evidence": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2,
+      "passed_weight": 5.0,
+      "total_weight": 5.0,
+      "score": 1.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

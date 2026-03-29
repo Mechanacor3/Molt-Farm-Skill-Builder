@@ -1,0 +1,32 @@
+Use pytest’s built-ins that isolate environment and filesystem per test:
+
+- monkeypatch fixture:
+  - monkeypatch.setenv("APP_MODE", "test") to control the env var
+  - monkeypatch.delenv("APP_MODE", raising=False) to test the “unset” case
+  - monkeypatch.chdir(tmp_path) to make any relative writes land in a temp dir
+  - monkeypatch.setattr(module, "OUTPUT_DIR", tmp_path) if the code uses a module-level path
+
+- tmp_path fixture:
+  - Gives a fresh temporary directory for each test to hold any JSON outputs
+
+Minimal example:
+
+def test_writes_json_uses_app_mode(tmp_path, monkeypatch):
+    # Isolate env and filesystem
+    monkeypatch.setenv("APP_MODE", "test")
+    monkeypatch.chdir(tmp_path)
+
+    write_config()  # function reads APP_MODE and writes out.json in CWD or default dir
+
+    data = json.loads((tmp_path / "out.json").read_text())
+    assert data["mode"] == "test"
+
+If your function writes to a module constant path:
+
+def test_redirect_output_dir(tmp_path, monkeypatch):
+    monkeypatch.setenv("APP_MODE", "dev")
+    monkeypatch.setattr(myapp.module, "OUTPUT_DIR", tmp_path)
+    write_config()
+    assert (tmp_path / "config.json").is_file()
+
+These fixtures avoid touching the real environment or repo files and clean up automatically.

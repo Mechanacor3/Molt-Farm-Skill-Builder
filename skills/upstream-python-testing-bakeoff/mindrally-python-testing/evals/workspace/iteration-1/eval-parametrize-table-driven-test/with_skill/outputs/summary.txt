@@ -1,0 +1,100 @@
+Use pytest.mark.parametrize for a table-driven test. You can structure it either as two focused tests (one for valid, one for invalid) or a single table that encodes the expected outcome. Pick the shape that matches your validator’s API.
+
+Option A: Separate tests, simplest and clear
+- Use when your validator returns True for valid and either False or raises for invalid.
+
+If your validator returns bool:
+- test_valid_emails ensures True for known-good inputs.
+- test_invalid_emails ensures False for known-bad inputs.
+
+Example:
+import pytest
+
+from your_pkg import validate_email  # returns True/False
+
+@pytest.mark.parametrize(
+    "email",
+    [
+        "a@b.com",
+        "user.name+tag@sub.example.co.uk",
+        "USER@EXAMPLE.ORG",
+        "x_y-z@ex.io",
+    ],
+    ids=["simple", "plus-subdomain", "upper", "symbols"]
+)
+def test_valid_emails(email):
+    assert validate_email(email) is True
+
+@pytest.mark.parametrize(
+    "email",
+    [
+        "plainaddress",
+        "missing-at.example.com",
+        "user@",
+        "@example.com",
+        "user@@example.com",
+        "user example@example.com",
+    ],
+    ids=["no-at", "no-at-2", "no-domain", "no-local", "double-at", "space"]
+)
+def test_invalid_emails(email):
+    assert validate_email(email) is False
+
+If your validator raises on invalid:
+- Keep the same shape but expect exceptions in the invalid table.
+
+import pytest
+from your_pkg import validate_email  # raises ValueError on invalid
+
+@pytest.mark.parametrize("email", ["a@b.com", "user.name+tag@sub.example.co.uk"])
+def test_valid_emails(email):
+    assert validate_email(email) is True
+
+@pytest.mark.parametrize("email", ["plainaddress", "user@", "@example.com"])
+def test_invalid_emails(email):
+    with pytest.raises(ValueError):
+        validate_email(email)
+
+Option B: Single table with expected outcome
+- Useful if you want one place to add cases and you assert per-row outcome.
+
+If returns bool:
+import pytest
+from your_pkg import validate_email
+
+@pytest.mark.parametrize(
+    "email, expected",
+    [
+        ("a@b.com", True),
+        ("user.name+tag@sub.example.co.uk", True),
+        ("plainaddress", False),
+        ("user@", False),
+    ],
+    ids=["simple", "plus-subdomain", "no-at", "no-domain"]
+)
+def test_validate_email_table(email, expected):
+    assert validate_email(email) is expected
+
+If raises on invalid, use context managers to keep one test:
+import pytest
+from contextlib import nullcontext as does_not_raise
+from your_pkg import validate_email  # raises ValueError on invalid
+
+@pytest.mark.parametrize(
+    "email, expectation",
+    [
+        pytest.param("a@b.com", does_not_raise(), id="simple"),
+        pytest.param("user.name+tag@sub.example.co.uk", does_not_raise(), id="plus-subdomain"),
+        pytest.param("plainaddress", pytest.raises(ValueError), id="no-at"),
+        pytest.param("user@", pytest.raises(ValueError), id="no-domain"),
+    ]
+)
+def test_validate_email_table(email, expectation):
+    with expectation:
+        assert validate_email(email) is True
+
+Notes for good table-driven tests
+- Provide ids for cases so failures are readable.
+- Keep valid and invalid sets balanced and focused on behavior you support (e.g., subdomains, plus addressing, case-insensitivity, missing parts, spaces).
+- If your validator normalizes or strips whitespace, include those cases explicitly.
+- Prefer two separate tests (valid vs invalid) if you want clearer reporting granularity; use the single-table shape if you value one place to manage all cases.

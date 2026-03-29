@@ -1,0 +1,65 @@
+Use pytest’s parametrize pattern (table-driven tests). Keep a single test function and feed it rows of (email, expected). Two common shapes depending on your validator’s contract:
+
+1) Validator returns a boolean
+- Pattern: one test, parametrize (email, expected), add readable ids.
+
+Example:
+import pytest
+
+@pytest.mark.parametrize(
+    "email, expected",
+    [
+        ("alice@example.com", True),
+        ("bob.smith+tag@sub.domain.co.uk", True),
+        ("", False),
+        ("no-at-symbol.com", False),
+        ("@nodomain", False),
+        ("user@", False),
+    ],
+    ids=[
+        "simple",
+        "plus-and-subdomain",
+        "empty",
+        "missing-at",
+        "missing-local",
+        "missing-domain",
+    ],
+)
+def test_is_valid_email(email, expected):
+    assert is_valid_email(email) is expected
+
+2) Validator raises on invalid input (e.g., ValueError) and returns None/normalized value on success
+- Pattern: single test, parametrize (email, ok) and use a conditional context manager to unify both paths.
+
+Example:
+import contextlib
+import pytest
+
+@pytest.mark.parametrize(
+    "email, ok",
+    [
+        ("alice@example.com", True),
+        ("bob.smith+tag@sub.domain.co.uk", True),
+        ("", False),
+        ("no-at-symbol.com", False),
+        ("@nodomain", False),
+        ("user@", False),
+    ],
+    ids=[
+        "simple",
+        "plus-and-subdomain",
+        "empty",
+        "missing-at",
+        "missing-local",
+        "missing-domain",
+    ],
+)
+def test_validate_email(email, ok):
+    ctx = contextlib.nullcontext() if ok else pytest.raises(ValueError, match="invalid email")
+    with ctx:
+        validate_email(email)
+
+Notes
+- Prefer a single parametrize table for both valid and invalid to avoid duplication.
+- Use ids for readability in test output.
+- If you prefer separate tests, you can split into test_accepts_valid_emails and test_rejects_invalid_emails with a single-parameter parametrize each, but the unified table is the canonical “table-driven” pytest shape.

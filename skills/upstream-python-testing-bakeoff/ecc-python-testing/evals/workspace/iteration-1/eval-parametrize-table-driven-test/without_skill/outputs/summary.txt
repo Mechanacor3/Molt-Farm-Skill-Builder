@@ -1,0 +1,81 @@
+Use pytest’s parametrize to drive a table of inputs. Two common shapes:
+
+A) One table with expected outcome (recommended when you want one place to see all cases)
+- Keeps valid/invalid together and makes it easy to add edge cases.
+
+Example:
+import pytest
+# from your_module import is_valid_email
+
+@pytest.mark.parametrize(
+    "email, expected",
+    [
+        ("alice@example.com", True),
+        ("bob.smith+tag@sub.domain.co", True),
+        ("user_name@exa-mple.org", True),
+        ("bad@", False),                    # missing domain
+        ("@no-local", False),               # missing local part
+        ("no-at-sign.example.com", False),  # no @
+        ("trailingdot.@example.com", False),
+        ("space in@domain.com", False),
+    ],
+    ids=[
+        "simple",
+        "plus-and-subdomain",
+        "dash-in-domain",
+        "missing-domain",
+        "missing-local",
+        "no-at",
+        "trailing-dot-local",
+        "space-in-local",
+    ],
+)
+def test_is_valid_email_table(email, expected):
+    assert is_valid_email(email) == expected
+
+B) Two parametrized tests, one for valid and one for invalid (nice when you often run just failures or just valids)
+valid_emails = [
+    "alice@example.com",
+    "bob.smith+tag@sub.domain.co",
+    "user_name@exa-mple.org",
+]
+
+invalid_emails = [
+    "bad@",
+    "@no-local",
+    "no-at-sign.example.com",
+    "trailingdot.@example.com",
+    "space in@domain.com",
+]
+
+import pytest
+# from your_module import is_valid_email
+
+@pytest.mark.parametrize("email", valid_emails, ids=valid_emails)
+def test_valid_emails(email):
+    assert is_valid_email(email)
+
+@pytest.mark.parametrize("email", invalid_emails, ids=invalid_emails)
+def test_invalid_emails(email):
+    assert not is_valid_email(email)
+
+Optional enhancement for readability: wrap cases with an id/reason
+from dataclasses import dataclass
+import pytest
+
+@dataclass
+class Case:
+    email: str
+    ok: bool
+    reason: str
+
+CASES = [
+    Case("alice@example.com", True, "simple"),
+    Case("bad@", False, "missing-domain"),
+]
+
+@pytest.mark.parametrize("case", CASES, ids=lambda c: c.reason)
+def test_is_valid_email_cases(case: Case):
+    assert is_valid_email(case.email) == case.ok
+
+Pick A or B based on preference. In all cases, use ids to make parametrized cases readable in test output.

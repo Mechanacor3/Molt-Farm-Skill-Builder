@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer mentions `pytest-asyncio` or equivalent async pytest support",
+      "passed": true,
+      "evidence": "Mentions: \"Use pytest-asyncio.\" and also \"Alternative: pytest-anyio with @pytest.mark.anyio\"",
+      "category": "goal",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer includes `@pytest.mark.asyncio` or an equivalent async test marker",
+      "passed": true,
+      "evidence": "States: \"Mark async tests with pytest.mark.asyncio\" and \"decorate each async test with @pytest.mark.asyncio\"; also mentions alternative marker \"@pytest.mark.anyio\"",
+      "category": "evidence",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer mentions awaiting the async function or using an async fixture pattern",
+      "passed": true,
+      "evidence": "Shows: \"assert await do_work(21) == 42\" and an async fixture with \"@pytest_asyncio.fixture\\nasync def client(): ...\" then uses \"resp = await client.get('/')\"",
+      "category": "evidence",
+      "weight": 2.0
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0,
+    "weighted_pass_rate": 1.0
+  },
+  "category_scores": {
+    "goal": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "passed_weight": 2.0,
+      "total_weight": 2.0,
+      "score": 1.0
+    },
+    "evidence": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2,
+      "passed_weight": 5.0,
+      "total_weight": 5.0,
+      "score": 1.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

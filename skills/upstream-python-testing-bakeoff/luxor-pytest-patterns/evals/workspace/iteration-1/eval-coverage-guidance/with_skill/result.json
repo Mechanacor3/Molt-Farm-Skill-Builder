@@ -1,0 +1,84 @@
+{
+  "status": "completed",
+  "task_input": {
+    "task": "Team coverage is stuck around 78%. Should we chase a percentage target everywhere, or focus effort differently? Give a concise pytest-oriented answer.",
+    "output_dir": "skills/upstream-python-testing-bakeoff/luxor-pytest-patterns/evals/workspace/iteration-1/eval-coverage-guidance/with_skill/outputs"
+  },
+  "output": {
+    "summary": "Don\u2019t chase a blanket percentage. Use coverage as a guardrail, not the goal. In pytest, set a reasonable floor to prevent backslides, then prioritize tests by risk and impact.\n\nPractical pytest approach:\n- Set a floor and keep reports actionable:\n  - pytest -q --cov=mypackage --cov-report=term-missing --cov-fail-under=78\n  - In pytest.ini/coverage config, omit generated/boilerplate and exclude trivial lines (e.g., def __repr__, if __name__ == \"__main__\":) or mark with pragma: no cover.\n- Focus effort where tests pay off:\n  - Critical business logic, complex/branchy code, error paths, and bug-prone/churn-heavy modules.\n  - Use parametrization to cover input matrices quickly; fixtures to hit edge cases; monkeypatch/mocks to exercise failure paths without external calls.\n- Ratchet, don\u2019t mandate 100%:\n  - Keep a global floor (e.g., ~78\u201380%) and add stricter checks only for key modules:\n    - pytest --cov=mypackage.core --cov-fail-under=90\n- Track what\u2019s missing and act:\n  - Use term-missing/HTML reports to target uncovered lines; add concise tests that assert behavior, not implementation.\n\nSummary: Maintain a modest global threshold, concentrate new tests on high-risk/high-value code, exclude noise, and increment module-specific targets over time.",
+    "skill_names": [
+      "luxor-pytest-patterns"
+    ],
+    "skill_descriptions": {
+      "luxor-pytest-patterns": "Python testing with pytest covering fixtures, parametrization, mocking, and test organization for reliable test suites"
+    },
+    "skill_references": {
+      "luxor-pytest-patterns": []
+    },
+    "skill_catalog": [
+      {
+        "name": "luxor-pytest-patterns",
+        "description": "Python testing with pytest covering fixtures, parametrization, mocking, and test organization for reliable test suites"
+      }
+    ],
+    "context_files": [],
+    "context_directories": [
+      "skills/upstream-python-testing-bakeoff/luxor-pytest-patterns/evals/workspace/iteration-1/eval-coverage-guidance/with_skill/outputs"
+    ],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "Team coverage is stuck around 78%. Should we chase a percentage target everywhere, or focus effort differently? Give a concise pytest-oriented answer.",
+      "output_dir": "skills/upstream-python-testing-bakeoff/luxor-pytest-patterns/evals/workspace/iteration-1/eval-coverage-guidance/with_skill/outputs"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 123,
+      "input_compacted": false,
+      "output_tokens_estimate": 297,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 17274,
+      "usage": {
+        "requests": 2,
+        "input_tokens": 12270,
+        "output_tokens": 1453,
+        "total_tokens": 13723,
+        "request_usage_entries": []
+      }
+    },
+    "trace": {
+      "response_ids": [
+        "resp_08b1ba63be9e708d0069c8608ccaec8196a0478a2e345c08e7",
+        "resp_08b1ba63be9e708d0069c8608f10fc819697a782ab2c62ea0e"
+      ],
+      "request_ids": [
+        "req_6b78e9ebde404ba7bff9c67206c0083d",
+        "req_7cb1379f9c8e4095bd854192c8612787"
+      ],
+      "items": [
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_08b1ba63be9e708d0069c8608d350881968c1ccdf6a708f3c4', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "tool_call_item",
+          "summary": "function_call:activate_skill:luxor-pytest-patterns"
+        },
+        {
+          "type": "tool_call_output_item",
+          "summary": "function_call_output:call_IE6cuS1VsCeyBrsuFnOeHosx"
+        },
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_08b1ba63be9e708d0069c8608fbe648196a8d049d4fa4ed6db', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "message_output_item",
+          "summary": "Don\u2019t chase a blanket percentage. Use coverage as a guardrail, not the goal. In pytest, set a reasonable floor to prevent backslides, then prioritize tests by risk and impact.\n\nPractical pytest approach:\n- Set a floor and keep reports actio"
+        }
+      ]
+    }
+  }
+}

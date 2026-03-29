@@ -1,0 +1,59 @@
+{
+  "status": "completed",
+  "task_input": {
+    "task": "I need to test the same email validator against a table of valid and invalid inputs. What pytest pattern should I use, and what should the test shape look like?",
+    "output_dir": "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/eval-parametrize-table-driven-test/without_skill/outputs"
+  },
+  "output": {
+    "summary": "Use pytest.mark.parametrize for a table-driven test. Drive one or two small test functions from a list of cases so each row is a separate subtest with clear IDs.\n\nIf your validator returns a boolean:\n- Keep one parametrized test with (email, expected) rows.\n\nExample:\nimport pytest\n\n# Table of cases\nCASES = [\n    pytest.param(\"simple@example.com\", True, id=\"simple\"),\n    pytest.param(\"user+tag@example.co.uk\", True, id=\"plus-tag-multi-tld\"),\n    pytest.param(\"bad@\", False, id=\"missing-domain\"),\n    pytest.param(\"@bad.com\", False, id=\"missing-local\"),\n    pytest.param(\"a..b@example.com\", False, id=\"consecutive-dots\"),\n]\n\n@pytest.mark.parametrize(\"email, expected\", CASES)\ndef test_is_valid_email(email, expected):\n    assert is_valid_email(email) is expected\n\nIf your validator raises on invalid input:\n- Split valid and invalid paths so assertions are simple and failure output is clear.\n\nExample:\nimport pytest\n\nVALIDS = [\n    pytest.param(\"simple@example.com\", id=\"simple\"),\n    pytest.param(\"user+tag@example.co.uk\", id=\"plus-tag-multi-tld\"),\n]\n\nINVALIDS = [\n    pytest.param(\"bad@\", ValueError, id=\"missing-domain\"),\n    pytest.param(\"@bad.com\", ValueError, id=\"missing-local\"),\n    pytest.param(\"a..b@example.com\", ValueError, id=\"consecutive-dots\"),\n]\n\n@pytest.mark.parametrize(\"email\", VALIDS)\ndef test_validate_email_accepts_valid(email):\n    validate_email(email)  # should not raise\n\n@pytest.mark.parametrize(\"email, exc\", INVALIDS)\ndef test_validate_email_rejects_invalid(email, exc):\n    with pytest.raises(exc):\n        validate_email(email)\n\nNotes:\n- Use pytest.param with id=... for readable failure messages.\n- Keep the table near the test so adding new cases is trivial.\n- Prefer separate tests for accept vs reject if the behavior differs (return vs raise).",
+    "skill_names": [],
+    "skill_descriptions": {},
+    "skill_references": {},
+    "skill_catalog": [],
+    "context_files": [],
+    "context_directories": [
+      "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/eval-parametrize-table-driven-test/without_skill/outputs"
+    ],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "I need to test the same email validator against a table of valid and invalid inputs. What pytest pattern should I use, and what should the test shape look like?",
+      "output_dir": "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/eval-parametrize-table-driven-test/without_skill/outputs"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 130,
+      "input_compacted": false,
+      "output_tokens_estimate": 411,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 15110,
+      "usage": {
+        "requests": 1,
+        "input_tokens": 190,
+        "output_tokens": 1425,
+        "total_tokens": 1615,
+        "request_usage_entries": []
+      }
+    },
+    "trace": {
+      "response_ids": [
+        "resp_08f5f89174b64a260069c85fc6e5dc81948ac34be7392a4ccb"
+      ],
+      "request_ids": [
+        "req_4b41d52b97804cb089ec377ae3f1e4ce"
+      ],
+      "items": [
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_08f5f89174b64a260069c85fc7333c8194abba534bcc1c6ebb', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "message_output_item",
+          "summary": "Use pytest.mark.parametrize for a table-driven test. Drive one or two small test functions from a list of cases so each row is a separate subtest with clear IDs.\n\nIf your validator returns a boolean:\n- Keep one parametrized test with (email"
+        }
+      ]
+    }
+  }
+}

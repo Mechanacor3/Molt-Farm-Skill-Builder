@@ -1,0 +1,32 @@
+{
+  "response_ids": [
+    "resp_091e6735a46e55a70069c85f9ee89881978c94129c84b9f19a",
+    "resp_091e6735a46e55a70069c85fa1e6648197a2eea4dd3a501cec"
+  ],
+  "request_ids": [
+    "req_65cc44a678874185810b006a4e7f07d1",
+    "req_2bfff0f0147e440794dc277040b2076d"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_091e6735a46e55a70069c85f9f97388197a6e78a3cee780d1a', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "tool_call_item",
+      "summary": "function_call:activate_skill:wshobson-python-testing-patterns"
+    },
+    {
+      "type": "tool_call_output_item",
+      "summary": "function_call_output:call_F5DPLzWqI45iqUtzxxlFbbkw"
+    },
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_091e6735a46e55a70069c85fa2cd8c8197af0d64c999def371', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Use pytest\u2019s parameterization pattern (table-driven tests). You define a table of inputs and expected outcomes, and run the same assertion over each row.\n\nIf your validator returns a boolean:\n- Shape: one parameterized test with (email, exp"
+    }
+  ]
+}

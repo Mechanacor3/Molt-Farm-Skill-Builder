@@ -1,0 +1,13 @@
+- Where it should live: Put the shared setup in a conftest.py located at the lowest common ancestor directory of the tests that need it (often tests/conftest.py). Pytest will auto-discover fixtures there for all tests under that directory.
+
+- What mechanism to use: Pytest fixtures (with yield for setup/teardown) and appropriate scopes. Compose fixtures (e.g., authenticated_client depends on client, which depends on temp_db).
+
+Example sketch:
+- temp_db: session- or module-scoped fixture that creates a temporary database and tears it down via yield (you can use tmp_path_factory).
+- client: function- or module-scoped fixture that wires the app to the temp_db and yields a test client.
+- authenticated_client: fixture that logs in or attaches an auth token and returns the client.
+
+Notes:
+- Choose scope based on isolation needs: session for expensive DB init + per-test transaction rollback; or function scope for full isolation.
+- Don’t import fixtures from conftest.py; rely on auto-discovery.
+- If you need this across multiple repositories, move it into a pytest plugin instead.

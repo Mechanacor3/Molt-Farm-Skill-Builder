@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_0b3d6647d305d3830069c860f55d6481969a7aa0cc1e9e7420"
+  ],
+  "request_ids": [
+    "req_98b05421098b4653b9653780134738fe"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0b3d6647d305d3830069c860f5b2088196bdff3f1278b192e5', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Short answer: don\u2019t chase a single % everywhere. Use coverage as a guardrail, and focus test effort on high\u2011risk, high\u2011value code.\n\nPytest-oriented plan:\n- Set a modest global floor to prevent regressions, but gate new/changed code more str"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "assertion_results": [
+    {
+      "text": "The answer mentions `pytest --cov`, `pytest-cov`, or an equivalent pytest coverage command or plugin",
+      "passed": true,
+      "evidence": "Includes: \"Commands: pytest --cov=src --cov-branch --cov-report=xml --cov-report=term-missing\" and \"CI gates: --cov-fail-under=80\"",
+      "category": "evidence",
+      "weight": 2.0
+    },
+    {
+      "text": "The answer recommends prioritizing meaningful, risky, or critical paths rather than blindly chasing one global percentage target",
+      "passed": true,
+      "evidence": "States: \"Short answer: don\u2019t chase a blanket percentage. Keep a sane floor, then target coverage where it reduces risk the most.\" and \"Prioritize by risk/impact: Focus on complex, bug-prone, and business-critical paths first\"",
+      "category": "goal",
+      "weight": 3.0
+    },
+    {
+      "text": "The answer does not treat raw coverage percentage as the only quality signal",
+      "passed": true,
+      "evidence": "States: \"don\u2019t chase a blanket percentage\"; \"Improve test quality over count\"; \"Make coverage meaningful: Enable branch coverage ... Exclude noise ...\"; also suggests diff coverage and risk-based focus, not a single global %",
+      "category": "goal",
+      "weight": 2.0
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0,
+    "weighted_pass_rate": 1.0
+  },
+  "category_scores": {
+    "evidence": {
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "passed_weight": 2.0,
+      "total_weight": 2.0,
+      "score": 1.0
+    },
+    "goal": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2,
+      "passed_weight": 5.0,
+      "total_weight": 5.0,
+      "score": 1.0
+    }
+  },
+  "mode": "llm_grader+trace_requirements"
+}

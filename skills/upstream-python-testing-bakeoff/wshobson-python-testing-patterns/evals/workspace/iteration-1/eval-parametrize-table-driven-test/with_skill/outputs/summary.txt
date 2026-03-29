@@ -1,0 +1,57 @@
+Use pytest’s parameterization pattern (table-driven tests). You define a table of inputs and expected outcomes, and run the same assertion over each row.
+
+If your validator returns a boolean:
+- Shape: one parameterized test with (email, expected_bool), optionally giving each case a readable id.
+
+Example:
+import pytest
+
+# assume is_valid_email is your validator that returns True/False
+@pytest.mark.parametrize(
+    "email, expected",
+    [
+        pytest.param("user@example.com", True, id="simple"),
+        pytest.param("first.last@sub.domain.co.uk", True, id="subdomain"),
+        pytest.param("invalid.email", False, id="missing-at"),
+        pytest.param("@example.com", False, id="missing-local"),
+        pytest.param("user@domain", False, id="no-tld"),
+        pytest.param("", False, id="empty"),
+    ],
+)
+def test_is_valid_email_table(email, expected):
+    assert is_valid_email(email) == expected
+
+If your validator raises on invalid input:
+- Shape: split into two tests: one that expects success for valid inputs, and one that expects an exception for invalid inputs.
+
+Example:
+import pytest
+
+# assume validate_email raises ValueError on invalid inputs
+@pytest.mark.parametrize(
+    "email",
+    [
+        pytest.param("user@example.com", id="simple"),
+        pytest.param("first.last@sub.domain.co.uk", id="subdomain"),
+    ],
+)
+def test_validate_email_accepts_valid(email):
+    validate_email(email)  # no exception means pass
+
+@pytest.mark.parametrize(
+    "email",
+    [
+        pytest.param("invalid.email", id="missing-at"),
+        pytest.param("@example.com", id="missing-local"),
+        pytest.param("user@domain", id="no-tld"),
+        pytest.param("", id="empty"),
+    ],
+)
+def test_validate_email_rejects_invalid(email):
+    with pytest.raises(ValueError, match="invalid email|Invalid email"):
+        validate_email(email)
+
+Tips:
+- Use pytest.param with id=... so failures are easy to read.
+- Keep one behavior per test: either “returns True/False” or “raises,” not both in one function.
+- Add edge cases as needed (leading/trailing spaces, uppercase, plus addressing, unicode).

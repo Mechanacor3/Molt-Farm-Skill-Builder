@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_0a206a2311fb73d50069c86077a55481979560332ea3fc705e"
+  ],
+  "request_ids": [
+    "req_83a9e79d049e4b93ae9ddb8fd5ee0c35"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0a206a2311fb73d50069c86077f9bc8197b2739d9ec9dfbb09', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Reach for pytest-asyncio (simple, asyncio-only) or pytest-anyio (if you might switch backends like Trio). For most projects using asyncio/httpx/aiohttp, pytest-asyncio is the straightforward choice.\n\nSetup (pytest-asyncio):\n- pip install py"
+    }
+  ]
+}

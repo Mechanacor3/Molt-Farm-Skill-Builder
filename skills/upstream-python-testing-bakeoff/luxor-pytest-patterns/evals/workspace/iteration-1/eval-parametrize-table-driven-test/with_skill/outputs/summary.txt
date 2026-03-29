@@ -1,0 +1,70 @@
+Use pytest’s parametrize pattern (table-driven testing). You define a table of cases and run the same assertion over each row.
+
+Recommended shapes
+
+1) Single table with expected outcome
+- Keeps valid and invalid cases together, each row is (email, expected_bool).
+- Add readable ids so the test output names each case.
+
+Example:
+import pytest
+from yourpkg.validators import is_valid_email
+
+VALID_EMAILS = [
+    "user@example.com",
+    "user.name+tag@example.co.uk",
+    '"quoted"@example.com',
+    "üñîçøðé@example.com",
+]
+
+INVALID_EMAILS = [
+    "plainaddress",
+    "@missing-local.org",
+    "user@.invalid",
+    "user..dots@example.com",
+    "user@example..com",
+]
+
+@pytest.mark.parametrize(
+    "email,expected",
+    [
+        *[pytest.param(e, True, id=f"valid:{e}") for e in VALID_EMAILS],
+        *[pytest.param(e, False, id=f"invalid:{e}") for e in INVALID_EMAILS],
+        # Example of a known edge you can xfail until fixed:
+        # pytest.param("a@b", False, id="invalid:too-short", marks=pytest.mark.xfail(reason="bug #123")),
+    ],
+)
+def test_is_valid_email(email, expected):
+    assert is_valid_email(email) == expected
+
+2) Two tests: one for valids, one for invalids
+- Slightly clearer failures (accept vs reject).
+- Good when you don’t care about the expected value beyond True/False.
+
+Example:
+import pytest
+from yourpkg.validators import is_valid_email
+
+VALID_EMAILS = [
+    "user@example.com",
+    "user.name+tag@example.co.uk",
+]
+
+INVALID_EMAILS = [
+    "plainaddress",
+    "@missing-local.org",
+]
+
+@pytest.mark.parametrize("email", VALID_EMAILS, ids=lambda e: f"valid:{e}")
+def test_email_validator_accepts_valid(email):
+    assert is_valid_email(email)
+
+@pytest.mark.parametrize("email", INVALID_EMAILS, ids=lambda e: f"invalid:{e}")
+def test_email_validator_rejects_invalid(email):
+    assert not is_valid_email(email)
+
+Tips
+- Use ids (pytest.param(..., id="...") or ids=...) to make case names readable.
+- Keep the tables close to the test or in a small helper module if reused.
+- For tricky/known-bad edge cases, use pytest.param with marks=pytest.mark.xfail and a reason.
+- If you need richer expectations (e.g., normalized output), switch to a small case object (namedtuple/dataclass) but keep the same parametrize pattern.

@@ -1,0 +1,16 @@
+Use these built-in pytest fixtures:
+
+- monkeypatch: isolate and control environment and globals
+  - monkeypatch.setenv("APP_MODE", "prod") to simulate modes
+  - monkeypatch.delenv("APP_MODE", raising=False) to test default behavior
+  - monkeypatch.chdir(tmp_path) to redirect any relative file writes into a temp dir
+  - monkeypatch.setattr(module, "OUTPUT_PATH", tmp_path / "config.json", raising=False) if your code uses a module-level path
+
+- tmp_path: per-test temporary directory for file writes/reads that’s auto-cleaned
+
+Example sketch:
+- Arrange: monkeypatch.setenv("APP_MODE", "prod"); monkeypatch.chdir(tmp_path)
+- Act: call the function
+- Assert: read the JSON from tmp_path and check contents
+
+This keeps tests narrow, avoids touching the real environment or repo files, and uses only pytest’s built-ins.

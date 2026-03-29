@@ -1,0 +1,59 @@
+{
+  "status": "completed",
+  "task_input": {
+    "task": "I'm about to add a small pure helper in Python. Before I write the implementation, what testing workflow should I follow, and in what order?",
+    "output_dir": "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/eval-tdd-red-green-refactor/without_skill/outputs"
+  },
+  "output": {
+    "summary": "Follow a tight TDD loop: Red \u2192 Green \u2192 Refactor, repeated until the helper\u2019s behavior is fully specified.\n\n1) Prep\n- Start from a green baseline (run tests; they should pass).\n- Decide the tiny slice of behavior and API: name, signature, return type, and one concrete example.\n\n2) Red\n- Write a single, smallest, behavior-focused unit test that demonstrates the desired example.\n  - Use Arrange\u2013Act\u2013Assert (Given\u2013When\u2013Then) style.\n  - If the function doesn\u2019t exist yet, import it and start with a stub (or expect NotImplementedError).\n- Run the full test suite and confirm this test fails for the right reason.\n\n3) Green\n- Implement the minimal code to make that one test pass (even if it\u2019s naive or partially hard-coded).\n- Run the tests; ensure all are green.\n\n4) Refactor\n- Improve the implementation: remove duplication, clarify names, simplify logic.\n- Refactor tests for clarity (parametrize similar cases, better names), without changing behavior.\n- Keep tests green after each small change.\n\n5) Triangulate behavior\n- Add another small test that forces generalization (a different input shape, edge, or boundary).\n- Repeat Red \u2192 Green \u2192 Refactor.\n- Grow coverage via multiple examples rather than over-generalizing early.\n\n6) Cover edges and invalid inputs\n- Decide and test behavior for:\n  - Empty/minimal inputs, large inputs, Unicode/locale quirks, ordering, precision/rounding, etc.\n  - Invalid inputs: assert raised exceptions or documented defaults.\n\n7) Properties (great for pure helpers)\n- Add property-based tests (e.g., with Hypothesis) for invariants:\n  - Idempotence, commutativity/associativity, monotonicity, reversibility, bounds, length preservation, etc.\n- Keep examples alongside properties to aid diagnostics.\n\n8) Finish and document\n- Add/confirm type hints; run a type checker if used.\n- Add a docstring with examples; optional doctest for simple helpers.\n- Check coverage (lines/branches) to ensure meaningful paths are exercised, not just lines touched.\n\nPractical tips\n- Keep each step tiny; commit after each Green (and sometimes after Refactor).\n- Run the whole suite each time; use watch mode for fast feedback.\n- Test public behavior, not implementation details.\n- Prefer pytest parametrization for many small cases; name tests after the behavior (\u201creturns_empty_on_empty_input\u201d) rather than the method name.\n\nOrder summary\n- Baseline green \u2192 Write 1 failing test (Red) \u2192 Minimal implementation (Green) \u2192 Refactor \u2192 Add next test (Red) \u2192 Green \u2192 Refactor \u2192 \u2026 \u2192 Edge cases \u2192 Properties \u2192 Final refactor/docs/types.",
+    "skill_names": [],
+    "skill_descriptions": {},
+    "skill_references": {},
+    "skill_catalog": [],
+    "context_files": [],
+    "context_directories": [
+      "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/eval-tdd-red-green-refactor/without_skill/outputs"
+    ],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "I'm about to add a small pure helper in Python. Before I write the implementation, what testing workflow should I follow, and in what order?",
+      "output_dir": "skills/upstream-python-testing-bakeoff/wshobson-python-testing-patterns/evals/workspace/iteration-1/eval-tdd-red-green-refactor/without_skill/outputs"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 128,
+      "input_compacted": false,
+      "output_tokens_estimate": 568,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 20724,
+      "usage": {
+        "requests": 1,
+        "input_tokens": 188,
+        "output_tokens": 1380,
+        "total_tokens": 1568,
+        "request_usage_entries": []
+      }
+    },
+    "trace": {
+      "response_ids": [
+        "resp_080287ce094fbc880069c85f7d74108194b3b6b2c997f115cb"
+      ],
+      "request_ids": [
+        "req_e08b6c622e6e4b9ca49fef215f5a9252"
+      ],
+      "items": [
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_080287ce094fbc880069c85f7df3048194bd62aae4bcafcaa3', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "message_output_item",
+          "summary": "Follow a tight TDD loop: Red \u2192 Green \u2192 Refactor, repeated until the helper\u2019s behavior is fully specified.\n\n1) Prep\n- Start from a green baseline (run tests; they should pass).\n- Decide the tiny slice of behavior and API: name, signature, re"
+        }
+      ]
+    }
+  }
+}

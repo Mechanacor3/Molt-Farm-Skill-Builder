@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_0ddf2ae0461714a50069c86065d99481939098ae4adaec05e7"
+  ],
+  "request_ids": [
+    "req_3b8fe0a3b7cc48449ff7d6d031e5f34c"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0ddf2ae0461714a50069c86066798481938201a603f26644d8', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Use these built-in pytest fixtures:\n\n- monkeypatch: isolate and control environment and globals\n  - monkeypatch.setenv(\"APP_MODE\", \"prod\") to simulate modes\n  - monkeypatch.delenv(\"APP_MODE\", raising=False) to test default behavior\n  - monk"
+    }
+  ]
+}

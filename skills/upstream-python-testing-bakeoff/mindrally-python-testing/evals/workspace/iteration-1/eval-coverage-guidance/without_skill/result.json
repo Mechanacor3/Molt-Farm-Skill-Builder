@@ -1,0 +1,59 @@
+{
+  "status": "completed",
+  "task_input": {
+    "task": "Team coverage is stuck around 78%. Should we chase a percentage target everywhere, or focus effort differently? Give a concise pytest-oriented answer.",
+    "output_dir": "skills/upstream-python-testing-bakeoff/mindrally-python-testing/evals/workspace/iteration-1/eval-coverage-guidance/without_skill/outputs"
+  },
+  "output": {
+    "summary": "Short answer: don\u2019t chase a single % everywhere. Use coverage as a guardrail, and focus test effort on high\u2011risk, high\u2011value code.\n\nPytest-oriented plan:\n- Set a modest global floor to prevent regressions, but gate new/changed code more strictly.\n  - pytest -q --cov=yourpkg --cov-branch --cov-report=term-missing:skip-covered --cov-fail-under=78\n  - In CI, add diff coverage: coverage xml && diff-cover coverage.xml --compare-branch=origin/main --fail-under=90\n- Focus tests on:\n  - Core business logic, public APIs, complex branches, bug-prone areas, security/IO boundaries.\n  - Use pytest.mark.parametrize and property-based tests (hypothesis) to hit edge cases quickly.\n- Improve signal over %:\n  - Turn on branch coverage and inspect gaps (term-missing).\n  - Add mutation testing on hotspots (mutmut) to check test effectiveness.\n- Reduce noise:\n  - Exclude low-value code (migrations, generated files, trivial wrappers) in pyproject.toml/.coveragerc.\n    - [tool.coverage.run] omit = [\"*/migrations/*\", \"*/_version.py\", \"*/cli.py\"]\n    - [tool.coverage.report] exclude_lines = [\"pragma: no cover\", \"if TYPE_CHECKING:\", \"raise NotImplementedError\"]\n\nRatcheting: keep the overall floor near current (~78) and raise it gradually; demand high diff coverage on new code and elevate coverage targets only for critical modules.",
+    "skill_names": [],
+    "skill_descriptions": {},
+    "skill_references": {},
+    "skill_catalog": [],
+    "context_files": [],
+    "context_directories": [
+      "skills/upstream-python-testing-bakeoff/mindrally-python-testing/evals/workspace/iteration-1/eval-coverage-guidance/without_skill/outputs"
+    ],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "Team coverage is stuck around 78%. Should we chase a percentage target everywhere, or focus effort differently? Give a concise pytest-oriented answer.",
+      "output_dir": "skills/upstream-python-testing-bakeoff/mindrally-python-testing/evals/workspace/iteration-1/eval-coverage-guidance/without_skill/outputs"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 119,
+      "input_compacted": false,
+      "output_tokens_estimate": 322,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 26467,
+      "usage": {
+        "requests": 1,
+        "input_tokens": 176,
+        "output_tokens": 1584,
+        "total_tokens": 1760,
+        "request_usage_entries": []
+      }
+    },
+    "trace": {
+      "response_ids": [
+        "resp_0b3d6647d305d3830069c860f55d6481969a7aa0cc1e9e7420"
+      ],
+      "request_ids": [
+        "req_98b05421098b4653b9653780134738fe"
+      ],
+      "items": [
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_0b3d6647d305d3830069c860f5b2088196bdff3f1278b192e5', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "message_output_item",
+          "summary": "Short answer: don\u2019t chase a single % everywhere. Use coverage as a guardrail, and focus test effort on high\u2011risk, high\u2011value code.\n\nPytest-oriented plan:\n- Set a modest global floor to prevent regressions, but gate new/changed code more str"
+        }
+      ]
+    }
+  }
+}

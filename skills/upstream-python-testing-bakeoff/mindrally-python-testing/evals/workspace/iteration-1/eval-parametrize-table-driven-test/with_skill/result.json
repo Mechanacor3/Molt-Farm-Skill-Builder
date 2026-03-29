@@ -1,0 +1,84 @@
+{
+  "status": "completed",
+  "task_input": {
+    "task": "I need to test the same email validator against a table of valid and invalid inputs. What pytest pattern should I use, and what should the test shape look like?",
+    "output_dir": "skills/upstream-python-testing-bakeoff/mindrally-python-testing/evals/workspace/iteration-1/eval-parametrize-table-driven-test/with_skill/outputs"
+  },
+  "output": {
+    "summary": "Use pytest.mark.parametrize for a table-driven test. You can structure it either as two focused tests (one for valid, one for invalid) or a single table that encodes the expected outcome. Pick the shape that matches your validator\u2019s API.\n\nOption A: Separate tests, simplest and clear\n- Use when your validator returns True for valid and either False or raises for invalid.\n\nIf your validator returns bool:\n- test_valid_emails ensures True for known-good inputs.\n- test_invalid_emails ensures False for known-bad inputs.\n\nExample:\nimport pytest\n\nfrom your_pkg import validate_email  # returns True/False\n\n@pytest.mark.parametrize(\n    \"email\",\n    [\n        \"a@b.com\",\n        \"user.name+tag@sub.example.co.uk\",\n        \"USER@EXAMPLE.ORG\",\n        \"x_y-z@ex.io\",\n    ],\n    ids=[\"simple\", \"plus-subdomain\", \"upper\", \"symbols\"]\n)\ndef test_valid_emails(email):\n    assert validate_email(email) is True\n\n@pytest.mark.parametrize(\n    \"email\",\n    [\n        \"plainaddress\",\n        \"missing-at.example.com\",\n        \"user@\",\n        \"@example.com\",\n        \"user@@example.com\",\n        \"user example@example.com\",\n    ],\n    ids=[\"no-at\", \"no-at-2\", \"no-domain\", \"no-local\", \"double-at\", \"space\"]\n)\ndef test_invalid_emails(email):\n    assert validate_email(email) is False\n\nIf your validator raises on invalid:\n- Keep the same shape but expect exceptions in the invalid table.\n\nimport pytest\nfrom your_pkg import validate_email  # raises ValueError on invalid\n\n@pytest.mark.parametrize(\"email\", [\"a@b.com\", \"user.name+tag@sub.example.co.uk\"])\ndef test_valid_emails(email):\n    assert validate_email(email) is True\n\n@pytest.mark.parametrize(\"email\", [\"plainaddress\", \"user@\", \"@example.com\"])\ndef test_invalid_emails(email):\n    with pytest.raises(ValueError):\n        validate_email(email)\n\nOption B: Single table with expected outcome\n- Useful if you want one place to add cases and you assert per-row outcome.\n\nIf returns bool:\nimport pytest\nfrom your_pkg import validate_email\n\n@pytest.mark.parametrize(\n    \"email, expected\",\n    [\n        (\"a@b.com\", True),\n        (\"user.name+tag@sub.example.co.uk\", True),\n        (\"plainaddress\", False),\n        (\"user@\", False),\n    ],\n    ids=[\"simple\", \"plus-subdomain\", \"no-at\", \"no-domain\"]\n)\ndef test_validate_email_table(email, expected):\n    assert validate_email(email) is expected\n\nIf raises on invalid, use context managers to keep one test:\nimport pytest\nfrom contextlib import nullcontext as does_not_raise\nfrom your_pkg import validate_email  # raises ValueError on invalid\n\n@pytest.mark.parametrize(\n    \"email, expectation\",\n    [\n        pytest.param(\"a@b.com\", does_not_raise(), id=\"simple\"),\n        pytest.param(\"user.name+tag@sub.example.co.uk\", does_not_raise(), id=\"plus-subdomain\"),\n        pytest.param(\"plainaddress\", pytest.raises(ValueError), id=\"no-at\"),\n        pytest.param(\"user@\", pytest.raises(ValueError), id=\"no-domain\"),\n    ]\n)\ndef test_validate_email_table(email, expectation):\n    with expectation:\n        assert validate_email(email) is True\n\nNotes for good table-driven tests\n- Provide ids for cases so failures are readable.\n- Keep valid and invalid sets balanced and focused on behavior you support (e.g., subdomains, plus addressing, case-insensitivity, missing parts, spaces).\n- If your validator normalizes or strips whitespace, include those cases explicitly.\n- Prefer two separate tests (valid vs invalid) if you want clearer reporting granularity; use the single-table shape if you value one place to manage all cases.",
+    "skill_names": [
+      "mindrally-python-testing"
+    ],
+    "skill_descriptions": {
+      "mindrally-python-testing": "Expert in Python testing with pytest and test-driven development"
+    },
+    "skill_references": {
+      "mindrally-python-testing": []
+    },
+    "skill_catalog": [
+      {
+        "name": "mindrally-python-testing",
+        "description": "Expert in Python testing with pytest and test-driven development"
+      }
+    ],
+    "context_files": [],
+    "context_directories": [
+      "skills/upstream-python-testing-bakeoff/mindrally-python-testing/evals/workspace/iteration-1/eval-parametrize-table-driven-test/with_skill/outputs"
+    ],
+    "runtime": "openai_agents",
+    "model": "gpt-5",
+    "task_input": {
+      "task": "I need to test the same email validator against a table of valid and invalid inputs. What pytest pattern should I use, and what should the test shape look like?",
+      "output_dir": "skills/upstream-python-testing-bakeoff/mindrally-python-testing/evals/workspace/iteration-1/eval-parametrize-table-driven-test/with_skill/outputs"
+    },
+    "compaction": {
+      "threshold_tokens": 100000,
+      "input_tokens_estimate": 126,
+      "input_compacted": false,
+      "output_tokens_estimate": 787,
+      "output_compacted": false
+    },
+    "metrics": {
+      "duration_ms": 21125,
+      "usage": {
+        "requests": 2,
+        "input_tokens": 1582,
+        "output_tokens": 1823,
+        "total_tokens": 3405,
+        "request_usage_entries": []
+      }
+    },
+    "trace": {
+      "response_ids": [
+        "resp_071c8dce6bfd81300069c85fa6f13481938e10ccb5729060fe",
+        "resp_071c8dce6bfd81300069c85facda388193a565f502fb6c1f99"
+      ],
+      "request_ids": [
+        "req_7dc6ae75ef1445c5b301b4cdbc0f3452",
+        "req_8ecbf729a62d4cd881e3f1eb22c4e8d3"
+      ],
+      "items": [
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_071c8dce6bfd81300069c85fa7b28081939b23bd593e1c20d0', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "tool_call_item",
+          "summary": "function_call:activate_skill:mindrally-python-testing"
+        },
+        {
+          "type": "tool_call_output_item",
+          "summary": "function_call_output:call_VdpS5qKeEtyKbLYjFte91Q7D"
+        },
+        {
+          "type": "reasoning_item",
+          "summary": "ResponseReasoningItem(id='rs_071c8dce6bfd81300069c85fad64008193a329cd1de33dc304', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+        },
+        {
+          "type": "message_output_item",
+          "summary": "Use pytest.mark.parametrize for a table-driven test. You can structure it either as two focused tests (one for valid, one for invalid) or a single table that encodes the expected outcome. Pick the shape that matches your validator\u2019s API.\n\nO"
+        }
+      ]
+    }
+  }
+}

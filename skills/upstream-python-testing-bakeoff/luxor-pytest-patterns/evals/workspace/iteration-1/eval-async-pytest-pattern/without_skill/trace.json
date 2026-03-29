@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_06e1bc592f0119940069c86069913c8194968ef39dd5f39910"
+  ],
+  "request_ids": [
+    "req_fdb222276ff44b428fca314728a92503"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_06e1bc592f0119940069c86069e6a8819492aa21c977b3861e', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Short answer:\n- Use pytest-asyncio if you\u2019re only targeting asyncio. Configure asyncio_mode=auto so you can write async def tests without a marker, and declare async fixtures with @pytest_asyncio.fixture.\n- Use pytest-anyio if you might swi"
+    }
+  ]
+}

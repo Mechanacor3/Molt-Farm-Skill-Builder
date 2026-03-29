@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_085a8c86ea60e4e70069c85f772d288195926eb4c4dd2a1343"
+  ],
+  "request_ids": [
+    "req_53ad5f02845345be80f0c11d9d1fdec6"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_085a8c86ea60e4e70069c85f778d5c8195977c6481c624c98d', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "Follow a tight Red\u2013Green\u2013Refactor TDD loop. For a small pure helper, this is the order that works best:\n\n1) Specify the contract\n- Name, inputs and types, return type/shape\n- Error behavior (exceptions vs. sentinels)\n- Purity expectations: "
+    }
+  ]
+}

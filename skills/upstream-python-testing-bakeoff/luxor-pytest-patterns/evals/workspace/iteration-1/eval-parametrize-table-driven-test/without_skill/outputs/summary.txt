@@ -1,0 +1,70 @@
+Use pytest’s parametrize pattern (table-driven tests). You feed a table of inputs and expected outcomes into a single test function. Shape it one of two common ways, depending on how your validator reports failure.
+
+A. Validator returns a boolean
+- Keep one table with (email, expected_bool).
+- Give each case a readable id.
+
+Example:
+import pytest
+
+@pytest.mark.parametrize(
+    "email, expected",
+    [
+        ("user@example.com", True),
+        ("user.name+tag@example.com", True),
+        ("user@[192.168.1.1]", True),
+        ("plainaddress", False),
+        ("@no-local-part.com", False),
+        ("user@.invalid.com", False),
+        ("user@invalid-.com", False),
+        ("user@invalid..com", False),
+        ("", False),
+    ],
+    ids=[
+        "simple",
+        "plus-address",
+        "domain-literal",
+        "no-at",
+        "no-local-part",
+        "leading-dot-label",
+        "trailing-hyphen",
+        "double-dot",
+        "empty",
+    ],
+)
+def test_is_valid_email_table(email, expected):
+    assert is_valid_email(email) == expected
+
+B. Validator raises on invalid input
+- Split into two tests for clearer intent and failure messages.
+
+import pytest
+
+VALID_EMAILS = [
+    "user@example.com",
+    "user.name+tag@example.com",
+    "user@[192.168.1.1]",
+]
+
+INVALID_EMAILS = [
+    "plainaddress",
+    "@no-local-part.com",
+    "user@.invalid.com",
+    "user@invalid-.com",
+    "user@invalid..com",
+    "",
+]
+
+@pytest.mark.parametrize("email", VALID_EMAILS, ids=["simple", "plus-address", "domain-literal"])
+def test_validate_email_accepts_valid(email):
+    validate_email(email)  # no exception
+
+@pytest.mark.parametrize("email", INVALID_EMAILS, ids=["no-at", "no-local-part", "leading-dot-label", "trailing-hyphen", "double-dot", "empty"])
+def test_validate_email_rejects_invalid(email):
+    with pytest.raises(ValueError):
+        validate_email(email)
+
+Tips
+- Prefer ids to make failures self-explanatory.
+- Keep the table close to the test or factor it into constants/fixtures if reused.
+- If your API can both return booleans and raise, model the expected outcome in the table (e.g., expected is True or an Exception type) and branch in the test accordingly.

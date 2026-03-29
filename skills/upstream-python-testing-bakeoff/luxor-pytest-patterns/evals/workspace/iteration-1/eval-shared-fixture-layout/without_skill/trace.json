@@ -1,0 +1,18 @@
+{
+  "response_ids": [
+    "resp_0e4f9f00d6b2b6a20069c85fc5e2788190ba12ff495381bf6b"
+  ],
+  "request_ids": [
+    "req_500efb62ead440548187dd768595d548"
+  ],
+  "items": [
+    {
+      "type": "reasoning_item",
+      "summary": "ResponseReasoningItem(id='rs_0e4f9f00d6b2b6a20069c85fc6312c81908bc1e783800ee657', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)"
+    },
+    {
+      "type": "message_output_item",
+      "summary": "- Where it should live: Put the shared setup in a conftest.py located at the lowest common ancestor directory of the tests that need it (often tests/conftest.py). Pytest will auto-discover fixtures there for all tests under that directory.\n"
+    }
+  ]
+}
