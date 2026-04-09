@@ -1,6 +1,7 @@
 example_upstream_skills/
 .env
 .venv/
+models/
 tmp/
 __pycache__/
 *.pyc

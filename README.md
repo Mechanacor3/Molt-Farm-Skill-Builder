@@ -6,7 +6,7 @@ Molt Farm Skill Builder is for people who write local `SKILL.md` skills and for 
 
 - Python `>=3.12`
 - An editable install of this repo
-- OpenAI credentials available in the environment or in `.env`
+- OpenAI credentials available in the environment or in `.env` for cloud-backed runs, grading, and `create-evals`
 
 If you prefer, put `OPENAI_API_KEY=...` in `.env` at the repo root. The CLI loads `.env` automatically.
 
@@ -27,6 +27,124 @@ After it finishes, inspect:
 - `skills/run-summarizer/evals/workspace/iteration-N/benchmark.json`
 - `skills/run-summarizer/evals/workspace/iteration-N/feedback.json`
 - `skills/run-summarizer/evals/workspace/iteration-N/eval-<case-id>/comparison.json`
+
+## Pure Local Pilot
+
+This repo can now run a narrow local-only subject loop against Gemma 4 in two ways:
+
+- direct chat-completions against `llama.cpp`
+- experimental proxy-backed Responses through `Molt-Farm-Proxy/README.md`
+
+The first milestone is subject-only. Full local `eval-skill` grading is intentionally out of scope for this pilot.
+
+1. Copy the sample env file:
+
+```bash
+cp .env.example .env
+```
+
+2. Download a Gemma 4 E4B 4-bit GGUF and normalize the local filename:
+
+```bash
+mkdir -p models
+ln -sf /absolute/path/to/your-gemma-4-e4b-4bit.gguf models/gemma-4-e4b-q4.gguf
+```
+
+The compose file expects `models/gemma-4-e4b-q4.gguf` by default. Override that with `MOLT_GEMMA4_MODEL_FILE` if needed.
+
+3. Start the local Gemma server:
+
+```bash
+docker compose --profile local-llm up -d llm-gemma4
+```
+
+4. Verify direct local chat-completions:
+
+```bash
+curl http://127.0.0.1:8080/health
+curl http://127.0.0.1:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer local-dev-key" \
+  -d '{
+    "model": "gemma-4-e4b",
+    "messages": [
+      {"role": "user", "content": "Say hello from local Gemma 4."}
+    ]
+  }'
+```
+
+### Direct Chat Baseline
+
+Use the direct `llama.cpp` surface as the default local subject path:
+
+```bash
+MOLT_SUBJECT_PROVIDER=openai_compatible
+MOLT_SUBJECT_MODEL=gemma-4-e4b
+MOLT_SUBJECT_BASE_URL=http://127.0.0.1:8080/v1
+MOLT_SUBJECT_API_KEY=local-dev-key
+```
+
+### Proxy Responses Experiment
+
+Start the proxy in a second terminal, pointed at the same local Gemma server:
+
+```bash
+cd Molt-Farm-Proxy
+env \
+  MOLT_UPSTREAM_BASE_URL=http://127.0.0.1:8080 \
+  MOLT_UPSTREAM_API_KEY=local-dev-key \
+  uv run molt-proxy-dev --host 127.0.0.1 --port 8000 --upstream-model gemma-4-e4b
+```
+
+Then switch the subject provider to the proxy-backed Responses surface:
+
+```bash
+MOLT_SUBJECT_PROVIDER=openai_responses
+MOLT_SUBJECT_MODEL=gemma-4-e4b
+MOLT_SUBJECT_BASE_URL=http://127.0.0.1:8000/v1
+MOLT_SUBJECT_API_KEY=local-dev-key
+```
+
+You can verify the proxy health and probe path with:
+
+```bash
+curl http://127.0.0.1:8000/health
+curl -i http://127.0.0.1:8000/v1/responses
+```
+
+`GET /v1/responses` should return `405 Method Not Allowed`; that is the expected proxy preflight response.
+
+### Pilot Sequence
+
+Run the same three narrow workflows on either subject path:
+
+```bash
+./molt skill-builder run manual-triage --input target=.
+./molt skill-builder run manual-run-summary --input run_record_path=runs/<previous-run-id>.json
+./molt skill-builder run manual-docker-smoke-test --input dockerfile_path=Dockerfile
+```
+
+Inspect these artifacts after each run:
+
+- `runs/<id>.json`
+- `jq -r '.output.trace.items[]?.summary' runs/<id>.json`
+- `Molt-Farm-Proxy/.molt-logs/proxy-requests.jsonl` for the Responses experiment
+
+The key trace signals are:
+
+- `function_call:activate_skill:*`
+- `function_call:read_skill_resource:*`
+
+### Eval-Skill Note
+
+`eval-skill` still supports hybrid local-subject/cloud-grader runs. The local-only pilot in this section does not attempt to make grading fully local yet.
+
+Example hybrid eval:
+
+```bash
+OPENAI_API_KEY=your_openai_key_here \
+./molt skill-builder eval-skill run-summarizer --model gemma-4-e4b --grader-model gpt-5
+```
 
 ## Tests
 
@@ -237,6 +355,12 @@ To keep writes in your working tree, bind-mount the repo:
 
 ```bash
 docker run --rm -it -v "$PWD:/app" -w /app moltfarm-skillbuilder ./molt skill-builder run manual-lesson-extraction --input source_path=runs/<run-id>.json
+```
+
+Validate the local llama.cpp compose file without starting it:
+
+```bash
+docker compose --profile local-llm config
 ```
 
 ## Further Reading

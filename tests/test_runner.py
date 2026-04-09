@@ -8,6 +8,7 @@ import types
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from urllib import error as urllib_error
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "packages"))
@@ -378,6 +379,388 @@ class OpenAIAgentsExecutorTests(unittest.TestCase):
             [{"type": "tool_call_item", "summary": "function_call:activate_skill:develop-web-game"}],
             trace["items"],
         )
+
+    def test_run_supports_openai_compatible_models_for_main_and_compaction(self) -> None:
+        calls: dict[str, object] = {"runner_calls": []}
+
+        class FakeChatModel:
+            def __init__(self, *, model, openai_client):
+                self.model = model
+                self.openai_client = openai_client
+
+        class FakeResult:
+            def __init__(self, final_output):
+                self.final_output = final_output
+                self.raw_responses = []
+                self.new_items = []
+
+        class FakeRunner:
+            @staticmethod
+            def run_sync(agent, input):
+                calls["runner_calls"].append((agent, input))
+                if agent.kwargs["name"] == "workflow-compactor":
+                    return FakeResult("Compacted local output.")
+                return FakeResult("x" * 1000)
+
+        class FakeSDK:
+            Runner = FakeRunner
+            OpenAIChatCompletionsModel = FakeChatModel
+
+            class Agent:
+                def __init__(self, **kwargs):
+                    self.kwargs = kwargs
+
+            @staticmethod
+            def set_tracing_disabled(value):
+                calls["tracing_disabled"] = value
+
+            @staticmethod
+            def function_tool(fn):
+                return fn
+
+        class FakeAsyncOpenAI:
+            def __init__(self, *, api_key, base_url):
+                self.api_key = api_key
+                self.base_url = base_url
+
+        original_import = runner._import_openai_agents_sdk
+        original_dotenv = runner._load_dotenv
+        original_threshold = runner.COMPACTION_TOKEN_THRESHOLD
+        original_openai_module = sys.modules.get("openai")
+        try:
+            runner._import_openai_agents_sdk = lambda project_root: FakeSDK
+            runner._load_dotenv = lambda project_root: None
+            runner.COMPACTION_TOKEN_THRESHOLD = 10
+            fake_openai_module = types.ModuleType("openai")
+            fake_openai_module.AsyncOpenAI = FakeAsyncOpenAI
+            sys.modules["openai"] = fake_openai_module
+
+            with tempfile.TemporaryDirectory() as temp_dir:
+                project_root = Path(temp_dir)
+                result = OpenAIAgentsExecutor().run(
+                    project_root=project_root,
+                    agent=AgentDefinition(
+                        name="local-worker",
+                        description="",
+                        model="ignored-default",
+                        runtime="openai_agents",
+                        context_policy="least_context",
+                    ),
+                    skills=[],
+                    task_input={"task": "summarize"},
+                    resolved_model=runner.ResolvedModelConfig(
+                        role="subject",
+                        provider="openai_compatible",
+                        model="gemma-4-e4b",
+                        api_surface="chat",
+                        base_url="http://127.0.0.1:8080/v1",
+                        api_key="local-dev-key",
+                    ),
+                )
+        finally:
+            runner._import_openai_agents_sdk = original_import
+            runner._load_dotenv = original_dotenv
+            runner.COMPACTION_TOKEN_THRESHOLD = original_threshold
+            if original_openai_module is None:
+                sys.modules.pop("openai", None)
+            else:
+                sys.modules["openai"] = original_openai_module
+
+        self.assertTrue(result["compaction"]["output_compacted"])
+        self.assertEqual("Compacted local output.", result["summary"])
+        self.assertEqual("openai_compatible", result["model_provider"])
+        self.assertEqual("gemma-4-e4b", result["model"])
+        main_agent = calls["runner_calls"][0][0]
+        compactor_agent = calls["runner_calls"][1][0]
+        self.assertIsInstance(main_agent.kwargs["model"], FakeChatModel)
+        self.assertIsInstance(compactor_agent.kwargs["model"], FakeChatModel)
+        self.assertEqual("http://127.0.0.1:8080/v1", main_agent.kwargs["model"].openai_client.base_url)
+        self.assertEqual("gemma-4-e4b", compactor_agent.kwargs["model"].model)
+
+    def test_run_supports_openai_responses_models_for_main_and_compaction(self) -> None:
+        calls: dict[str, object] = {"runner_calls": []}
+
+        class FakeResponsesModel:
+            def __init__(self, *, model, openai_client):
+                self.model = model
+                self.openai_client = openai_client
+
+        class FakeResult:
+            def __init__(self, final_output):
+                self.final_output = final_output
+                self.raw_responses = []
+                self.new_items = []
+
+        class FakeRunner:
+            @staticmethod
+            def run_sync(agent, input):
+                calls["runner_calls"].append((agent, input))
+                if agent.kwargs["name"] == "workflow-compactor":
+                    return FakeResult("Compacted proxy output.")
+                return FakeResult("x" * 1000)
+
+        class FakeSDK:
+            Runner = FakeRunner
+            OpenAIResponsesModel = FakeResponsesModel
+
+            class Agent:
+                def __init__(self, **kwargs):
+                    self.kwargs = kwargs
+
+            @staticmethod
+            def set_tracing_disabled(value):
+                calls["tracing_disabled"] = value
+
+            @staticmethod
+            def function_tool(fn):
+                return fn
+
+        class FakeAsyncOpenAI:
+            def __init__(self, *, api_key, base_url):
+                self.api_key = api_key
+                self.base_url = base_url
+
+        original_import = runner._import_openai_agents_sdk
+        original_dotenv = runner._load_dotenv
+        original_threshold = runner.COMPACTION_TOKEN_THRESHOLD
+        original_openai_module = sys.modules.get("openai")
+        try:
+            runner._import_openai_agents_sdk = lambda project_root: FakeSDK
+            runner._load_dotenv = lambda project_root: None
+            runner.COMPACTION_TOKEN_THRESHOLD = 10
+            fake_openai_module = types.ModuleType("openai")
+            fake_openai_module.AsyncOpenAI = FakeAsyncOpenAI
+            sys.modules["openai"] = fake_openai_module
+
+            with tempfile.TemporaryDirectory() as temp_dir:
+                project_root = Path(temp_dir)
+                result = OpenAIAgentsExecutor().run(
+                    project_root=project_root,
+                    agent=AgentDefinition(
+                        name="local-worker",
+                        description="",
+                        model="ignored-default",
+                        runtime="openai_agents",
+                        context_policy="least_context",
+                    ),
+                    skills=[],
+                    task_input={"task": "summarize"},
+                    resolved_model=runner.ResolvedModelConfig(
+                        role="subject",
+                        provider="openai_responses",
+                        model="gemma-4-e4b",
+                        api_surface="responses",
+                        base_url="http://127.0.0.1:8000/v1",
+                        api_key="local-dev-key",
+                    ),
+                )
+        finally:
+            runner._import_openai_agents_sdk = original_import
+            runner._load_dotenv = original_dotenv
+            runner.COMPACTION_TOKEN_THRESHOLD = original_threshold
+            if original_openai_module is None:
+                sys.modules.pop("openai", None)
+            else:
+                sys.modules["openai"] = original_openai_module
+
+        self.assertTrue(result["compaction"]["output_compacted"])
+        self.assertEqual("Compacted proxy output.", result["summary"])
+        self.assertEqual("openai_responses", result["model_provider"])
+        main_agent = calls["runner_calls"][0][0]
+        compactor_agent = calls["runner_calls"][1][0]
+        self.assertIsInstance(main_agent.kwargs["model"], FakeResponsesModel)
+        self.assertIsInstance(compactor_agent.kwargs["model"], FakeResponsesModel)
+        self.assertEqual(
+            "http://127.0.0.1:8000/v1",
+            main_agent.kwargs["model"].openai_client.base_url,
+        )
+
+
+class ModelResolutionTests(unittest.TestCase):
+    def test_resolve_model_config_defaults_to_openai(self) -> None:
+        original_dotenv = runner._load_dotenv
+        try:
+            runner._load_dotenv = lambda project_root: None
+            with tempfile.TemporaryDirectory() as temp_dir, mock.patch.dict("os.environ", {}, clear=True):
+                config = runner.resolve_model_config(
+                    project_root=Path(temp_dir),
+                    role="subject",
+                    default_model="gpt-5",
+                )
+        finally:
+            runner._load_dotenv = original_dotenv
+
+        self.assertEqual("openai", config.provider)
+        self.assertEqual("gpt-5", config.model)
+        self.assertEqual("native", config.api_surface)
+
+    def test_resolve_model_config_supports_openai_compatible_provider(self) -> None:
+        original_dotenv = runner._load_dotenv
+        original_probe = runner._assert_openai_compatible_endpoint
+        try:
+            runner._load_dotenv = lambda project_root: None
+            runner._assert_openai_compatible_endpoint = lambda base_url: None
+            with tempfile.TemporaryDirectory() as temp_dir, mock.patch.dict(
+                "os.environ",
+                {
+                    "MOLT_SUBJECT_PROVIDER": "openai_compatible",
+                    "MOLT_SUBJECT_MODEL": "gemma-4-e4b",
+                    "MOLT_SUBJECT_BASE_URL": "http://127.0.0.1:8080/v1",
+                    "MOLT_SUBJECT_API_KEY": "local-dev-key",
+                },
+                clear=True,
+            ):
+                config = runner.resolve_model_config(
+                    project_root=Path(temp_dir),
+                    role="subject",
+                    default_model="gpt-5",
+                )
+        finally:
+            runner._load_dotenv = original_dotenv
+            runner._assert_openai_compatible_endpoint = original_probe
+
+        self.assertEqual("openai_compatible", config.provider)
+        self.assertEqual("gemma-4-e4b", config.model)
+        self.assertEqual("chat", config.api_surface)
+        self.assertEqual("http://127.0.0.1:8080/v1", config.base_url)
+        self.assertEqual("local-dev-key", config.api_key)
+
+    def test_resolve_model_config_supports_openai_responses_provider(self) -> None:
+        original_dotenv = runner._load_dotenv
+        original_probe = runner._assert_openai_responses_endpoint
+        try:
+            runner._load_dotenv = lambda project_root: None
+            runner._assert_openai_responses_endpoint = lambda base_url: None
+            with tempfile.TemporaryDirectory() as temp_dir, mock.patch.dict(
+                "os.environ",
+                {
+                    "MOLT_SUBJECT_PROVIDER": "openai_responses",
+                    "MOLT_SUBJECT_MODEL": "gemma-4-e4b",
+                    "MOLT_SUBJECT_BASE_URL": "http://127.0.0.1:8000/v1",
+                    "MOLT_SUBJECT_API_KEY": "local-dev-key",
+                },
+                clear=True,
+            ):
+                config = runner.resolve_model_config(
+                    project_root=Path(temp_dir),
+                    role="subject",
+                    default_model="gpt-5",
+                )
+        finally:
+            runner._load_dotenv = original_dotenv
+            runner._assert_openai_responses_endpoint = original_probe
+
+        self.assertEqual("openai_responses", config.provider)
+        self.assertEqual("responses", config.api_surface)
+        self.assertEqual("http://127.0.0.1:8000/v1", config.base_url)
+
+    def test_resolve_model_config_requires_explicit_model_for_openai_compatible_provider(self) -> None:
+        original_dotenv = runner._load_dotenv
+        original_probe = runner._assert_openai_compatible_endpoint
+        try:
+            runner._load_dotenv = lambda project_root: None
+            runner._assert_openai_compatible_endpoint = lambda base_url: None
+            with tempfile.TemporaryDirectory() as temp_dir, mock.patch.dict(
+                "os.environ",
+                {
+                    "MOLT_SUBJECT_PROVIDER": "openai_compatible",
+                    "MOLT_SUBJECT_BASE_URL": "http://127.0.0.1:8080/v1",
+                    "MOLT_SUBJECT_API_KEY": "local-dev-key",
+                },
+                clear=True,
+            ):
+                with self.assertRaises(ValueError) as raised:
+                    runner.resolve_model_config(
+                        project_root=Path(temp_dir),
+                        role="subject",
+                        default_model="gpt-5",
+                    )
+        finally:
+            runner._load_dotenv = original_dotenv
+            runner._assert_openai_compatible_endpoint = original_probe
+
+        self.assertIn("MOLT_SUBJECT_MODEL is required", str(raised.exception))
+
+    def test_resolve_model_config_surfaces_unreachable_endpoints(self) -> None:
+        original_dotenv = runner._load_dotenv
+        original_probe = runner._assert_openai_compatible_endpoint
+        try:
+            runner._load_dotenv = lambda project_root: None
+
+            def failing_probe(base_url: str) -> None:
+                raise ConnectionError(f"down: {base_url}")
+
+            runner._assert_openai_compatible_endpoint = failing_probe
+            with tempfile.TemporaryDirectory() as temp_dir, mock.patch.dict(
+                "os.environ",
+                {
+                    "MOLT_SUBJECT_PROVIDER": "openai_compatible",
+                    "MOLT_SUBJECT_MODEL": "gemma-4-e4b",
+                    "MOLT_SUBJECT_BASE_URL": "http://127.0.0.1:8080/v1",
+                    "MOLT_SUBJECT_API_KEY": "local-dev-key",
+                },
+                clear=True,
+            ):
+                with self.assertRaises(ConnectionError) as raised:
+                    runner.resolve_model_config(
+                        project_root=Path(temp_dir),
+                        role="subject",
+                        default_model="gpt-5",
+                    )
+        finally:
+            runner._load_dotenv = original_dotenv
+            runner._assert_openai_compatible_endpoint = original_probe
+
+        self.assertIn("down: http://127.0.0.1:8080/v1", str(raised.exception))
+
+    def test_endpoint_probe_targets_cover_chat_health_endpoints(self) -> None:
+        probes = runner._endpoint_probe_targets(
+            "http://127.0.0.1:8080/v1",
+            "chat",
+        )
+
+        self.assertEqual(
+            (
+                ("GET", "http://127.0.0.1:8080/v1/health", None),
+                ("GET", "http://127.0.0.1:8080/v1/healthz", None),
+                ("GET", "http://127.0.0.1:8080/health", None),
+                ("GET", "http://127.0.0.1:8080/healthz", None),
+            ),
+            probes,
+        )
+
+    def test_endpoint_probe_targets_cover_responses_probe_and_health_endpoints(self) -> None:
+        probes = runner._endpoint_probe_targets(
+            "http://127.0.0.1:8000/v1",
+            "responses",
+        )
+
+        self.assertEqual(
+            (
+                ("GET", "http://127.0.0.1:8000/v1/responses", (405,)),
+                ("GET", "http://127.0.0.1:8000/v1/health", None),
+                ("GET", "http://127.0.0.1:8000/v1/healthz", None),
+                ("GET", "http://127.0.0.1:8000/health", None),
+                ("GET", "http://127.0.0.1:8000/healthz", None),
+            ),
+            probes,
+        )
+
+    def test_responses_endpoint_probe_accepts_proxy_405(self) -> None:
+        runner._assert_openai_endpoint.cache_clear()
+
+        def fake_urlopen(request, timeout=0):
+            del timeout
+            raise urllib_error.HTTPError(
+                request.full_url,
+                405,
+                "Method Not Allowed",
+                hdrs=None,
+                fp=None,
+            )
+
+        with mock.patch("moltfarm.runner.urllib_request.urlopen", side_effect=fake_urlopen):
+            runner._assert_openai_responses_endpoint("http://127.0.0.1:8000/v1")
 
 
 class RunnerHelperTests(unittest.TestCase):

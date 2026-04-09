@@ -60,8 +60,13 @@ def _add_eval_skill_parser(subparsers) -> argparse.ArgumentParser:
     )
     eval_parser.add_argument(
         "--model",
-        default="gpt-5",
-        help="Model to use for eval runs and grading.",
+        default=None,
+        help="Optional subject-model override for eval runs.",
+    )
+    eval_parser.add_argument(
+        "--grader-model",
+        default=None,
+        help="Optional grader-model override for eval grading.",
     )
     return eval_parser
 
@@ -244,6 +249,7 @@ def main() -> int:
             project_root=project_root,
             skill_name=args.skill,
             model=args.model,
+            grader_model=args.grader_model,
             baseline=args.baseline,
             snapshot_current=args.snapshot_current,
         )

@@ -48,6 +48,8 @@ class CliParserTests(unittest.TestCase):
         self.assertEqual("run-summarizer", args.skill)
         self.assertEqual("snapshot", args.baseline)
         self.assertTrue(args.snapshot_current)
+        self.assertIsNone(args.model)
+        self.assertIsNone(args.grader_model)
 
     def test_skill_builder_eval_skill_allows_no_baseline(self) -> None:
         parser = build_parser()
@@ -66,6 +68,25 @@ class CliParserTests(unittest.TestCase):
 
         self.assertEqual("none", args.baseline)
         self.assertEqual("gpt-5.4-nano", args.model)
+        self.assertIsNone(args.grader_model)
+
+    def test_skill_builder_eval_skill_accepts_grader_model_override(self) -> None:
+        parser = build_parser()
+
+        args = parser.parse_args(
+            [
+                "skill-builder",
+                "eval-skill",
+                "run-summarizer",
+                "--model",
+                "gemma-4-e4b",
+                "--grader-model",
+                "gpt-5.4-mini",
+            ]
+        )
+
+        self.assertEqual("gemma-4-e4b", args.model)
+        self.assertEqual("gpt-5.4-mini", args.grader_model)
 
     def test_skill_builder_create_evals_command_parses(self) -> None:
         parser = build_parser()
@@ -266,6 +287,8 @@ class CliMainTests(unittest.TestCase):
                     "--snapshot-current",
                     "--model",
                     "gpt-5.4",
+                    "--grader-model",
+                    "gpt-5.4-mini",
                 ]
             )
 
@@ -274,6 +297,7 @@ class CliMainTests(unittest.TestCase):
             project_root=Path.cwd(),
             skill_name="run-summarizer",
             model="gpt-5.4",
+            grader_model="gpt-5.4-mini",
             baseline="snapshot",
             snapshot_current=True,
         )

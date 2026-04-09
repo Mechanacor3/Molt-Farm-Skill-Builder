@@ -81,6 +81,16 @@ class AgentDefinition:
 
 
 @dataclass(slots=True)
+class ResolvedModelConfig:
+    role: str
+    provider: str
+    model: str
+    api_surface: str = "native"
+    base_url: str | None = None
+    api_key: str | None = None
+
+
+@dataclass(slots=True)
 class OperationDefinition:
     name: str
     description: str

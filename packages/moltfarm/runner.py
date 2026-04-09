@@ -2,14 +2,19 @@ from __future__ import annotations
 
 import importlib
 import math
+import os
 import sys
 import time
 from contextlib import contextmanager
 from enum import Enum
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
+from urllib import error as urllib_error
+from urllib import parse as urllib_parse
+from urllib import request as urllib_request
 
-from .models import AgentDefinition, RunResult, Skill
+from .models import AgentDefinition, ResolvedModelConfig, RunResult, Skill
 from .operations import load_operation
 from .skill_loader import discover_skills
 from .storage import generate_run_id, result_to_payload, write_log, write_run_record
@@ -34,7 +39,9 @@ class StubAgentExecutor:
         agent: AgentDefinition,
         skills: list[Skill],
         task_input: dict[str, Any],
+        resolved_model: ResolvedModelConfig | None = None,
     ) -> dict[str, Any]:
+        del resolved_model
         context_files = _collect_context_files(project_root, task_input)
         context_directories = _collect_context_directories(project_root, task_input)
         summary = self._build_summary(agent=agent, skills=skills, task_input=task_input)
@@ -104,14 +111,16 @@ class OpenAIAgentsExecutor:
         agent: AgentDefinition,
         skills: list[Skill],
         task_input: dict[str, Any],
+        resolved_model: ResolvedModelConfig | None = None,
     ) -> dict[str, Any]:
-        load_dotenv = _load_dotenv(project_root)
-        if load_dotenv is not None:
-            # Load API keys from .env without inspecting or printing its contents.
-            load_dotenv(project_root / ".env", override=False)
-
-        sdk = _import_openai_agents_sdk(project_root)
-        sdk.set_tracing_disabled(True)
+        resolved_model = resolved_model or ResolvedModelConfig(
+            role="default",
+            provider="openai",
+            model=agent.model,
+            api_surface="native",
+        )
+        sdk = _load_openai_agents_sdk(project_root)
+        sdk_model = _build_sdk_model(sdk=sdk, resolved_model=resolved_model)
         context_files = _collect_context_files(project_root, task_input)
         context_directories = _collect_context_directories(project_root, task_input)
         tools = []
@@ -126,12 +135,12 @@ class OpenAIAgentsExecutor:
         )
         model_input, compaction = _maybe_compact_input(
             sdk=sdk,
-            model=agent.model,
+            model=sdk_model,
             input_text=raw_input,
         )
         sdk_agent = sdk.Agent(
             name=agent.name,
-            model=agent.model,
+            model=sdk_model,
             instructions=_build_sdk_instructions(agent=agent, skills=skills),
             tools=tools,
         )
@@ -144,7 +153,7 @@ class OpenAIAgentsExecutor:
         final_output = _coerce_final_output(result.final_output)
         final_output, compaction = _maybe_compact_output(
             sdk=sdk,
-            model=agent.model,
+            model=sdk_model,
             output_text=final_output,
             compaction=compaction,
         )
@@ -162,7 +171,8 @@ class OpenAIAgentsExecutor:
             "context_files": context_files,
             "context_directories": context_directories,
             "runtime": agent.runtime,
-            "model": agent.model,
+            "model": resolved_model.model,
+            "model_provider": resolved_model.provider,
             "task_input": task_input,
             "compaction": compaction,
             "metrics": {
@@ -197,6 +207,7 @@ def run_workflow(
         agent=agent,
         skills=attached_skills,
         task_input=task_input,
+        model_role="subject",
     )
 
     log_path = write_log(
@@ -228,14 +239,25 @@ def execute_task(
     agent: AgentDefinition,
     skills: list[Skill],
     task_input: dict[str, Any],
+    model_role: str | None = None,
+    model_override: str | None = None,
 ) -> tuple[str, dict[str, Any]]:
     executor = _build_executor(agent.runtime)
+    resolved_model: ResolvedModelConfig | None = None
     try:
+        if model_role is not None and agent.runtime == "openai_agents":
+            resolved_model = resolve_model_config(
+                project_root=project_root,
+                role=model_role,
+                default_model=agent.model,
+                model_override=model_override,
+            )
         output = executor.run(
             project_root=project_root,
             agent=agent,
             skills=skills,
             task_input=task_input,
+            resolved_model=resolved_model,
         )
         return "completed", output
     except Exception as exc:
@@ -244,6 +266,7 @@ def execute_task(
             skills=skills,
             task_input=task_input,
             error=exc,
+            resolved_model=resolved_model,
         )
         return "failed", output
 
@@ -252,6 +275,216 @@ def _build_executor(runtime: str) -> StubAgentExecutor | OpenAIAgentsExecutor:
     if runtime == "openai_agents":
         return OpenAIAgentsExecutor()
     return StubAgentExecutor()
+
+
+def resolve_model_config(
+    *,
+    project_root: Path,
+    role: str,
+    default_model: str,
+    model_override: str | None = None,
+) -> ResolvedModelConfig:
+    _load_project_environment(project_root)
+    prefix = _model_role_prefix(role)
+    provider = (os.getenv(f"{prefix}_PROVIDER") or "openai").strip().lower()
+    env_model = (os.getenv(f"{prefix}_MODEL") or "").strip()
+    override_model = (model_override or "").strip()
+    model_name = override_model or env_model or default_model
+
+    if provider == "openai":
+        return ResolvedModelConfig(
+            role=role,
+            provider=provider,
+            model=model_name,
+            api_surface="native",
+        )
+
+    if provider not in {"openai_compatible", "openai_responses"}:
+        raise ValueError(
+            f"Unsupported {prefix}_PROVIDER value '{provider}'. "
+            "Expected 'openai', 'openai_compatible', or 'openai_responses'."
+        )
+
+    if not override_model and not env_model:
+        raise ValueError(
+            f"{prefix}_MODEL is required when {prefix}_PROVIDER={provider}."
+        )
+
+    base_url = (os.getenv(f"{prefix}_BASE_URL") or "").strip()
+    api_key = (os.getenv(f"{prefix}_API_KEY") or "").strip()
+    if not base_url:
+        raise ValueError(
+            f"{prefix}_BASE_URL is required when {prefix}_PROVIDER={provider}."
+        )
+    if not api_key:
+        raise ValueError(
+            f"{prefix}_API_KEY is required when {prefix}_PROVIDER={provider}."
+        )
+
+    if provider == "openai_compatible":
+        api_surface = "chat"
+        _assert_openai_compatible_endpoint(base_url)
+    else:
+        api_surface = "responses"
+        _assert_openai_responses_endpoint(base_url)
+    return ResolvedModelConfig(
+        role=role,
+        provider=provider,
+        model=model_name,
+        api_surface=api_surface,
+        base_url=base_url,
+        api_key=api_key,
+    )
+
+
+def _load_project_environment(project_root: Path) -> None:
+    load_dotenv = _load_dotenv(project_root)
+    if load_dotenv is not None:
+        # Load API keys and provider settings without inspecting or printing them.
+        load_dotenv(project_root / ".env", override=False)
+
+
+def _load_openai_agents_sdk(project_root: Path):
+    _load_project_environment(project_root)
+    sdk = _import_openai_agents_sdk(project_root)
+    sdk.set_tracing_disabled(True)
+    return sdk
+
+
+def _load_openai_agents_sdk_with_model(
+    *,
+    project_root: Path,
+    role: str,
+    default_model: str,
+    model_override: str | None = None,
+):
+    sdk = _load_openai_agents_sdk(project_root)
+    resolved_model = resolve_model_config(
+        project_root=project_root,
+        role=role,
+        default_model=default_model,
+        model_override=model_override,
+    )
+    sdk_model = _build_sdk_model(sdk=sdk, resolved_model=resolved_model)
+    return sdk, sdk_model, resolved_model
+
+
+def _build_sdk_model(*, sdk: Any, resolved_model: ResolvedModelConfig) -> Any:
+    if resolved_model.provider == "openai":
+        return resolved_model.model
+
+    model_class_name = (
+        "OpenAIResponsesModel"
+        if resolved_model.api_surface == "responses"
+        else "OpenAIChatCompletionsModel"
+    )
+    model_class = getattr(sdk, model_class_name, None)
+    if model_class is None:
+        raise ImportError(
+            f"Installed openai-agents SDK does not expose {model_class_name}."
+        )
+
+    try:
+        from openai import AsyncOpenAI
+    except ImportError as exc:
+        raise ImportError(
+            "The 'openai' package is required for openai_compatible model providers."
+        ) from exc
+
+    client = AsyncOpenAI(
+        api_key=resolved_model.api_key,
+        base_url=resolved_model.base_url,
+    )
+    return model_class(
+        model=resolved_model.model,
+        openai_client=client,
+    )
+
+
+def _model_role_prefix(role: str) -> str:
+    normalized = role.strip().lower()
+    if normalized == "subject":
+        return "MOLT_SUBJECT"
+    if normalized == "grader":
+        return "MOLT_GRADER"
+    raise ValueError(f"Unsupported model role '{role}'.")
+
+
+def _assert_openai_compatible_endpoint(base_url: str) -> None:
+    _assert_openai_endpoint(base_url, api_surface="chat")
+
+
+def _assert_openai_responses_endpoint(base_url: str) -> None:
+    _assert_openai_endpoint(base_url, api_surface="responses")
+
+
+@lru_cache(maxsize=64)
+def _assert_openai_endpoint(base_url: str, *, api_surface: str) -> None:
+    errors: list[str] = []
+    for method, url, accepted_statuses in _endpoint_probe_targets(
+        base_url, api_surface
+    ):
+        request = urllib_request.Request(url, method=method)
+        try:
+            with urllib_request.urlopen(request, timeout=3.0) as response:
+                status_code = int(getattr(response, "status", 200) or 200)
+                if _probe_accepts_status(status_code, accepted_statuses):
+                    return
+                errors.append(f"{method} {url}: HTTP {status_code}")
+        except urllib_error.HTTPError as exc:
+            status_code = int(getattr(exc, "code", 0) or 0)
+            if _probe_accepts_status(status_code, accepted_statuses):
+                return
+            errors.append(f"{method} {url}: HTTP {status_code}")
+        except urllib_error.URLError as exc:
+            errors.append(f"{method} {url}: {exc.reason}")
+        except Exception as exc:  # pragma: no cover - defensive branch
+            errors.append(f"{method} {url}: {exc}")
+    joined = "; ".join(errors) or "no health check URLs were generated"
+    raise ConnectionError(
+        f"Configured {api_surface} endpoint is unreachable for base URL '{base_url}'. "
+        f"Tried: {joined}."
+    )
+
+
+def _endpoint_probe_targets(
+    base_url: str,
+    api_surface: str,
+) -> tuple[tuple[str, str, tuple[int, ...] | None], ...]:
+    normalized = base_url.rstrip("/")
+    parsed = urllib_parse.urlparse(normalized)
+    root_url = normalized
+    if parsed.path.rstrip("/") == "/v1":
+        root_url = urllib_parse.urlunparse(
+            parsed._replace(path="", params="", query="", fragment="")
+        ).rstrip("/")
+
+    probes: list[tuple[str, str, tuple[int, ...] | None]] = []
+    if api_surface == "responses":
+        response_urls = [f"{normalized}/responses"]
+        if root_url == normalized:
+            response_urls.append(f"{root_url}/v1/responses")
+        probes.extend(
+            ("GET", url, (405,)) for url in dict.fromkeys(response_urls)
+        )
+
+    health_bases = [normalized]
+    if root_url != normalized:
+        health_bases.append(root_url)
+    for health_base in dict.fromkeys(health_bases):
+        probes.append(("GET", f"{health_base}/health", None))
+        probes.append(("GET", f"{health_base}/healthz", None))
+
+    return tuple(dict.fromkeys(probes))
+
+
+def _probe_accepts_status(
+    status_code: int,
+    accepted_statuses: tuple[int, ...] | None,
+) -> bool:
+    if accepted_statuses is None:
+        return 200 <= status_code < 400
+    return status_code in accepted_statuses
 
 
 def _resolve_skills(
@@ -473,6 +706,7 @@ def _build_failed_output(
     skills: list[Skill],
     task_input: dict[str, Any],
     error: Exception,
+    resolved_model: ResolvedModelConfig | None = None,
 ) -> dict[str, Any]:
     return {
         "summary": f"Run failed: {type(error).__name__}: {error}",
@@ -488,7 +722,10 @@ def _build_failed_output(
         "context_files": [],
         "context_directories": [],
         "runtime": agent.runtime,
-        "model": agent.model,
+        "model": resolved_model.model if resolved_model is not None else agent.model,
+        "model_provider": (
+            resolved_model.provider if resolved_model is not None else "openai"
+        ),
         "task_input": task_input,
         "compaction": {
             "threshold_tokens": COMPACTION_TOKEN_THRESHOLD,
@@ -582,7 +819,7 @@ def _build_read_skill_resource_tool(sdk: Any, skills: list[Skill]):
 def _maybe_compact_input(
     *,
     sdk: Any,
-    model: str,
+    model: Any,
     input_text: str,
 ) -> tuple[str, dict[str, Any]]:
     input_tokens = _estimate_tokens(input_text)
@@ -617,7 +854,7 @@ def _maybe_compact_input(
 def _maybe_compact_output(
     *,
     sdk: Any,
-    model: str,
+    model: Any,
     output_text: str,
     compaction: dict[str, Any],
 ) -> tuple[str, dict[str, Any]]:
@@ -640,7 +877,7 @@ def _maybe_compact_output(
 def _compact_text(
     *,
     sdk: Any,
-    model: str,
+    model: Any,
     text: str,
     purpose: str,
 ) -> str:

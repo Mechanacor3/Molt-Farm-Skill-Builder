@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "packages"))
 
@@ -85,8 +86,9 @@ class SkillEvaluatorTests(unittest.TestCase):
         original_execute_task = skill_evaluator.execute_task
         original_load_sdk = skill_evaluator._load_sdk
         try:
-            def fake_execute_task(*, project_root, agent, skills, task_input):
+            def fake_execute_task(*, project_root, agent, skills, task_input, model_role=None, model_override=None):
                 del project_root, agent, task_input
+                del model_role, model_override
                 with_skill = bool(skills)
                 return "completed", {
                     "summary": (
@@ -165,7 +167,9 @@ class SkillEvaluatorTests(unittest.TestCase):
                     del value
 
             skill_evaluator.execute_task = fake_execute_task
-            skill_evaluator._load_sdk = lambda project_root: FakeSDK
+            skill_evaluator._load_sdk = (
+                lambda project_root, model, model_override=None: (FakeSDK, model, None)
+            )
 
             with tempfile.TemporaryDirectory() as temp_dir:
                 project_root = Path(temp_dir)
@@ -278,8 +282,9 @@ class SkillEvaluatorTests(unittest.TestCase):
         original_execute_task = skill_evaluator.execute_task
         original_load_sdk = skill_evaluator._load_sdk
         try:
-            def fake_execute_task(*, project_root, agent, skills, task_input):
+            def fake_execute_task(*, project_root, agent, skills, task_input, model_role=None, model_override=None):
                 del project_root, agent, skills, task_input
+                del model_role, model_override
                 return "completed", {
                     "summary": "attempted: x\nhappened: y\nstatus: completed\nproduced: z\ngaps: none\nnext_step: none",
                     "metrics": {
@@ -334,7 +339,9 @@ class SkillEvaluatorTests(unittest.TestCase):
                     del value
 
             skill_evaluator.execute_task = fake_execute_task
-            skill_evaluator._load_sdk = lambda project_root: FakeSDK
+            skill_evaluator._load_sdk = (
+                lambda project_root, model, model_override=None: (FakeSDK, model, None)
+            )
 
             with tempfile.TemporaryDirectory() as temp_dir:
                 project_root = Path(temp_dir)
@@ -395,8 +402,9 @@ class SkillEvaluatorTests(unittest.TestCase):
         original_execute_task = skill_evaluator.execute_task
         original_load_sdk = skill_evaluator._load_sdk
         try:
-            def fake_execute_task(*, project_root, agent, skills, task_input):
+            def fake_execute_task(*, project_root, agent, skills, task_input, model_role=None, model_override=None):
                 del project_root, agent, skills, task_input
+                del model_role, model_override
                 return "completed", {
                     "summary": "goal: x\ncurrent_evidence: y\nnext_phase: z\nuse_skills: develop-web-game\nbuild_step: a\nvalidation_step: b\nstop_after: c",
                     "metrics": {
@@ -460,7 +468,9 @@ class SkillEvaluatorTests(unittest.TestCase):
                     del value
 
             skill_evaluator.execute_task = fake_execute_task
-            skill_evaluator._load_sdk = lambda project_root: FakeSDK
+            skill_evaluator._load_sdk = (
+                lambda project_root, model, model_override=None: (FakeSDK, model, None)
+            )
 
             with tempfile.TemporaryDirectory() as temp_dir:
                 project_root = Path(temp_dir)
@@ -509,6 +519,153 @@ class SkillEvaluatorTests(unittest.TestCase):
                 self.assertNotIn("delta", benchmark["run_summary"])
                 self.assertNotIn("comparison_summary", benchmark)
                 self.assertNotIn("task_uplift_score", benchmark)
+        finally:
+            skill_evaluator.execute_task = original_execute_task
+            skill_evaluator._load_sdk = original_load_sdk
+
+    def test_evaluate_skill_splits_subject_and_grader_models(self) -> None:
+        original_execute_task = skill_evaluator.execute_task
+        original_load_sdk = skill_evaluator._load_sdk
+        captured: dict[str, Any] = {}
+        try:
+            def fake_execute_task(*, project_root, agent, skills, task_input, model_role=None, model_override=None):
+                del project_root, agent, task_input
+                captured.setdefault("subject_calls", []).append(
+                    {
+                        "skills": [skill.name for skill in skills],
+                        "model_role": model_role,
+                        "model_override": model_override,
+                    }
+                )
+                return "completed", {
+                    "summary": "attempted: x\nhappened: y\nstatus: completed\nproduced: z\ngaps: none\nnext_step: none",
+                    "metrics": {
+                        "duration_ms": 10,
+                        "usage": {
+                            "requests": 1,
+                            "input_tokens": 1,
+                            "output_tokens": 1,
+                            "total_tokens": 2,
+                        },
+                    },
+                    "trace": {
+                        "response_ids": [],
+                        "request_ids": [],
+                        "items": [
+                            {
+                                "type": "tool_call_item",
+                                "summary": "function_call:activate_skill:sample-skill",
+                            }
+                        ],
+                    },
+                }
+
+            class FakeResult:
+                def __init__(self, final_output: str):
+                    self.final_output = final_output
+
+            class FakeRunner:
+                @staticmethod
+                def run_sync(agent, prompt):
+                    del prompt
+                    captured.setdefault("grader_models", []).append(agent.kwargs["model"])
+                    return FakeResult(
+                        json.dumps(
+                            {
+                                "assertion_results": [
+                                    {
+                                        "text": "The plan is focused",
+                                        "passed": True,
+                                        "evidence": "Focused.",
+                                    }
+                                ],
+                                "summary": {
+                                    "passed": 1,
+                                    "failed": 0,
+                                    "total": 1,
+                                    "pass_rate": 1.0,
+                                },
+                            }
+                        )
+                    )
+
+            class FakeSDK:
+                Runner = FakeRunner
+
+                class Agent:
+                    def __init__(self, **kwargs):
+                        self.kwargs = kwargs
+
+                @staticmethod
+                def set_tracing_disabled(value):
+                    del value
+
+            def fake_load_sdk(project_root, *, model, model_override=None):
+                del project_root
+                captured.setdefault("grader_requests", []).append(
+                    {"model": model, "model_override": model_override}
+                )
+                return FakeSDK, f"sdk:{model}", None
+
+            skill_evaluator.execute_task = fake_execute_task
+            skill_evaluator._load_sdk = fake_load_sdk
+
+            with tempfile.TemporaryDirectory() as temp_dir:
+                project_root = Path(temp_dir)
+                skill_dir = project_root / "skills" / "sample-skill"
+                files_dir = skill_dir / "evals" / "files"
+                files_dir.mkdir(parents=True)
+                (skill_dir / "SKILL.md").write_text(
+                    "---\nname: sample-skill\ndescription: Sample.\n---\n\nDo the thing.\n",
+                    encoding="utf-8",
+                )
+                (files_dir / "sample.json").write_text("{}", encoding="utf-8")
+                (skill_dir / "evals" / "evals.json").write_text(
+                    json.dumps(
+                        {
+                            "skill_name": "sample-skill",
+                            "evals": [
+                                {
+                                    "id": "case-one",
+                                    "prompt": "Plan the next pass.",
+                                    "expected_output": "A focused plan.",
+                                    "files": ["evals/files/sample.json"],
+                                    "checks": [
+                                        {
+                                            "text": "The plan is focused",
+                                            "category": "goal",
+                                            "weight": 1,
+                                        }
+                                    ],
+                                    "required_skill_activations": ["sample-skill"],
+                                }
+                            ],
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+
+                result = skill_evaluator.evaluate_skill(
+                    project_root,
+                    skill_name="sample-skill",
+                    model="gemma-4-e4b",
+                    grader_model="gpt-5.4-mini",
+                )
+
+            self.assertEqual("gpt-5.4-mini", result["grader_model"])
+            self.assertEqual(
+                {
+                    "skills": ["sample-skill"],
+                    "model_role": "subject",
+                    "model_override": "gemma-4-e4b",
+                },
+                captured["subject_calls"][0],
+            )
+            self.assertEqual(
+                {"model": "gpt-5.4-mini", "model_override": "gpt-5.4-mini"},
+                captured["grader_requests"][0],
+            )
+            self.assertEqual("sdk:gpt-5.4-mini", captured["grader_models"][0])
         finally:
             skill_evaluator.execute_task = original_execute_task
             skill_evaluator._load_sdk = original_load_sdk

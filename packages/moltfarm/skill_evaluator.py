@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import statistics
 from difflib import SequenceMatcher
 from collections import defaultdict
@@ -9,6 +10,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from . import runner
 from .models import AgentDefinition, EvalCheck, Skill, SkillEvalCase
 from .runner import execute_task
 from .skill_evals import (
@@ -49,10 +51,18 @@ def evaluate_skill(
     project_root: Path,
     *,
     skill_name: str,
-    model: str = "gpt-5",
+    model: str | None = None,
+    grader_model: str | None = None,
     baseline: str = "without-skill",
     snapshot_current: bool = False,
 ) -> dict[str, Any]:
+    requested_subject_model = model
+    subject_model = (model or "gpt-5").strip()
+    effective_grader_model = _resolve_default_grader_model(
+        project_root=project_root,
+        subject_model=subject_model,
+        grader_model=grader_model,
+    )
     skills_by_name = discover_skills(project_root / "skills")
     skill = skills_by_name.get(skill_name)
     if skill is None:
@@ -93,7 +103,10 @@ def evaluate_skill(
             case=case,
             skill=skill,
             configurations=configurations,
-            model=model,
+            model=subject_model,
+            model_override=requested_subject_model,
+            grader_model=effective_grader_model,
+            grader_model_override=grader_model,
             iteration_dir=iteration_dir,
         )
         case_summaries.append(case_result)
@@ -115,6 +128,7 @@ def evaluate_skill(
         "benchmark_path": str(benchmark_path.relative_to(project_root)),
         "feedback_path": str(feedback_path.relative_to(project_root)),
         "baseline": baseline,
+        "grader_model": effective_grader_model,
         "snapshot_dir": (
             str(snapshot_dir.relative_to(project_root)) if snapshot_dir is not None else None
         ),
@@ -130,6 +144,9 @@ def _evaluate_case(
     skill: Skill,
     configurations: list[tuple[str, Skill | None]],
     model: str,
+    model_override: str | None,
+    grader_model: str,
+    grader_model_override: str | None,
     iteration_dir: Path,
 ) -> dict[str, Any]:
     case_dir = iteration_dir / f"eval-{case.case_id}"
@@ -165,6 +182,8 @@ def _evaluate_case(
             agent=agent,
             skills=attached_skills,
             task_input=task_input,
+            model_role="subject",
+            model_override=model_override,
         )
 
         write_json(
@@ -182,7 +201,8 @@ def _evaluate_case(
 
         grading = _grade_eval_output(
             project_root=project_root,
-            model=model,
+            model=grader_model,
+            model_override=grader_model_override,
             case=case,
             output=output,
             attached_skill=configured_skill,
@@ -241,13 +261,18 @@ def _grade_eval_output(
     *,
     project_root: Path,
     model: str,
+    model_override: str | None,
     case: SkillEvalCase,
     output: dict[str, Any],
     attached_skill: Skill | None,
 ) -> dict[str, Any]:
     llm_payload = _empty_grading_payload(mode="no_checks")
     if case.checks:
-        sdk = _load_sdk(project_root)
+        sdk, sdk_model, _ = _load_sdk(
+            project_root,
+            model=model,
+            model_override=model_override,
+        )
         prompt = _build_grading_prompt(
             case=case,
             output=output,
@@ -255,7 +280,7 @@ def _grade_eval_output(
         )
         grader = sdk.Agent(
             name="skill-eval-grader",
-            model=model,
+            model=sdk_model,
             instructions=(
                 "Grade eval checks against the provided output. "
                 "Copy each check text exactly into assertion_results.text, in the same order as provided. "
@@ -799,15 +824,36 @@ def _stats(values: list[int | float]) -> dict[str, float]:
     }
 
 
-def _load_sdk(project_root: Path):
-    from . import runner
+def _load_sdk(
+    project_root: Path,
+    *,
+    model: str,
+    model_override: str | None = None,
+):
+    return runner._load_openai_agents_sdk_with_model(
+        project_root=project_root,
+        role="grader",
+        default_model=model,
+        model_override=model_override,
+    )
 
-    load_dotenv = runner._load_dotenv(project_root)
-    if load_dotenv is not None:
-        load_dotenv(project_root / ".env", override=False)
-    sdk = runner._import_openai_agents_sdk(project_root)
-    sdk.set_tracing_disabled(True)
-    return sdk
+
+def _resolve_default_grader_model(
+    *,
+    project_root: Path,
+    subject_model: str,
+    grader_model: str | None,
+) -> str:
+    runner._load_project_environment(project_root)
+    configured_grader_model = (os.getenv("MOLT_GRADER_MODEL") or "").strip()
+    if grader_model:
+        return grader_model
+    if configured_grader_model:
+        return configured_grader_model
+    subject_provider = (os.getenv("MOLT_SUBJECT_PROVIDER") or "openai").strip().lower()
+    if subject_provider == "openai":
+        return subject_model
+    return "gpt-5"
 
 
 def _find_latest_snapshot_skill(skill: Skill, *, exclude_dir: Path) -> Path | None:
