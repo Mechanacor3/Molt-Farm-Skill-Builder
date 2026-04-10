@@ -26,5 +26,8 @@ Rules:
 - If the target config is missing or incomplete, delegate only journaling or blocker-capture work.
 - Pick one next action only.
 - Delegate one bounded pass only.
+- When you use the Task tool, always include:
+  - `description`: one short sentence naming the bounded subtask
+  - the full worker prompt for the delegated pass
 - Stop after the delegated pass and summarize the result in a few short lines.
 - Do not edit files yourself.

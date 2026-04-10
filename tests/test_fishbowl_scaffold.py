@@ -22,8 +22,8 @@ class FishbowlScaffoldTests(unittest.TestCase):
         self.assertEqual("deny", payload["permission"]["task"]["*"])
         self.assertEqual("ask", payload["permission"]["bash"]["*"])
         self.assertEqual("ask", payload["permission"]["edit"]["*"])
-        self.assertEqual("deny", payload["permission"]["webfetch"]["*"])
-        self.assertEqual("deny", payload["permission"]["websearch"]["*"])
+        self.assertEqual("deny", payload["permission"]["webfetch"])
+        self.assertEqual("deny", payload["permission"]["websearch"])
 
     def test_fishbowl_agents_and_skills_exist(self) -> None:
         agent_paths = [

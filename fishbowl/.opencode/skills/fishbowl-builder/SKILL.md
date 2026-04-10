@@ -20,9 +20,15 @@ Instructions:
    - one island interaction
    - one restart path
 4. Prefer inspectable structure and deterministic hooks over polish.
-5. Change one main dimension only: bootstrap or core-loop repair.
-6. Use short ordered actions, not essays.
-7. Report in exactly this order:
+5. If the target repo does not already have a clear app scaffold, do not invent a broad framework setup in the first pass.
+6. In a thin repo, prefer this order:
+   - fixture data such as `farm-state.json` or `farm-events.jsonl`
+   - one tiny world-model module or README note
+   - only then UI code
+7. Touch at most 3 files in one pass.
+8. Change one main dimension only: bootstrap or core-loop repair.
+9. Use short ordered actions, not essays.
+10. Report in exactly this order:
    goal:
    current_slice:
    next_change:

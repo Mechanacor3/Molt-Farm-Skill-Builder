@@ -39,11 +39,7 @@
     "edit": {
       "*": "ask"
     },
-    "webfetch": {
-      "*": "deny"
-    },
-    "websearch": {
-      "*": "deny"
-    }
+    "webfetch": "deny",
+    "websearch": "deny"
   }
 }
