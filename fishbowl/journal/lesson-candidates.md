@@ -13,3 +13,6 @@ Current status:
 - `candidate`: Headless `opencode run` with explicit `@subagent` prompts is still less reliable than primary-agent planning on the local model, so smoke tests should treat the primary `overseer` path as the baseline.
   `evidence_paths`: `fishbowl/journal/sessions/2026-04-10-opencode-smoke-rounds.md`, `fishbowl/.opencode/agents/overseer.md`
   `next`: Prefer overseer-led smoke runs and gather more evidence from interactive TUI usage before redesigning the subagent layout.
+- `candidate`: Delegated prompts need to say that `config/target.local.json` lives in the fishbowl working directory and must repeat the child agent's exact output schema, or the local model may look for config inside the external repo or answer in the wrong format.
+  `evidence_paths`: `fishbowl/journal/sessions/2026-04-10-opencode-smoke-rounds.md`, `fishbowl/.opencode/agents/scout.md`, `fishbowl/.opencode/agents/shipwright.md`, `fishbowl/.opencode/skills/fishbowl-overseer/SKILL.md`
+  `next`: Rerun one `@shipwright` smoke and one `@scout` smoke after tightening config-location and child-schema instructions.

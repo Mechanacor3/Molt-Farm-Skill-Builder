@@ -70,6 +70,7 @@ class FishbowlScaffoldTests(unittest.TestCase):
             FISHBOWL_ROOT / "journal" / "templates" / "session-template.md",
             FISHBOWL_ROOT / "journal" / "sessions" / "2026-04-10-kickoff.md",
             FISHBOWL_ROOT / "journal" / "sessions" / "2026-04-10-metaphor-visual-plan.md",
+            FISHBOWL_ROOT / "journal" / "sessions" / "2026-04-10-opencode-smoke-rounds-followup.md",
         ]
 
         for path in expected_paths:
@@ -91,6 +92,29 @@ class FishbowlScaffoldTests(unittest.TestCase):
         self.assertIn("boats = agent-agent communication", plan)
         self.assertIn("farm-state.json", plan)
         self.assertIn("farm-events.jsonl", plan)
+
+    def test_agent_contracts_lock_config_location_and_output_shape(self) -> None:
+        overseer_agent = (FISHBOWL_ROOT / ".opencode" / "agents" / "overseer.md").read_text(encoding="utf-8")
+        shipwright_agent = (FISHBOWL_ROOT / ".opencode" / "agents" / "shipwright.md").read_text(encoding="utf-8")
+        scout_agent = (FISHBOWL_ROOT / ".opencode" / "agents" / "scout.md").read_text(encoding="utf-8")
+        overseer_skill = (
+            FISHBOWL_ROOT / ".opencode" / "skills" / "fishbowl-overseer" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        builder_skill = (
+            FISHBOWL_ROOT / ".opencode" / "skills" / "fishbowl-builder" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        browser_check_skill = (
+            FISHBOWL_ROOT / ".opencode" / "skills" / "fishbowl-browser-check" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("not from inside `repo_path`", overseer_agent)
+        self.assertIn('Task(description="...", prompt="...", subagent_type="...")', overseer_agent)
+        self.assertIn("not from inside `repo_path`", overseer_skill)
+        self.assertIn('Task(description="...", prompt="...", subagent_type="...")', overseer_skill)
+        self.assertIn("Do not look for it inside `repo_path`", shipwright_agent)
+        self.assertIn("Do not look for it inside the target repo", scout_agent)
+        self.assertIn("Return only the six required lines.", builder_skill)
+        self.assertIn("Return only the five required lines.", browser_check_skill)
 
 
 if __name__ == "__main__":

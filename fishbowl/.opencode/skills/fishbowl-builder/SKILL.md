@@ -12,7 +12,7 @@ Use this skill when:
 - The goal is one playable step, not a broad rewrite.
 
 Instructions:
-1. Read `config/target.local.json` first.
+1. Read `config/target.local.json` from the fishbowl working directory first.
 2. If the target config is missing or `repo_path` is empty, stop and return only the blocker.
 3. Build the smallest playable slice first:
    - one control scheme
@@ -25,10 +25,13 @@ Instructions:
    - fixture data such as `farm-state.json` or `farm-events.jsonl`
    - one tiny world-model module or README note
    - only then UI code
-7. Touch at most 3 files in one pass.
-8. Change one main dimension only: bootstrap or core-loop repair.
-9. Use short ordered actions, not essays.
-10. Report in exactly this order:
+7. Inspect the repo root and at most 2 relevant existing files before editing.
+8. If the repo is very thin, prefer creating exactly one small fixture file first, starting with `fixtures/farm-state.json` when possible.
+9. Touch at most 3 files in one pass.
+10. Change one main dimension only: bootstrap or core-loop repair.
+11. Use short ordered actions, not essays.
+12. Return only the six required lines.
+13. Report in exactly this order:
    goal:
    current_slice:
    next_change:

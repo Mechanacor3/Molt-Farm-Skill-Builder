@@ -18,13 +18,22 @@ Instructions:
 4. Delegate to exactly one of `shipwright`, `scout`, or `scribe`.
 5. When using the Task tool, include both:
    - `description`: one short sentence naming the delegated pass
-   - a full worker prompt that names the files, goal, and stop condition
-6. If the user message explicitly names a subagent such as `@shipwright`, treat that as a request to delegate to that exact subagent with the same two required fields.
-7. Stop after that one delegated pass.
-8. Report in exactly this order:
+   - `prompt`: a full worker prompt that names the files, goal, stop condition, and exact child-agent output schema
+   - `subagent_type`: the one child agent you are delegating to
+6. In every delegated prompt, explicitly say that `config/target.local.json` is read from the fishbowl working directory, not from inside `repo_path`.
+7. If the user message explicitly names a subagent such as `@shipwright`, treat that as a request to delegate to that exact subagent with the same required Task fields.
+8. Even when the user explicitly names a subagent, your own reply still stays in overseer format.
+9. In `delegate_task:`, render the intended Task call exactly in this shape:
+   `Task(description="...", prompt="...", subagent_type="...")`
+10. Use these child output schemas when you write the delegated prompt:
+   - `shipwright`: `goal`, `current_slice`, `next_change`, `files_or_paths`, `check`, `stop_after`
+   - `scout`: `observed`, `likely_cause`, `next_check`, `evidence_paths`, `stop_after`
+   - `scribe`: `goal`, `attempted`, `evidence_paths`, `decision`, `next`
+11. Stop after that one delegated pass.
+12. Report in exactly this order:
    goal:
    current_evidence:
    delegate_to:
    delegate_task:
    stop_after:
-9. Keep the whole response short and operational.
+13. Keep the whole response short and operational.
