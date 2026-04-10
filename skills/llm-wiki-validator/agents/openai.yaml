@@ -1,0 +1,4 @@
+interface:
+  display_name: "LLM Wiki Validator"
+  short_description: "Review wiki update plans for evidence and taxonomy fit"
+  default_prompt: "Use this skill when a proposed wiki update or draft page change needs review for source-path evidence, canonical routing, duplicate avoidance, and taxonomy fit before editing."

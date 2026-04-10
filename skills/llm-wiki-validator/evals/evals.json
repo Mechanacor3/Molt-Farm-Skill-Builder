@@ -1,0 +1,85 @@
+{
+  "skill_name": "llm-wiki-validator",
+  "evals": [
+    {
+      "id": "flag-duplicate-and-taxonomy-drift",
+      "prompt": "Using the attached proposed plan, wiki taxonomy, and source pack, review the plan before anyone edits the wiki.",
+      "expected_output": "A concise validation report that marks the plan for revision because it creates duplicate pages, invents a new top-level folder, and omits exact source paths.",
+      "files": [
+        "evals/files/proposed-update-plan-bad.md",
+        "evals/files/wiki-taxonomy.md",
+        "evals/files/source-pack.md"
+      ],
+      "required_skill_activations": [
+        "llm-wiki-validator"
+      ],
+      "checks": [
+        {
+          "text": "The response marks the plan for revision rather than approval",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response flags duplicate-page risk for Davra or the Zelroun spelling variants",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response flags the invented `Delegates/` top-level folder as taxonomy drift",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response calls out the lack of exact supporting source paths",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response stays in a short review format instead of rewriting the whole wiki plan from scratch",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "approve-sound-plan-with-residual-note",
+      "prompt": "Using the attached proposed plan, wiki taxonomy, and source pack, validate whether the plan is safe to apply.",
+      "expected_output": "A concise validation report that approves the plan, notes that it preserves canonical routing and source-path evidence, and mentions only a small residual uncertainty around canonical naming guidance.",
+      "files": [
+        "evals/files/proposed-update-plan-good.md",
+        "evals/files/wiki-taxonomy.md",
+        "evals/files/source-pack.md"
+      ],
+      "required_skill_activations": [
+        "llm-wiki-validator"
+      ],
+      "checks": [
+        {
+          "text": "The response approves the plan rather than requesting a broad rewrite",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response notes that the plan preserves existing canonical pages and taxonomy",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response cites the exact source-path evidence discipline in the plan",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response mentions at most a small residual uncertainty about canonical naming or errata handling",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The response stays in the required verdict and findings style instead of converting into an authoring plan",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    }
+  ]
+}

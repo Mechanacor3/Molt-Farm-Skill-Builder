@@ -1,0 +1,164 @@
+{
+  "skill_name": "llm-wiki",
+  "evals": [
+    {
+      "id": "route-raw-fragment-into-timeline-and-entity-pages",
+      "prompt": "Using the attached raw fragment, chapter guide, people index, and existing Davra page, what wiki updates should happen first?",
+      "expected_output": "A concise update plan that routes the event into the existing aligned or timeline structure, updates the canonical Davra page, and uses the existing people taxonomy instead of duplicating pages.",
+      "files": [
+        "evals/files/raw-fragment-gauntlgrym.md",
+        "evals/files/chapter-guide-excerpt.md",
+        "evals/files/people-index-excerpt.md",
+        "evals/files/davra-jassur-page.md"
+      ],
+      "required_skill_activations": [
+        "llm-wiki"
+      ],
+      "checks": [
+        {
+          "text": "The response updates a chapter, aligned, or timeline page for the Gauntlgrym arrival instead of treating the raw fragment as the final destination",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response routes Davra Jassur to the existing canonical page rather than creating a duplicate note",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response preserves the existing `People/` taxonomy or index structure shown in the fixtures",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response links the recommended edits back to the attached raw-fragment evidence",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response stays narrow and edit-oriented rather than proposing a brand-new wiki design",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "combine-reference-and-errata-without-overclaiming",
+      "prompt": "Using the attached raw fragment, chapter guide, and errata snippet, how should the wiki handle the named delegates and the spelling guidance without overstating what the raw note proves?",
+      "expected_output": "A concise evidence-backed answer that separates raw-note events from chapter context and errata naming guidance, preserves note-backed history, and applies canonical spelling without inventing unsupported detail.",
+      "files": [
+        "evals/files/raw-fragment-gauntlgrym.md",
+        "evals/files/chapter-guide-excerpt.md",
+        "evals/files/errata-snippet.md"
+      ],
+      "required_skill_activations": [
+        "llm-wiki"
+      ],
+      "checks": [
+        {
+          "text": "The response distinguishes what the raw fragment supports from what the chapter guide or errata adds",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response applies the canonical `Zelroun Roaringhorn` spelling to curated wiki pages while preserving the note-backed evidence trail",
+          "category": "evidence",
+          "weight": 3
+        },
+        {
+          "text": "The response avoids silently resolving unsupported lore or replacing the note-backed event with book context",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The response marks uncertainty, variant naming, or source role explicitly when needed",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response stays compact and evidence-disciplined",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "preserve-existing-taxonomy-before-proposing-defaults",
+      "prompt": "I want to turn a mixed note corpus into a wiki. Using the attached chapter guide and people index excerpt, what structure should I use first?",
+      "expected_output": "A concise structure recommendation that preserves the existing raw, aligned, and typed entity folders plus indexes, and only mentions a minimal default structure as a fallback when no taxonomy exists.",
+      "files": [
+        "evals/files/chapter-guide-excerpt.md",
+        "evals/files/people-index-excerpt.md"
+      ],
+      "required_skill_activations": [
+        "llm-wiki"
+      ],
+      "checks": [
+        {
+          "text": "The response preserves the existing `Notes/Raw`, `Notes/Aligned`, and typed entity folder pattern instead of inventing a new top-level taxonomy",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response keeps or improves the existing index-page approach for navigation",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response only proposes a minimal default structure as a fallback for repos that do not already have a taxonomy",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The response mentions matching the existing root-based Markdown link style or existing link conventions",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response stays focused on structure choice instead of drafting full content",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "canonical-page-first-linking",
+      "prompt": "A new note mentions Davra Jassur again. Using the attached people index and existing Davra page, what should happen in the wiki first?",
+      "expected_output": "A concise answer that updates the existing Davra page and any needed index metadata, links the new note to the canonical page, and avoids creating a second Davra note.",
+      "files": [
+        "evals/files/people-index-excerpt.md",
+        "evals/files/davra-jassur-page.md"
+      ],
+      "required_skill_activations": [
+        "llm-wiki"
+      ],
+      "checks": [
+        {
+          "text": "The response updates the existing `/People/npcs/davra-jassur.md` page or its equivalent canonical page first",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response avoids creating a duplicate page for Davra Jassur or a spelling variant",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response mentions updating index metadata such as last-seen or references when the new note changes it",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response links the new note mention back to the canonical page using the existing wiki link convention",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response stays short and action-oriented",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "LLM Wiki"
+  short_description: "Turn mixed notes into an evidence-backed linked wiki"
+  default_prompt: "Use this skill when raw notes, reference text, and errata need to become a structured Markdown wiki with canonical pages, timeline notes, and explicit evidence handling."

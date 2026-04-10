@@ -13,6 +13,86 @@ from moltfarm import skill_evaluator
 
 
 class SkillEvaluatorTests(unittest.TestCase):
+    def test_parse_grading_json_normalizes_alternate_summary_keys(self) -> None:
+        payload = {
+            "assertion_results": [
+                {
+                    "text": "One",
+                    "passed": True,
+                    "evidence": "ok",
+                    "weight": 2,
+                },
+                {
+                    "text": "Two",
+                    "passed": False,
+                    "evidence": "missing",
+                    "weight": 1,
+                },
+            ],
+            "summary": {
+                "passed_count": 1,
+                "total_checks": 2,
+                "overall_result": "MIXED",
+            },
+        }
+
+        parsed = skill_evaluator._parse_grading_json(json.dumps(payload))
+
+        self.assertEqual(1, parsed["summary"]["passed"])
+        self.assertEqual(1, parsed["summary"]["failed"])
+        self.assertEqual(2, parsed["summary"]["total"])
+        self.assertEqual(0.5, parsed["summary"]["pass_rate"])
+        self.assertAlmostEqual(2 / 3, parsed["summary"]["weighted_pass_rate"])
+
+    def test_parse_grading_json_derives_summary_when_model_returns_only_assessment(self) -> None:
+        payload = {
+            "assertion_results": [
+                {
+                    "text": "One",
+                    "passed": True,
+                    "evidence": "ok",
+                },
+                {
+                    "text": "Two",
+                    "passed": True,
+                    "evidence": "ok",
+                },
+                {
+                    "text": "Three",
+                    "passed": False,
+                    "evidence": "missing",
+                },
+            ],
+            "summary": {
+                "overall_assessment": "Mostly good, one miss.",
+            },
+        }
+
+        parsed = skill_evaluator._parse_grading_json(json.dumps(payload))
+
+        self.assertEqual(2, parsed["summary"]["passed"])
+        self.assertEqual(1, parsed["summary"]["failed"])
+        self.assertEqual(3, parsed["summary"]["total"])
+        self.assertAlmostEqual(2 / 3, parsed["summary"]["pass_rate"])
+
+    def test_failed_grading_payload_marks_all_checks_false(self) -> None:
+        checks = [
+            skill_evaluator.EvalCheck(text="One", category="goal", weight=2),
+            skill_evaluator.EvalCheck(text="Two", category="evidence", weight=1),
+        ]
+
+        payload = skill_evaluator._failed_grading_payload(
+            checks=checks,
+            error=ValueError("bad grader payload"),
+            mode="llm_grader_error",
+        )
+
+        self.assertEqual(0, payload["summary"]["passed"])
+        self.assertEqual(2, payload["summary"]["failed"])
+        self.assertEqual(2, payload["summary"]["total"])
+        self.assertIn("bad grader payload", payload["assertion_results"][0]["evidence"])
+        self.assertEqual("llm_grader_error", payload["mode"])
+
     def test_align_grading_payload_recovers_paraphrased_results_by_position(self) -> None:
         checks = [
             skill_evaluator.EvalCheck(text="The answer recommends pytest parametrization", category="goal", weight=3),

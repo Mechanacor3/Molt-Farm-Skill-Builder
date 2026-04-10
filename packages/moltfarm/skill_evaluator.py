@@ -287,16 +287,24 @@ def _grade_eval_output(
                 "Each assertion_result must include text, passed, and evidence. "
                 "Require concrete evidence for PASS. "
                 "If a check cannot be verified from the output, mark it false. "
-                "Do not invent missing evidence."
+                "Do not invent missing evidence. "
+                "Return JSON only with top-level keys assertion_results and summary. "
+                "summary should include passed, failed, total, pass_rate, and weighted_pass_rate."
             ),
-            output_type=GradingPayload,
         )
-        result = sdk.Runner.run_sync(grader, prompt)
-        llm_payload = _align_grading_payload(
-            checks=case.checks,
-            payload=_coerce_grading_payload(result.final_output),
-            mode="llm_grader",
-        )
+        try:
+            result = sdk.Runner.run_sync(grader, prompt)
+            llm_payload = _align_grading_payload(
+                checks=case.checks,
+                payload=_coerce_grading_payload(result.final_output),
+                mode="llm_grader",
+            )
+        except Exception as exc:
+            llm_payload = _failed_grading_payload(
+                checks=case.checks,
+                error=exc,
+                mode="llm_grader_error",
+            )
 
     trace_payload = _grade_trace_requirements(case=case, output=output, attached_skill=attached_skill)
     return _merge_grading_payloads(llm_payload, trace_payload)
@@ -385,6 +393,30 @@ def _empty_grading_payload(*, mode: str) -> dict[str, Any]:
         "assertion_results": [],
         "summary": _build_grading_summary([]),
         "category_scores": {},
+        "mode": mode,
+    }
+
+
+def _failed_grading_payload(
+    *,
+    checks: list[EvalCheck],
+    error: Exception,
+    mode: str,
+) -> dict[str, Any]:
+    aligned_results = [
+        {
+            "text": check.text,
+            "passed": False,
+            "evidence": f"Grader failed before producing a usable payload: {type(error).__name__}: {error}",
+            "category": check.category,
+            "weight": check.weight,
+        }
+        for check in checks
+    ]
+    return {
+        "assertion_results": aligned_results,
+        "summary": _build_grading_summary(aligned_results),
+        "category_scores": _build_category_scores(aligned_results),
         "mode": mode,
     }
 
@@ -658,19 +690,23 @@ def _parse_grading_json(raw_text: str) -> dict[str, Any]:
         payload = json.loads(raw_text[start : end + 1])
 
     assertion_results = payload.get("assertion_results") or []
-    summary = payload.get("summary") or {}
-    if not isinstance(assertion_results, list) or not isinstance(summary, dict):
+    if not isinstance(assertion_results, list):
         raise ValueError("Invalid grading payload shape.")
+    normalized_results = [
+        dict(item) for item in assertion_results
+        if isinstance(item, dict)
+    ]
+    summary = _normalize_grading_summary(
+        raw_summary=payload.get("summary"),
+        assertion_results=normalized_results,
+    )
+    category_scores = payload.get("category_scores")
+    if not isinstance(category_scores, dict):
+        category_scores = _build_category_scores(normalized_results)
     return {
-        "assertion_results": assertion_results,
-        "summary": {
-            "passed": int(summary.get("passed", 0) or 0),
-            "failed": int(summary.get("failed", 0) or 0),
-            "total": int(summary.get("total", 0) or 0),
-            "pass_rate": float(summary.get("pass_rate", 0.0) or 0.0),
-            "weighted_pass_rate": float(summary.get("weighted_pass_rate", 0.0) or 0.0),
-        },
-        "category_scores": payload.get("category_scores") or {},
+        "assertion_results": normalized_results,
+        "summary": summary,
+        "category_scores": category_scores,
     }
 
 
@@ -682,6 +718,79 @@ def _coerce_grading_payload(value: Any) -> dict[str, Any]:
         if isinstance(dumped, dict):
             return _parse_grading_json(json.dumps(dumped))
     return _parse_grading_json(str(value))
+
+
+def _normalize_grading_summary(
+    *,
+    raw_summary: Any,
+    assertion_results: list[dict[str, Any]],
+) -> dict[str, Any]:
+    if not isinstance(raw_summary, dict):
+        raw_summary = {}
+
+    fallback = _build_grading_summary(assertion_results)
+    passed = _first_int(
+        raw_summary,
+        "passed",
+        "passed_count",
+        "pass_count",
+        default=fallback["passed"],
+    )
+    total = _first_int(
+        raw_summary,
+        "total",
+        "total_checks",
+        "check_count",
+        default=fallback["total"],
+    )
+    failed = _first_int(
+        raw_summary,
+        "failed",
+        "failed_count",
+        "fail_count",
+        default=max(total - passed, 0),
+    )
+    pass_rate = _first_float(
+        raw_summary,
+        "pass_rate",
+        default=(0.0 if total == 0 else passed / total),
+    )
+    weighted_pass_rate = _first_float(
+        raw_summary,
+        "weighted_pass_rate",
+        default=fallback["weighted_pass_rate"],
+    )
+    return {
+        "passed": passed,
+        "failed": failed,
+        "total": total,
+        "pass_rate": pass_rate,
+        "weighted_pass_rate": weighted_pass_rate,
+    }
+
+
+def _first_int(raw_summary: dict[str, Any], *keys: str, default: int) -> int:
+    for key in keys:
+        value = raw_summary.get(key)
+        if value is None or value == "":
+            continue
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            continue
+    return int(default)
+
+
+def _first_float(raw_summary: dict[str, Any], *keys: str, default: float) -> float:
+    for key in keys:
+        value = raw_summary.get(key)
+        if value is None or value == "":
+            continue
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            continue
+    return float(default)
 
 
 def _build_benchmark(case_summaries: list[dict[str, Any]]) -> dict[str, Any]:

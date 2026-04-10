@@ -1,0 +1,149 @@
+{
+  "skill_name": "molt-skill-builder-authoring",
+  "evals": [
+    {
+      "id": "start-new-skill-loop",
+      "prompt": "Using the attached brief, what first local authoring loop should I follow to add this skill to Molt Farm?",
+      "expected_output": "A concise ordered loop that starts with a narrow skill surface, then uses create-evals, draft review, promotion, eval-skill, artifact inspection, lesson capture, and rerun.",
+      "files": [
+        "evals/files/new-skill-brief.md"
+      ],
+      "required_skill_activations": [
+        "molt-skill-builder-authoring"
+      ],
+      "checks": [
+        {
+          "text": "The response starts with authoring or tightening `SKILL.md` plus only the smallest supporting files",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response uses `./molt skill-builder create-evals schema-diff-review` before `eval-skill`",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response includes reviewing the draft workspace and promoting the accepted draft into canonical eval files",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response mentions inspecting benchmark, feedback, or comparison artifacts before refining the skill",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response stays as a short ordered authoring loop rather than a broad repo overview",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "resume-create-evals-and-promote",
+      "prompt": "Using the attached draft-session status, what next repo-local steps should I take before I edit the skill again?",
+      "expected_output": "A concise next-step answer that resumes the draft session with a selected_flavors answer, reviews the session workspace, promotes the draft, and then runs eval-skill before further refinement.",
+      "files": [
+        "evals/files/create-evals-session.md"
+      ],
+      "required_skill_activations": [
+        "molt-skill-builder-authoring"
+      ],
+      "checks": [
+        {
+          "text": "The response includes a resume command using `./molt skill-builder create-evals schema-diff-review --session session-2 --answer selected_flavors=core-task,evidence-discipline` or an equally narrow selected_flavors answer",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response includes a promotion step using `--promote` before the next `eval-skill` run",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response tells the author to inspect the draft session workspace before promotion instead of promoting blindly",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response continues into `./molt skill-builder eval-skill schema-diff-review` before more skill edits",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The response stays focused on the next authoring steps rather than re-explaining the whole CLI",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "inspect-evidence-before-editing",
+      "prompt": "Using the attached iteration summary, what local evidence should I open before changing the skill instructions?",
+      "expected_output": "A concise evidence-first answer that opens the benchmark, feedback, one failing comparison, and the paired with-skill and without-skill outputs before editing the skill.",
+      "files": [
+        "evals/files/iteration-evidence.md"
+      ],
+      "required_skill_activations": [
+        "molt-skill-builder-authoring"
+      ],
+      "checks": [
+        {
+          "text": "The response points to `benchmark.json` and `feedback.json` as the top-level evidence to inspect first",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response points to the named case `comparison.json` before changing `SKILL.md`",
+          "category": "evidence",
+          "weight": 2
+        },
+        {
+          "text": "The response mentions comparing the paired `with_skill/` and `without_skill/` outputs for the case",
+          "category": "evidence",
+          "weight": 3
+        },
+        {
+          "text": "The response frames the edit as a narrow refinement tied to observed evidence",
+          "category": "goal",
+          "weight": 2
+        },
+        {
+          "text": "The response stays focused on evidence order instead of drifting into a fresh brainstorm",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "use-this-skill-vs-molt-cli",
+      "prompt": "I already know the operation name. I only need one exact `./molt` command and the artifact paths to inspect afterward. Should I use this skill or `molt-cli`, and why?",
+      "expected_output": "A concise answer that routes exact command-and-artifact requests to `molt-cli` and keeps this skill for the broader authoring, evaluation, and refinement loop.",
+      "required_skill_activations": [
+        "molt-skill-builder-authoring"
+      ],
+      "checks": [
+        {
+          "text": "The response explicitly recommends `molt-cli` for one exact command plus artifact lookup",
+          "category": "trigger",
+          "weight": 3
+        },
+        {
+          "text": "The response explains that this skill is for the larger create-evals to eval-skill to lesson refinement loop",
+          "category": "goal",
+          "weight": 3
+        },
+        {
+          "text": "The response distinguishes the two skills instead of treating them as interchangeable",
+          "category": "trigger",
+          "weight": 2
+        },
+        {
+          "text": "The response stays short and decision-oriented",
+          "category": "format",
+          "weight": 1
+        }
+      ]
+    }
+  ]
+}

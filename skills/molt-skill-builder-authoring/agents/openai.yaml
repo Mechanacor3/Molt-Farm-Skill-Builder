@@ -1,0 +1,4 @@
+interface:
+  display_name: "Molt Skill Builder Authoring"
+  short_description: "Build, evaluate, and refine local Molt Farm skills"
+  default_prompt: "Use this skill when authoring or refining a local Molt Farm skill and you need the repo's create-evals, eval-skill, artifact inspection, and lesson loop rather than one exact CLI command."
