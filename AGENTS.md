@@ -48,6 +48,10 @@ Current durable preferences:
 - treat the repo as a skill foundry: look for reusable capabilities that should become portable `SKILL.md` artifacts
 - remember to keep work moving into git in small, coherent commits instead of leaving useful repo changes uncommitted
 - record meaningful implementation lessons in `lessons/` as part of feature work, not only after an explicit reminder
+- the fishbowl lives under `fishbowl/` as a self-contained opencode experiment surface
+- fishbowl target repos stay external to this repo and are referenced through local config
+- fishbowl work should prefer local-model-first defaults and visible approvals over silent autonomy
+- fishbowl agents should stay one-skill-per-agent unless a later lesson proves a broader bundle is better
 
 ---
 
@@ -63,6 +67,7 @@ Primary artifacts:
 
 Non-product or optional areas:
 - `experiments/` = optional research tooling that should not shape the main product surface
+- `fishbowl/` = self-contained opencode experiment scaffold that points at external target repos and journals work locally
 - `tmp/` = local scratch artifacts
 - `example_upstream_skills/` = ignored local study material, not part of the runtime
 

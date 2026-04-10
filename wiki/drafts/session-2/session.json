@@ -1,0 +1,36 @@
+{
+  "session_id": "session-2",
+  "phase": "draft_ready",
+  "status": "completed",
+  "created_at": "2026-04-10T06:17:28",
+  "filters": {
+    "lesson_paths": [
+      "lessons/2026-04-10-fishbowl-scaffold-for-local-opencode.md",
+      "lessons/2026-04-09-local-gemma-pure-local-pilot.md",
+      "lessons/2026-04-09-skill-authoring-and-wiki-validation.md"
+    ],
+    "lesson_glob": "lessons/*.md",
+    "workflow_focus": [],
+    "date_from": "",
+    "date_to": ""
+  },
+  "lesson_count": 3,
+  "entry_count": 12,
+  "draft_plan_path": "wiki/drafts/session-2/plan.md",
+  "draft_index_path": "wiki/drafts/session-2/_build/lesson-index.json",
+  "draft_page_paths": [
+    "wiki/drafts/session-2/pages/components/cli-and-operations.md",
+    "wiki/drafts/session-2/pages/components/evaluator-and-grading.md",
+    "wiki/drafts/session-2/pages/components/local-model-proxy.md",
+    "wiki/drafts/session-2/pages/components/testing-and-evidence.md",
+    "wiki/drafts/session-2/pages/components/wiki-authoring.md",
+    "wiki/drafts/session-2/pages/index.md",
+    "wiki/drafts/session-2/pages/workflows/author-skill.md",
+    "wiki/drafts/session-2/pages/workflows/build-evals.md",
+    "wiki/drafts/session-2/pages/workflows/extract-lessons.md",
+    "wiki/drafts/session-2/pages/workflows/inspect-artifacts.md",
+    "wiki/drafts/session-2/pages/workflows/local-model-pilot.md",
+    "wiki/drafts/session-2/pages/workflows/refine-and-rerun.md",
+    "wiki/drafts/session-2/pages/workflows/run-evals.md"
+  ]
+}

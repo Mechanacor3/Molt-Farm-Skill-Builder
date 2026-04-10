@@ -146,6 +146,20 @@ OPENAI_API_KEY=your_openai_key_here \
 ./molt skill-builder eval-skill run-summarizer --model gemma-4-e4b --grader-model gpt-5
 ```
 
+## Fishbowl Experiment
+
+The `fishbowl/` subtree is a separate local opencode surface for watching small local-model agents work against an external browser-game repo. It owns opencode config, agent prompts, journal files, and lesson capture, but it does not own the 1602-style game source.
+
+Start from the fishbowl root:
+
+```bash
+cp fishbowl/config/target.example.json fishbowl/config/target.local.json
+cd fishbowl
+opencode
+```
+
+Point `config/target.local.json` at the external game repo you want the baby molts to work on. The default fishbowl config stays local-only, uses the direct `llama.cpp` baseline at `http://127.0.0.1:8080/v1`, and leaves external-directory access on approval.
+
 ## Tests
 
 If you want local test tooling in your existing virtualenv, install the repo with the `test` extra:

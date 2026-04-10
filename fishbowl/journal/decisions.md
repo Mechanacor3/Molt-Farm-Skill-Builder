@@ -1,0 +1,19 @@
+# Fishbowl Decisions
+
+- Date: 2026-04-10
+- Default local model surface: direct `llama.cpp` at `http://127.0.0.1:8080/v1`
+- Default model id: `llama.cpp/gemma-4-e4b`
+- Share mode: `disabled`
+- Web access: denied by default
+- External game repo: stays outside this repo and is referenced through `config/target.local.json`
+- Agent layout: `overseer`, `shipwright`, `scout`, `scribe`
+- Skill layout: one fishbowl skill per fishbowl agent
+- First milestone: scaffold plus durable journal, not full eval automation
+- Game surface: browser game
+- Editing policy: global `bash` and `edit` approvals stay on `ask`
+- End-state metaphor: the browser game is a visual shell over a running Molt Farm, not a separate fictional game
+- Island mapping: one island represents one agent instance or worker node
+- Crop mapping: each field or crop line represents one skill owned or exercised by that island
+- Boat mapping: boat travel represents task handoff, dependency flow, or artifact delivery between agents
+- First visual milestone: replay fixture-backed farm activity before attempting a live feed
+- Runtime boundary: the external game repo should consume a small exported world-state plus event-log contract rather than embedding Molt runtime logic directly

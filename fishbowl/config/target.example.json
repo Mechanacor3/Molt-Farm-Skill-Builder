@@ -1,0 +1,9 @@
+{
+  "project_name": "molt-fishbowl-1602",
+  "repo_path": "/absolute/path/to/external/browser-game-repo",
+  "package_manager": "npm",
+  "dev_command": "npm run dev",
+  "dev_url": "http://127.0.0.1:3000",
+  "test_command": "npm test",
+  "notes": "Start with one island, one ship, one farm loop, and one replayable browser slice."
+}
