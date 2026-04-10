@@ -634,6 +634,52 @@ class EvalAuthoringHelperTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 eval_authoring._load_eval_author_skill(project_root)
 
+    def test_find_relevant_lessons_prefers_promoted_system_map_index(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            _write_eval_author_skill(project_root)
+            _write_sample_skill(project_root, with_existing_evals=False)
+            skill = _load_skill(project_root)
+
+            lessons_root = project_root / "lessons"
+            lessons_root.mkdir(exist_ok=True)
+            (lessons_root / "generic.md").write_text(
+                "# Generic Lesson\n\n"
+                "Source:\n"
+                "- note: `README.md`\n\n"
+                "## Guidance\n\n"
+                "- `lesson`: Keep the output contract stable.\n"
+                "- `evidence`: The revised flow removed ad hoc fields.\n"
+                "- `scope`: structured reporting\n"
+                "- `reuse`: Prefer one stable output contract.\n",
+                encoding="utf-8",
+            )
+            promoted_root = project_root / "wiki" / "_build"
+            promoted_root.mkdir(parents=True)
+            (promoted_root / "lesson-index.json").write_text(
+                '{\n'
+                '  "entries": [\n'
+                '    {\n'
+                '      "source_path": "lessons/generic.md",\n'
+                '      "title": "Generic Lesson: Guidance",\n'
+                '      "lesson": "Keep the output contract stable.",\n'
+                '      "evidence": "The revised flow removed ad hoc fields.",\n'
+                '      "scope": "structured reporting",\n'
+                '      "reuse": "Prefer one stable output contract.",\n'
+                '      "workflow_pages": ["workflows/refine-and-rerun.md"],\n'
+                '      "component_pages": ["components/skill-instructions.md"],\n'
+                '      "claim_status": "stable",\n'
+                '      "supporting_paths": ["skills/sample-skill/SKILL.md"]\n'
+                "    }\n"
+                "  ]\n"
+                "}\n",
+                encoding="utf-8",
+            )
+
+            lessons = eval_authoring._find_relevant_lessons(project_root=project_root, skill=skill)
+            self.assertEqual([{"path": "lessons/generic.md", "excerpt": lessons[0]["excerpt"]}], lessons)
+            self.assertIn("Keep the output contract stable.", lessons[0]["excerpt"])
+
 
 def _write_eval_author_skill(project_root: Path) -> None:
     skill_dir = project_root / "skills" / "eval-author"

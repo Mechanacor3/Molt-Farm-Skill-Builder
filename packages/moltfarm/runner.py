@@ -18,6 +18,7 @@ from .models import AgentDefinition, ResolvedModelConfig, RunResult, Skill
 from .operations import load_operation
 from .skill_loader import discover_skills
 from .storage import generate_run_id, result_to_payload, write_log, write_run_record
+from .wiki_system_map import draft_system_map, find_relevant_lesson_paths
 
 COMPACTION_TOKEN_THRESHOLD = 100_000
 COMPACTION_TARGET_TOKENS = 20_000
@@ -202,13 +203,43 @@ def run_workflow(
         skills_by_name=skills_by_name,
     )
     run_id = generate_run_id()
-    status, output = execute_task(
-        project_root=project_root,
-        agent=agent,
-        skills=attached_skills,
-        task_input=task_input,
-        model_role="subject",
-    )
+    if operation.execution_policy == "system_map_draft":
+        try:
+            draft_result = draft_system_map(
+                project_root=project_root,
+                lesson_paths=str(task_input.get("lesson_paths") or ""),
+                lesson_glob=str(task_input.get("lesson_glob") or "lessons/*.md"),
+                workflow_focus=str(task_input.get("workflow_focus") or ""),
+                date_from=str(task_input.get("date_from") or ""),
+                date_to=str(task_input.get("date_to") or ""),
+            )
+            status = "completed"
+            output = _build_local_workflow_output(
+                project_root=project_root,
+                agent=agent,
+                skills=attached_skills,
+                task_input=task_input,
+                summary=draft_result["summary"],
+                context_files=draft_result.pop("context_files", []),
+                context_directories=[],
+                extra_output=draft_result,
+            )
+        except Exception as exc:
+            status = "failed"
+            output = _build_failed_output(
+                agent=agent,
+                skills=attached_skills,
+                task_input=task_input,
+                error=exc,
+            )
+    else:
+        status, output = execute_task(
+            project_root=project_root,
+            agent=agent,
+            skills=attached_skills,
+            task_input=task_input,
+            model_role="subject",
+        )
 
     log_path = write_log(
         project_root,
@@ -569,6 +600,17 @@ def _augment_task_input_with_local_skill_paths(
                 project_root=project_root,
                 paths=sorted(latest_iteration.glob("eval-*/with_skill/trace.json")),
             )
+    lesson_matches = find_relevant_lesson_paths(
+        project_root=project_root,
+        skill=skill,
+        max_results=4,
+    )
+    _set_default_path_series(
+        task_input=task_input,
+        base_key="lesson_path",
+        project_root=project_root,
+        paths=[project_root / relative_path for relative_path in lesson_matches],
+    )
 
 
 def _set_default_if_blank(task_input: dict[str, Any], key: str, value: str | None) -> None:
@@ -753,6 +795,63 @@ def _build_failed_output(
             "message": str(error),
         },
     }
+
+
+def _build_local_workflow_output(
+    *,
+    project_root: Path,
+    agent: AgentDefinition,
+    skills: list[Skill],
+    task_input: dict[str, Any],
+    summary: str,
+    context_files: list[str],
+    context_directories: list[str],
+    extra_output: dict[str, Any],
+) -> dict[str, Any]:
+    collected_context_files = set(_collect_context_files(project_root, task_input))
+    collected_context_files.update(context_files)
+    collected_context_directories = set(_collect_context_directories(project_root, task_input))
+    collected_context_directories.update(context_directories)
+    output = {
+        "summary": summary,
+        "skill_names": [skill.name for skill in skills],
+        "skill_descriptions": {
+            skill.name: skill.description for skill in skills
+        },
+        "skill_references": {
+            skill.name: [path.as_posix() for path in skill.referenced_paths]
+            for skill in skills
+        },
+        "skill_catalog": _build_skill_catalog(skills),
+        "context_files": sorted(collected_context_files),
+        "context_directories": sorted(collected_context_directories),
+        "runtime": agent.runtime,
+        "model": agent.model,
+        "task_input": task_input,
+        "compaction": {
+            "threshold_tokens": COMPACTION_TOKEN_THRESHOLD,
+            "input_tokens_estimate": 0,
+            "input_compacted": False,
+            "output_tokens_estimate": 0,
+            "output_compacted": False,
+        },
+        "metrics": {
+            "duration_ms": 0,
+            "usage": {
+                "requests": 0,
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "total_tokens": 0,
+            },
+        },
+        "trace": {
+            "response_ids": [],
+            "request_ids": [],
+            "items": [],
+        },
+    }
+    output.update(extra_output)
+    return output
 
 
 def _build_activate_skill_tool(sdk: Any, skills: list[Skill]):

@@ -18,10 +18,20 @@ class OperationRegistryTests(unittest.TestCase):
         self.assertEqual(["repo-triage"], operation.agent.skills)
         self.assertEqual(".", operation.inputs["target"])
 
+    def test_load_operation_returns_system_map_draft_definition(self) -> None:
+        operation = load_operation("manual-system-map-draft")
+
+        self.assertEqual("manual-system-map-draft", operation.name)
+        self.assertEqual("system-map-draft-worker", operation.agent.name)
+        self.assertEqual(["llm-wiki"], operation.agent.skills)
+        self.assertEqual("lessons/*.md", operation.inputs["lesson_glob"])
+        self.assertEqual("system_map_draft", operation.execution_policy)
+
     def test_list_operations_excludes_removed_manual_log_write(self) -> None:
         operation_names = [operation.name for operation in list_operations()]
 
         self.assertIn("manual-run-summary", operation_names)
+        self.assertIn("manual-system-map-draft", operation_names)
         self.assertNotIn("manual-log-write", operation_names)
 
     def test_load_operation_raises_for_missing_name(self) -> None:

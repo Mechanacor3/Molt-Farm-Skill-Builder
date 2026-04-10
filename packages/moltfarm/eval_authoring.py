@@ -13,6 +13,7 @@ from .models import AgentDefinition, Skill
 from .runner import execute_task
 from .skill_loader import discover_skills
 from .storage import write_json, write_text
+from .wiki_system_map import find_relevant_lessons
 
 ALLOWED_FIXTURE_EXTENSIONS = {".json", ".md", ".markdown", ".txt"}
 ALLOWED_CHECK_CATEGORIES = {"goal", "evidence", "format", "trigger"}
@@ -1145,23 +1146,7 @@ def _load_existing_eval_payload(skill: Skill) -> dict[str, Any]:
 
 
 def _find_relevant_lessons(*, project_root: Path, skill: Skill) -> list[dict[str, str]]:
-    lessons_root = project_root / "lessons"
-    if not lessons_root.exists():
-        return []
-    matches: list[dict[str, str]] = []
-    targets = {skill.name.lower(), f"skills/{skill.name}/".lower()}
-    for lesson_path in sorted(lessons_root.rglob("*.md")):
-        text = lesson_path.read_text(encoding="utf-8")
-        lowered = text.lower()
-        if not any(target in lowered for target in targets):
-            continue
-        matches.append(
-            {
-                "path": _relative_to_project(project_root, lesson_path),
-                "excerpt": _truncate_text(text, max_chars=3000),
-            }
-        )
-    return matches[:4]
+    return find_relevant_lessons(project_root, skill=skill, max_results=4)
 
 
 def _find_latest_iteration_dir(skill: Skill) -> Path | None:

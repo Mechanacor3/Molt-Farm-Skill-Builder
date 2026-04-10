@@ -186,6 +186,35 @@ The normal authoring loop is:
 4. Inspect `benchmark.json`, `feedback.json`, and per-case `comparison.json`.
 5. Refine the skill and rerun the eval.
 
+## System Map
+
+Build a reviewable workflow-first wiki draft from the current lesson corpus:
+
+```bash
+./molt skill-builder run manual-system-map-draft
+```
+
+Useful filters:
+
+```bash
+./molt skill-builder run manual-system-map-draft \
+  --input lesson_glob='lessons/*.md' \
+  --input workflow_focus=author-skill,build-evals \
+  --input date_from=2026-04-01
+```
+
+That draft writes a reviewable workspace under:
+
+- `wiki/drafts/session-N/plan.md`
+- `wiki/drafts/session-N/pages/`
+- `wiki/drafts/session-N/_build/lesson-index.json`
+
+Promote a reviewed draft into canonical wiki pages and the promoted lesson index:
+
+```bash
+./molt skill-builder promote-system-map --session session-N
+```
+
 ### Skill Layout
 
 Most authored skills follow this shape:
@@ -324,6 +353,7 @@ Current built-in operations:
 - `manual-run-summary`: summarize a completed run record
 - `manual-skill-finding`: choose the best existing skill or identify a missing one for a task
 - `manual-skill-refinement`: refine an existing skill from a brief plus supporting lessons and eval artifacts
+- `manual-system-map-draft`: synthesize selected lesson files into a reviewable workflow-first wiki draft under `wiki/drafts/session-N/`
 - `manual-triage`: run a narrow repository triage task
 
 After any operation run, inspect:
@@ -337,6 +367,7 @@ The main directories you will use are:
 
 - `skills/`: reusable skills anchored by `SKILL.md`
 - `lessons/`: durable lesson files extracted from runs and evals
+- `wiki/`: curated workflow-first system map pages plus the promoted lesson index
 - `runs/`: structured run records
 - `logs/`: dated log files for completed runs
 - `packages/`: the Python runtime and CLI that support the skill loop

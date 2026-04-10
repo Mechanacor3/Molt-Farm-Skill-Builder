@@ -63,6 +63,27 @@ _OPERATION_TEMPLATES: dict[str, OperationDefinition] = {
             "comparison_path": "",
         },
     ),
+    "manual-system-map-draft": OperationDefinition(
+        name="manual-system-map-draft",
+        description="Draft a workflow-first Molt system map from selected lesson files.",
+        agent=AgentDefinition(
+            name="system-map-draft-worker",
+            description="Local worker for drafting a workflow-first lesson wiki.",
+            model="gpt-5",
+            skills=["llm-wiki"],
+            context_policy="least_context",
+            runtime="stub",
+        ),
+        inputs={
+            "task": "draft a workflow-first system map from the selected lesson files",
+            "lesson_paths": "",
+            "lesson_glob": "lessons/*.md",
+            "workflow_focus": "",
+            "date_from": "",
+            "date_to": "",
+        },
+        execution_policy="system_map_draft",
+    ),
     "manual-python-build": OperationDefinition(
         name="manual-python-build",
         description="Build or repair a local Python project with narrow, explicit context.",

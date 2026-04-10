@@ -24,6 +24,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_run_parser(skill_builder_subparsers)
     _add_eval_skill_parser(skill_builder_subparsers)
     _add_create_evals_parser(skill_builder_subparsers)
+    _add_promote_system_map_parser(skill_builder_subparsers)
     _add_experimental_parser(skill_builder_subparsers)
     return parser
 
@@ -100,6 +101,19 @@ def _add_create_evals_parser(subparsers) -> argparse.ArgumentParser:
         help="Model to use for probe-authoring and draft generation.",
     )
     return create_parser
+
+
+def _add_promote_system_map_parser(subparsers) -> argparse.ArgumentParser:
+    promote_parser = subparsers.add_parser(
+        "promote-system-map",
+        help="Promote a reviewed system-map draft session into canonical wiki/ files.",
+    )
+    promote_parser.add_argument(
+        "--session",
+        required=True,
+        help="Draft session id under wiki/drafts/, such as session-1.",
+    )
+    return promote_parser
 
 
 def _add_experimental_parser(subparsers) -> argparse.ArgumentParser:
@@ -266,6 +280,16 @@ def main() -> int:
             answers=parse_overrides(args.answer),
             promote=args.promote,
             model=args.model,
+        )
+        print(json.dumps(result, indent=2))
+        return 0
+
+    if command == "promote-system-map":
+        from .wiki_system_map import promote_system_map
+
+        result = promote_system_map(
+            project_root=project_root,
+            session_id=args.session,
         )
         print(json.dumps(result, indent=2))
         return 0

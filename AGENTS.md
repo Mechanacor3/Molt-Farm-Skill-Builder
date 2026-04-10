@@ -56,6 +56,7 @@ Current durable preferences:
 Primary artifacts:
 - `skills/` = reusable capabilities anchored by `SKILL.md`
 - `lessons/` = distilled improvements
+- `wiki/` = curated workflow-first system map distilled from lessons
 - `logs/` = append-only observations
 - `runs/` = durable execution records
 - `packages/` = minimal runtime code that supports the skill loop

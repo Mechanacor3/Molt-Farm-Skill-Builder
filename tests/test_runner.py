@@ -1163,6 +1163,48 @@ class RunnerHelperTests(unittest.TestCase):
 
 
 class RunWorkflowFailureTests(unittest.TestCase):
+    def test_run_workflow_builds_system_map_draft_without_mutating_canonical_wiki(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            skill_dir = project_root / "skills" / "llm-wiki"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text(
+                "---\nname: llm-wiki\ndescription: Build a wiki.\n---\n\nDo it.\n",
+                encoding="utf-8",
+            )
+            (project_root / "packages" / "moltfarm").mkdir(parents=True)
+            (project_root / "packages" / "moltfarm" / "eval_authoring.py").write_text(
+                "# stub\n",
+                encoding="utf-8",
+            )
+            lessons_root = project_root / "lessons"
+            lessons_root.mkdir(parents=True)
+            (lessons_root / "2026-04-09-authoring.md").write_text(
+                "# Authoring Lessons\n\n"
+                "Source:\n"
+                "- feature: `packages/moltfarm/eval_authoring.py`\n\n"
+                "## Draft First\n\n"
+                "- `lesson`: Conversational eval creation should write a reviewable draft workspace before it touches canonical files.\n"
+                "- `evidence`: The draft flow writes session artifacts before promotion.\n"
+                "- `scope`: eval authoring workflow\n"
+                "- `reuse`: Keep the first pass additive and inspectable.\n",
+                encoding="utf-8",
+            )
+
+            result = run_workflow(
+                project_root=project_root,
+                workflow_name="manual-system-map-draft",
+            )
+
+            self.assertEqual("completed", result.status)
+            self.assertEqual(
+                ["lessons/2026-04-09-authoring.md"],
+                result.output["context_files"],
+            )
+            self.assertEqual("session-1", result.output["draft_session_id"])
+            self.assertTrue((project_root / result.output["draft_plan_path"]).is_file())
+            self.assertFalse((project_root / "wiki" / "index.md").is_file())
+
     def test_run_workflow_uses_explicit_manual_lesson_context_files(self) -> None:
         original_build_executor = runner._build_executor
         try:
@@ -1265,6 +1307,71 @@ class RunWorkflowFailureTests(unittest.TestCase):
                     "skills/sample-skill/evals/workspace/iteration-2/eval-case-one/with_skill/grading.json",
                     result.output["context_files"],
                 )
+        finally:
+            runner._build_executor = original_build_executor
+
+    def test_run_workflow_prefers_promoted_lesson_index_for_refinement_context(self) -> None:
+        original_build_executor = runner._build_executor
+        try:
+            runner._build_executor = lambda runtime: runner.StubAgentExecutor()
+
+            with tempfile.TemporaryDirectory() as temp_dir:
+                project_root = Path(temp_dir)
+                (project_root / "skills" / "skill-refiner").mkdir(parents=True)
+                sample_skill_dir = project_root / "skills" / "sample-skill"
+                sample_skill_dir.mkdir(parents=True)
+                (project_root / "skills" / "skill-refiner" / "SKILL.md").write_text(
+                    "---\nname: skill-refiner\ndescription: Refine skills.\n---\n\nDo it.\n",
+                    encoding="utf-8",
+                )
+                (sample_skill_dir / "SKILL.md").write_text(
+                    "---\nname: sample-skill\ndescription: Sample skill.\n---\n\nDo it.\n",
+                    encoding="utf-8",
+                )
+                lessons_root = project_root / "lessons"
+                lessons_root.mkdir(parents=True)
+                (lessons_root / "generic.md").write_text(
+                    "# Generic Lesson\n\n"
+                    "Source:\n"
+                    "- feature: `README.md`\n\n"
+                    "## Guidance\n\n"
+                    "- `lesson`: Keep the output contract stable.\n"
+                    "- `evidence`: The revised flow removed ad hoc fields.\n"
+                    "- `scope`: structured reporting\n"
+                    "- `reuse`: Prefer one stable output contract.\n",
+                    encoding="utf-8",
+                )
+                promoted_root = project_root / "wiki" / "_build"
+                promoted_root.mkdir(parents=True)
+                (promoted_root / "lesson-index.json").write_text(
+                    '{\n'
+                    '  "entries": [\n'
+                    '    {\n'
+                    '      "source_path": "lessons/generic.md",\n'
+                    '      "title": "Generic Lesson: Guidance",\n'
+                    '      "lesson": "Keep the output contract stable.",\n'
+                    '      "evidence": "The revised flow removed ad hoc fields.",\n'
+                    '      "scope": "structured reporting",\n'
+                    '      "reuse": "Prefer one stable output contract.",\n'
+                    '      "workflow_pages": ["workflows/refine-and-rerun.md"],\n'
+                    '      "component_pages": ["components/skill-instructions.md"],\n'
+                    '      "claim_status": "stable",\n'
+                    '      "supporting_paths": ["skills/sample-skill/SKILL.md"]\n'
+                    "    }\n"
+                    "  ]\n"
+                    "}\n",
+                    encoding="utf-8",
+                )
+
+                result = run_workflow(
+                    project_root=project_root,
+                    workflow_name="manual-skill-refinement",
+                    overrides={"target_skill": "sample-skill"},
+                )
+
+                self.assertEqual("completed", result.status)
+                self.assertEqual("lessons/generic.md", result.inputs["lesson_path"])
+                self.assertIn("lessons/generic.md", result.output["context_files"])
         finally:
             runner._build_executor = original_build_executor
 

@@ -122,6 +122,22 @@ class CliParserTests(unittest.TestCase):
         self.assertTrue(args.promote)
         self.assertEqual("gpt-5.4", args.model)
 
+    def test_skill_builder_promote_system_map_command_parses(self) -> None:
+        parser = build_parser()
+
+        args = parser.parse_args(
+            [
+                "skill-builder",
+                "promote-system-map",
+                "--session",
+                "session-2",
+            ]
+        )
+
+        self.assertEqual("skill-builder", args.command)
+        self.assertEqual("promote-system-map", args.skill_builder_command)
+        self.assertEqual("session-2", args.session)
+
     def test_skill_builder_experimental_probe_codex_trigger_parses(self) -> None:
         parser = build_parser()
 
@@ -331,6 +347,25 @@ class CliMainTests(unittest.TestCase):
             answers={"selected_flavors": "core-task", "author_notes": "keep-it-local"},
             promote=True,
             model="gpt-5.4",
+        )
+        self.assertEqual(result, json.loads(stdout))
+
+    def test_main_promote_system_map_dispatches(self) -> None:
+        result = {"session_id": "session-1", "status": "completed"}
+        with mock.patch("moltfarm.wiki_system_map.promote_system_map", return_value=result) as patched:
+            code, stdout = self._run_main(
+                [
+                    "skill-builder",
+                    "promote-system-map",
+                    "--session",
+                    "session-1",
+                ]
+            )
+
+        self.assertEqual(0, code)
+        patched.assert_called_once_with(
+            project_root=Path.cwd(),
+            session_id="session-1",
         )
         self.assertEqual(result, json.loads(stdout))
 
