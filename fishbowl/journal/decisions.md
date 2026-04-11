@@ -16,4 +16,6 @@
 - Crop mapping: each field or crop line represents one skill owned or exercised by that island
 - Boat mapping: boat travel represents task handoff, dependency flow, or artifact delivery between agents
 - First visual milestone: replay fixture-backed farm activity before attempting a live feed
+- First UI implementation: plain static HTML/CSS/JS served directly, with no framework or bundler in the initial slice
 - Runtime boundary: the external game repo should consume a small exported world-state plus event-log contract rather than embedding Molt runtime logic directly
+- Lesson loop rule: repeated fishbowl findings should graduate from `journal/lesson-candidates.md` into root `lessons/` after one fix-and-rerun cycle when the evidence is stable

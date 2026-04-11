@@ -2,16 +2,16 @@
 
 ## Now
 
-- Bind the first external 1602-style browser-game repo through `config/target.local.json`.
+- Replay one real Molt run through the visual layer using exported state and event fixtures.
+- Add browser evidence capture and replay checks for the visualization slice.
+- Add playback controls and direct inspector links back to real artifact paths.
+- Promote repeated fishbowl findings into root `lessons/` instead of leaving them only in `journal/lesson-candidates.md`.
 - Keep the fishbowl local-only, approval-gated, and one-skill-per-agent.
-- Turn the 1602 metaphor into a concrete visual contract for agents, skills, and agent-agent communication.
-- Define the minimum replayable event/state JSON that the external browser game will consume.
 
 ## Next
 
-- Build one non-live browser slice that shows a few islands, skill fields, and one boat route from fixture data.
-- Replay one real Molt run through the visual layer using exported state and event fixtures.
-- Add browser evidence capture and replay checks for the visualization slice.
+- Capture a browser screenshot set or replay note for the first visual slice.
+- Tune the route, inspector, and timeline layers against one real exported run instead of hand-authored fixture language.
 - Record each fishbowl pass in `journal/sessions/`.
 
 ## Later
@@ -25,4 +25,7 @@
 ## Done
 
 - Scaffold the fishbowl opencode surface, journal, and lesson seed files.
+- Bind the first external 1602-style browser-game repo through `config/target.local.json`.
+- Define the minimum replayable event/state JSON that the external browser game will consume.
 - Write the first concrete fishbowl visualization plan.
+- Build the first non-live browser slice with islands, fields, routes, inspector, and timeline from fixture data.

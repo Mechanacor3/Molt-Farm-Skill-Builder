@@ -19,3 +19,4 @@ Rules:
 - Use exact file paths for evidence.
 - Do not invent outcomes or evidence.
 - Keep entries compact and operational.
+- If a finding has repeated evidence across multiple fishbowl passes, mark it as ready to promote into a repo-level lesson instead of leaving it only as a candidate.
